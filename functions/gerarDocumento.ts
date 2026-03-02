@@ -55,6 +55,9 @@ Deno.serve(async (req) => {
   }
 
   return Response.json({ html: htmlContent, tipo, projeto_id });
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
 });
 
 function gerarProcuracao({ projeto, uc, rt, RESP_TECNICO, RESP_CPF, RESP_RG, RESP_ENDERECO, dataExtenso, cidade, estado }) {
