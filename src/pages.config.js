@@ -49,12 +49,14 @@
  */
 import Dashboard from './pages/Dashboard';
 import novoprProjeto from './pages/NovoPréProjeto';
+import Projetos from './pages/Projetos';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Dashboard": Dashboard,
     "NovoPréProjeto": novoprProjeto,
+    "Projetos": Projetos,
 }
 
 export const pagesConfig = {
