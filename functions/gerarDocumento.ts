@@ -5,7 +5,8 @@ Deno.serve(async (req) => {
   const user = await base44.auth.me();
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { tipo, projeto_id } = await req.json();
+  const body = await req.json();
+  const { tipo, projeto_id } = body;
 
   // Buscar dados do projeto
   const [projetos, ucs, resumos] = await Promise.all([
