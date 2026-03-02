@@ -11,10 +11,20 @@ Deno.serve(async (req) => {
 
   // Buscar dados do projeto (service role para evitar problemas de permissão)
   const [projetos, ucs, resumos] = await Promise.all([
-    base44.asServiceRole.entities.Projeto.filter({ id: projeto_id }),
-    base44.asServiceRole.entities.UC.filter({ projeto_id }),
-    base44.asServiceRole.entities.ResumoTecnico.filter({ projeto_id }),
+    base44.asServiceRole.entities.Projeto.list(),
+    base44.asServiceRole.entities.UC.list(),
+    base44.asServiceRole.entities.ResumoTecnico.list(),
   ]);
+
+  // Filtrar manualmente para evitar erro de ID inválido
+  const projetosFiltrados = projetos.filter(p => p.id === projeto_id);
+  const ucsFiltradas = ucs.filter(u => u.projeto_id === projeto_id);
+  const resumosFiltrados = resumos.filter(r => r.projeto_id === projeto_id);
+
+  // Substituir arrays originais
+  projetos.splice(0, projetos.length, ...projetosFiltrados);
+  ucs.splice(0, ucs.length, ...ucsFiltradas);
+  resumos.splice(0, resumos.length, ...resumosFiltrados);
 
   const projeto = projetos[0];
   const uc = ucs[0] || {};
