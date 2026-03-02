@@ -28,9 +28,7 @@ Deno.serve(async (req) => {
   const uc = ucs[0] || {};
   const rt = resumos[0] || {};
 
-  if (!projetoData) {
-    return Response.json({ error: 'Projeto não encontrado' }, { status: 404 });
-  }
+  if (!projetoData) return Response.json({ error: 'Projeto não encontrado' }, { status: 404 });
   const projeto = projetoData;
 
   // Responsável técnico fixo (configurável no futuro)
