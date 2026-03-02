@@ -10,6 +10,7 @@ export default function NovoPréProjeto() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [concluido, setConcluido] = useState(false);
   const [extracting, setExtracting] = useState(false);
 
   const [form, setForm] = useState({
