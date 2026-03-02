@@ -108,7 +108,7 @@ export default function Projetos() {
           to={createPageUrl("NovoPréProjeto")}
           className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-amber-500/20"
         >
-          <Zap size={16} /> Novo Pré-Projeto
+          <Zap size={16} /> Novo Cliente
         </Link>
       </div>
 
