@@ -212,6 +212,7 @@ Retorne apenas o JSON.`;
               { label: "CPF *", key: "cpf", type: "text", placeholder: "000.000.000-00" },
               { label: "Telefone / WhatsApp", key: "telefone", type: "text", placeholder: "(11) 99999-9999" },
               { label: "E-mail", key: "email", type: "email", placeholder: "joao@email.com" },
+              { label: "Valor do Projeto (R$) *", key: "valor_projeto", type: "text", placeholder: "R$ 25.000,00" },
             ].map(f => (
               <div key={f.key}>
                 <label className="text-slate-400 text-xs font-medium block mb-1.5">{f.label}</label>
