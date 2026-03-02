@@ -51,6 +51,7 @@ import Dashboard from './pages/Dashboard';
 import novoprProjeto from './pages/NovoPréProjeto';
 import Projetos from './pages/Projetos';
 import ProjetoDetalhe from './pages/ProjetoDetalhe';
+import Produtos from './pages/Produtos';
 import __Layout from './Layout.jsx';
 
 
@@ -59,6 +60,7 @@ export const PAGES = {
     "NovoPréProjeto": novoprProjeto,
     "Projetos": Projetos,
     "ProjetoDetalhe": ProjetoDetalhe,
+    "Produtos": Produtos,
 }
 
 export const pagesConfig = {
