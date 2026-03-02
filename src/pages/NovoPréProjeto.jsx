@@ -146,14 +146,45 @@ Retorne apenas o JSON.`;
     return <span className={`text-xs ${color} ml-2`}>{pct}%</span>;
   };
 
+  if (concluido) {
+    return (
+      <div className="p-6 md:p-8 max-w-3xl mx-auto flex items-center justify-center min-h-[60vh]">
+        <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-10 text-center space-y-5 shadow-xl shadow-amber-500/10">
+          <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto">
+            <PartyPopper size={40} className="text-amber-400" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">Parabéns pela venda! 🎉</h2>
+            <p className="text-slate-300 text-base">O cliente <span className="text-amber-400 font-semibold">{form.nome_cliente}</span> foi cadastrado com sucesso.</p>
+            <p className="text-slate-400 text-sm mt-2">O projeto está aguardando confirmação de pagamento pelo financeiro.</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+            <button
+              onClick={() => navigate(createPageUrl("Projetos"))}
+              className="bg-amber-500 hover:bg-amber-400 text-white font-semibold px-6 py-3 rounded-xl transition-all"
+            >
+              Ver Projetos
+            </button>
+            <button
+              onClick={() => { setConcluido(false); setStep(0); setForm({ nome_cliente: "", cpf: "", telefone: "", email: "", usina_fechada: false }); setContaEnergiaUrl(""); setDocFotoUrl(""); setExtraido(null); }}
+              className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-6 py-3 rounded-xl transition-all"
+            >
+              Cadastrar outro cliente
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Zap className="text-amber-400" size={22} /> Novo Pré-Projeto
+          <Zap className="text-amber-400" size={22} /> Novo Cliente
         </h1>
-        <p className="text-slate-400 text-sm mt-1">Cadastro rápido de cliente e pré-projeto solar</p>
+        <p className="text-slate-400 text-sm mt-1">Cadastro de novo cliente solar</p>
       </div>
 
       {/* Stepper */}
