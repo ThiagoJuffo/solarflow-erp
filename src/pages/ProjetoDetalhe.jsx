@@ -484,6 +484,16 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit }) {
                   )}
                 </div>
                 <div className="flex flex-wrap gap-2">
+                  {tipo.gerarivel && canEdit && (
+                    <button
+                      onClick={() => handleGerar(tipo.key)}
+                      disabled={gerando === tipo.key}
+                      className="text-xs bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1"
+                    >
+                      {gerando === tipo.key ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
+                      Gerar documento
+                    </button>
+                  )}
                   {doc?.url_gerado && (
                     <a href={doc.url_gerado} target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:underline flex items-center gap-1">
                       <FileText size={12} /> Ver original
@@ -499,7 +509,7 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit }) {
                       <label className="cursor-pointer">
                         <span className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1">
                           {uploading === tipo.key ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                          {doc ? "Substituir" : "Fazer upload"}
+                          {doc ? "Substituir PDF" : "Upload PDF"}
                         </span>
                         <input type="file" className="hidden" accept=".pdf,image/*" onChange={e => e.target.files[0] && handleUpload(tipo.key, e.target.files[0])} />
                       </label>
