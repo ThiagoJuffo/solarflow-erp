@@ -401,17 +401,46 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit }) {
 
 function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit }) {
   const [uploading, setUploading] = useState(null);
+  const [gerando, setGerando] = useState(null);
 
   const TIPOS = [
-    { key: "procuracao", label: "Procuração" },
-    { key: "memorial_tecnico", label: "Memorial Técnico" },
-    { key: "formulario_creditos", label: "Form. Envio de Créditos" },
-    { key: "art", label: "ART" },
-    { key: "inmetro", label: "Certificado INMETRO" },
-    { key: "outros_anexos", label: "Outros Anexos" },
+    { key: "procuracao", label: "Procuração", gerarivel: true },
+    { key: "memorial_tecnico", label: "Memorial Técnico", gerarivel: true },
+    { key: "solicitacao_art", label: "Solicitação ART", gerarivel: true },
+    { key: "formulario_creditos", label: "Form. Envio de Créditos", gerarivel: false },
+    { key: "art", label: "ART", gerarivel: false },
+    { key: "inmetro", label: "Certificado INMETRO", gerarivel: false },
+    { key: "outros_anexos", label: "Outros Anexos", gerarivel: false },
   ];
 
   const getDoc = (tipo) => documentos.find(d => d.tipo === tipo);
+
+  const handleGerar = async (tipo) => {
+    setGerando(tipo);
+    const response = await base44.functions.invoke('gerarDocumento', { tipo, projeto_id: projetoId });
+    const { html } = response.data;
+
+    // Abrir HTML em nova aba para visualizar/imprimir
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+
+    // Salvar como gerado
+    const existing = getDoc(tipo);
+    if (existing) {
+      const updated = await base44.entities.Documento.update(existing.id, { status: "gerado" });
+      setDocumentos(prev => prev.map(d => d.id === existing.id ? updated : d));
+    } else {
+      const TIPOS_LABELS = { procuracao: "Procuração", memorial_tecnico: "Memorial Técnico", solicitacao_art: "Solicitação ART" };
+      const novo = await base44.entities.Documento.create({
+        projeto_id: projetoId, tipo,
+        status: "gerado",
+        titulo: TIPOS_LABELS[tipo] || tipo
+      });
+      setDocumentos(prev => [...prev, novo]);
+    }
+    setGerando(null);
+  };
 
   const handleUpload = async (tipo, file, signed = false) => {
     setUploading(tipo);
