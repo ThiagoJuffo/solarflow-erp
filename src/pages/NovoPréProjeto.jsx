@@ -226,6 +226,22 @@ Retorne apenas o JSON.`;
               </div>
             ))}
           </div>
+          <div>
+            <label className="text-slate-400 text-xs font-medium block mb-1.5">Forma de Pagamento *</label>
+            <select
+              value={form.forma_pagamento || ""}
+              onChange={e => set("forma_pagamento", e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors"
+            >
+              <option value="">Selecionar...</option>
+              <option value="a_vista">À Vista</option>
+              <option value="financiamento">Financiamento</option>
+              <option value="consorcio">Consórcio</option>
+              <option value="parcelado_cartao">Parcelado no Cartão</option>
+              <option value="boleto_parcelado">Boleto Parcelado</option>
+            </select>
+          </div>
+
           <div className="flex items-center gap-3 p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl">
             <input
               type="checkbox"
