@@ -136,7 +136,7 @@ Retorne apenas o JSON.`;
     }
 
     setSaving(false);
-    navigate(createPageUrl("Projetos"));
+    setConcluido(true);
   };
 
   const ScoreIndicator = ({ score }) => {
