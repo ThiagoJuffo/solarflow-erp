@@ -11,7 +11,7 @@ import {
 const NAV_ITEMS = [
   { label: "Dashboard", page: "Dashboard", icon: LayoutDashboard, roles: ["admin","vendas","engenharia","financeiro","suprimentos","instalacao"] },
   { label: "Projetos", page: "Projetos", icon: FolderKanban, roles: ["admin","vendas","engenharia","financeiro","suprimentos","instalacao"] },
-  { label: "Novo Pré-Projeto", page: "NovoPréProjeto", icon: Zap, roles: ["admin","vendas"] },
+  { label: "Novo Cliente", page: "NovoPréProjeto", icon: Zap, roles: ["admin","vendas"] },
   { label: "Biblioteca Produtos", page: "Produtos", icon: Package, roles: ["admin","engenharia","suprimentos"] },
   { label: "Usuários", page: "Usuarios", icon: Users, roles: ["admin"] },
 ];
