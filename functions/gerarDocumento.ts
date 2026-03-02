@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
 
   const projetos = projeto ? [projeto] : [];
 
-  const projeto = projetos[0];
+  const projetoData = projetos[0];
   const uc = ucs[0] || {};
   const rt = resumos[0] || {};
 
