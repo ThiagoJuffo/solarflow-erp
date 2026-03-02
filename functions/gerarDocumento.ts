@@ -8,11 +8,11 @@ Deno.serve(async (req) => {
   const body = await req.json();
   const { tipo, projeto_id } = body;
 
-  // Buscar dados do projeto
+  // Buscar dados do projeto (service role para evitar problemas de permissão)
   const [projetos, ucs, resumos] = await Promise.all([
-    base44.entities.Projeto.filter({ id: projeto_id }),
-    base44.entities.UC.filter({ projeto_id }),
-    base44.entities.ResumoTecnico.filter({ projeto_id }),
+    base44.asServiceRole.entities.Projeto.filter({ id: projeto_id }),
+    base44.asServiceRole.entities.UC.filter({ projeto_id }),
+    base44.asServiceRole.entities.ResumoTecnico.filter({ projeto_id }),
   ]);
 
   const projeto = projetos[0];
