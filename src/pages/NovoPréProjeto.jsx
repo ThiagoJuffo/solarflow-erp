@@ -108,7 +108,13 @@ Retorne apenas o JSON.`;
   const handleSalvar = async () => {
     setSaving(true);
     const preProjeto = await base44.entities.PreProjeto.create({
-      ...form,
+      nome_cliente: form.nome_cliente,
+      cpf: form.cpf,
+      telefone: form.telefone,
+      email: form.email,
+      usina_fechada: form.usina_fechada,
+      valor_projeto: form.valor_projeto,
+      forma_pagamento: form.forma_pagamento,
       conta_energia_url: contaEnergiaUrl,
       documento_foto_url: docFotoUrl,
       dados_extraidos: extraido,
