@@ -2,7 +2,7 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Upload, User, FileText, CheckCircle, AlertTriangle, Loader2, ChevronRight, Zap } from "lucide-react";
+import { Upload, User, FileText, CheckCircle, AlertTriangle, Loader2, ChevronRight, Zap, PartyPopper } from "lucide-react";
 
 const STEPS = ["Dados do Cliente", "Upload de Documentos", "Extração & Revisão", "Confirmar"];
 
