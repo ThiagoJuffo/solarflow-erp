@@ -229,6 +229,8 @@ export default function Produtos() {
                   { label: "Potência (kVA)", key: "potencia_kva", type: "number" },
                   { label: "Eficiência (%)", key: "eficiencia", type: "number" },
                   { label: "Garantia (anos)", key: "garantia_anos", type: "number" },
+                  { label: "Dimensões (mm)", key: "dimensoes" },
+                  { label: "Peso (kg)", key: "peso", type: "number" },
                 ].map(f => (
                   <div key={f.key} className={f.key === "fabricante" || f.key === "modelo" ? "col-span-2" : ""}>
                     <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
