@@ -188,7 +188,7 @@ export default function DashboardVendas() {
 
         {/* Formas de pagamento */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-          <h3 className="text-white font-semibold mb-4 flex items-center gap-2"><DollarSign size={16} className="text-amber-400" /> Formas de Pagamento — {anoSelecionado}</h3>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2"><DollarSign size={16} className="text-amber-400" /> Formas de Pagamento — {MESES[mesSelecionado]}/{anoSelecionado}</h3>
           {formasPagamento.length === 0 ? (
             <p className="text-slate-500 text-sm text-center py-6">Nenhum dado disponível</p>
           ) : (
