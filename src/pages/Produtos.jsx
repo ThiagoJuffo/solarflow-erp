@@ -229,7 +229,6 @@ export default function Produtos() {
                 {[
                   { label: "Fabricante *", key: "fabricante" },
                   { label: "Modelo *", key: "modelo" },
-                  { label: "Potência (Wp)", key: "potencia_wp", type: "number" },
                   { label: "Potência (kVA)", key: "potencia_kva", type: "number" },
                   { label: "Eficiência (%)", key: "eficiencia", type: "number" },
                   { label: "Garantia (anos)", key: "garantia_anos", type: "number" },
