@@ -66,6 +66,51 @@ export default function Produtos() {
     setModal(false);
   };
 
+  const handlePreencherIA = async () => {
+    if (!form.fabricante || !form.modelo) return;
+    setPreenchendoIA(true);
+    const resultado = await base44.integrations.Core.InvokeLLM({
+      prompt: `Busque as especificações técnicas completas do inversor/microinversor solar: Fabricante: ${form.fabricante}, Modelo: ${form.modelo}.
+Retorne os dados em JSON com os campos: potencia_kva, potencia_ac_w, tensao_nominal_ac_v (string com range, ex: "220 V (176/224V)"), corrente_max_ac_a, frequencia_operacao_hz, range_frequencia_hz, fator_potencia, corrente_max_dc_a, tensao_min_dc_v, tensao_max_dc_v, num_mppt, entradas_por_mppt, range_temperatura, eficiencia, peso, dimensoes, garantia_anos.
+Preencha apenas os campos que encontrar com certeza. Deixe null para os demais.`,
+      add_context_from_internet: true,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          potencia_kva: { type: "number" },
+          potencia_ac_w: { type: "number" },
+          tensao_nominal_ac_v: { type: "string" },
+          corrente_max_ac_a: { type: "number" },
+          frequencia_operacao_hz: { type: "number" },
+          range_frequencia_hz: { type: "string" },
+          fator_potencia: { type: "number" },
+          corrente_max_dc_a: { type: "number" },
+          tensao_min_dc_v: { type: "number" },
+          tensao_max_dc_v: { type: "number" },
+          num_mppt: { type: "number" },
+          entradas_por_mppt: { type: "number" },
+          range_temperatura: { type: "string" },
+          eficiencia: { type: "number" },
+          peso: { type: "number" },
+          dimensoes: { type: "string" },
+          garantia_anos: { type: "number" }
+        }
+      }
+    });
+    if (resultado) {
+      setForm(f => {
+        const updated = { ...f };
+        Object.entries(resultado).forEach(([k, v]) => {
+          if (v !== null && v !== undefined && v !== "" && !f[k]) {
+            updated[k] = v;
+          }
+        });
+        return updated;
+      });
+    }
+    setPreenchendoIA(false);
+  };
+
   const handleUploadInmetro = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
