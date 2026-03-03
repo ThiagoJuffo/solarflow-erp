@@ -114,13 +114,13 @@ export default function DashboardVendas() {
           </h1>
           <p className="text-slate-400 text-sm mt-1">Resultados de fechamento — acesso restrito</p>
         </div>
-        {/* Seletor de ano */}
+        {/* Seletor de mês/ano */}
         <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2">
-          <button onClick={() => setAnoSelecionado(a => a - 1)} className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={() => navegarMes(-1)} className="text-slate-400 hover:text-white transition-colors">
             <ChevronLeft size={16} />
           </button>
-          <span className="text-white font-semibold text-sm w-12 text-center">{anoSelecionado}</span>
-          <button onClick={() => setAnoSelecionado(a => a + 1)} className="text-slate-400 hover:text-white transition-colors">
+          <span className="text-white font-semibold text-sm w-28 text-center">{MESES[mesSelecionado]} {anoSelecionado}</span>
+          <button onClick={() => navegarMes(1)} className="text-slate-400 hover:text-white transition-colors">
             <ChevronRight size={16} />
           </button>
         </div>
