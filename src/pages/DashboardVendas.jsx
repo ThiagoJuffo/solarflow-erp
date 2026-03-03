@@ -165,7 +165,7 @@ export default function DashboardVendas() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Ranking vendedores */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-          <h3 className="text-white font-semibold mb-4 flex items-center gap-2"><Award size={16} className="text-amber-400" /> Ranking Vendedores — {anoSelecionado}</h3>
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2"><Award size={16} className="text-amber-400" /> Ranking Vendedores — {MESES[mesSelecionado]}/{anoSelecionado}</h3>
           {rankingVendedores.length === 0 ? (
             <p className="text-slate-500 text-sm text-center py-6">Nenhum dado disponível</p>
           ) : (
