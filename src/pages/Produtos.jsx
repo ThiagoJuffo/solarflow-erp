@@ -71,34 +71,55 @@ export default function Produtos() {
   const handlePreencherIA = async () => {
     if (!form.fabricante || !form.modelo) return;
     setPreenchendoIA(true);
-    const resultado = await base44.integrations.Core.InvokeLLM({
-      prompt: `Busque as especificações técnicas completas do inversor/microinversor solar: Fabricante: ${form.fabricante}, Modelo: ${form.modelo}.
+    const isModulo = form.tipo === "modulo_fv";
+    const prompt = isModulo
+      ? `Busque as especificações técnicas completas do módulo fotovoltaico: Fabricante: ${form.fabricante}, Modelo: ${form.modelo}.
+Retorne os dados em JSON com os campos: potencia_wp (Ppeak), vmp (Tensão Vmp), imp (Corrente Imp), voc (Tensão Voc), isc (Corrente Isc), eficiencia_modulo (% eficiência), corrente_max_fusivel_a (corrente máx fusível série), coef_temperatura (ex: "-0.35%/°C"), area_m2, dimensoes, peso, garantia_anos.
+Preencha apenas os campos que encontrar com certeza. Deixe null para os demais.`
+      : `Busque as especificações técnicas completas do inversor/microinversor solar: Fabricante: ${form.fabricante}, Modelo: ${form.modelo}.
 Retorne os dados em JSON com os campos: potencia_kva, potencia_ac_w, tensao_nominal_ac_v (string com range, ex: "220 V (176/224V)"), corrente_max_ac_a, frequencia_operacao_hz, range_frequencia_hz, fator_potencia, corrente_max_dc_a, tensao_min_dc_v, tensao_max_dc_v, num_mppt, entradas_por_mppt, range_temperatura, eficiencia, peso, dimensoes, garantia_anos.
-Preencha apenas os campos que encontrar com certeza. Deixe null para os demais.`,
-      add_context_from_internet: true,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          potencia_kva: { type: "number" },
-          potencia_ac_w: { type: "number" },
-          tensao_nominal_ac_v: { type: "string" },
-          corrente_max_ac_a: { type: "number" },
-          frequencia_operacao_hz: { type: "number" },
-          range_frequencia_hz: { type: "string" },
-          fator_potencia: { type: "number" },
-          corrente_max_dc_a: { type: "number" },
-          tensao_min_dc_v: { type: "number" },
-          tensao_max_dc_v: { type: "number" },
-          num_mppt: { type: "number" },
-          entradas_por_mppt: { type: "number" },
-          range_temperatura: { type: "string" },
-          eficiencia: { type: "number" },
-          peso: { type: "number" },
-          dimensoes: { type: "string" },
-          garantia_anos: { type: "number" }
-        }
+Preencha apenas os campos que encontrar com certeza. Deixe null para os demais.`;
+
+    const response_json_schema = isModulo ? {
+      type: "object",
+      properties: {
+        potencia_wp: { type: "number" },
+        vmp: { type: "number" },
+        imp: { type: "number" },
+        voc: { type: "number" },
+        isc: { type: "number" },
+        eficiencia_modulo: { type: "number" },
+        corrente_max_fusivel_a: { type: "number" },
+        coef_temperatura: { type: "string" },
+        area_m2: { type: "number" },
+        dimensoes: { type: "string" },
+        peso: { type: "number" },
+        garantia_anos: { type: "number" }
       }
-    });
+    } : {
+      type: "object",
+      properties: {
+        potencia_kva: { type: "number" },
+        potencia_ac_w: { type: "number" },
+        tensao_nominal_ac_v: { type: "string" },
+        corrente_max_ac_a: { type: "number" },
+        frequencia_operacao_hz: { type: "number" },
+        range_frequencia_hz: { type: "string" },
+        fator_potencia: { type: "number" },
+        corrente_max_dc_a: { type: "number" },
+        tensao_min_dc_v: { type: "number" },
+        tensao_max_dc_v: { type: "number" },
+        num_mppt: { type: "number" },
+        entradas_por_mppt: { type: "number" },
+        range_temperatura: { type: "string" },
+        eficiencia: { type: "number" },
+        peso: { type: "number" },
+        dimensoes: { type: "string" },
+        garantia_anos: { type: "number" }
+      }
+    };
+
+    const resultado = await base44.integrations.Core.InvokeLLM({ prompt, add_context_from_internet: true, response_json_schema });
     if (resultado) {
       setForm(f => {
         const updated = { ...f };
