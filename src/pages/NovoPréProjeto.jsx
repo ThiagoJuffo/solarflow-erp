@@ -352,13 +352,52 @@ Retorne apenas o JSON.`;
           {extraido && (
             <div className="space-y-4">
               {cpfMismatch && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3">
-                  <AlertTriangle size={18} className="text-red-400 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-red-300 font-semibold text-sm">Divergência de CPF detectada!</p>
-                    <p className="text-red-400/80 text-xs mt-0.5">CPF digitado: {form.cpf} | CPF no documento: {extraido.cpf_extraido}</p>
-                    <p className="text-red-400/80 text-xs mt-1">Revise os dados antes de prosseguir.</p>
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 space-y-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle size={18} className="text-red-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-red-300 font-semibold text-sm">Divergência de CPF detectada!</p>
+                      <p className="text-red-400/80 text-xs mt-0.5">CPF do cliente: <strong>{form.cpf}</strong> | CPF na conta de energia: <strong>{extraido.cpf_extraido}</strong></p>
+                    </div>
                   </div>
+
+                  <p className="text-slate-300 text-sm font-medium">O projeto ficará em nome de uma pessoa diferente do cliente cadastrado?</p>
+
+                  <div className="space-y-2">
+                    {/* Opção 1 */}
+                    <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${cpfDivergenceOption === "different_holder" ? "border-amber-500 bg-amber-500/10" : "border-slate-700 hover:border-slate-500"}`}>
+                      <input type="radio" name="cpf_divergence" value="different_holder" checked={cpfDivergenceOption === "different_holder"} onChange={() => setCpfDivergenceOption("different_holder")} className="mt-0.5 accent-amber-500" />
+                      <div>
+                        <p className="text-white text-sm font-medium">Sim — titular da conta é uma pessoa diferente</p>
+                        <p className="text-slate-400 text-xs mt-0.5">O projeto envolverá duas pessoas: o decisor (cliente cadastrado) e o titular da conta de energia <strong className="text-slate-300">({extraido?.titular || "—"})</strong>.</p>
+                      </div>
+                    </label>
+
+                    {/* Opção 2 */}
+                    <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${cpfDivergenceOption === "ownership_change_pending" ? "border-amber-500 bg-amber-500/10" : "border-slate-700 hover:border-slate-500"}`}>
+                      <input type="radio" name="cpf_divergence" value="ownership_change_pending" checked={cpfDivergenceOption === "ownership_change_pending"} onChange={() => setCpfDivergenceOption("ownership_change_pending")} className="mt-0.5 accent-amber-500" />
+                      <div>
+                        <p className="text-white text-sm font-medium">O cliente fará a mudança de titularidade</p>
+                        <p className="text-slate-400 text-xs mt-0.5">O cadastro será liberado, porém uma pendência de <strong className="text-amber-400">mudança de titularidade</strong> será registrada no projeto.</p>
+                      </div>
+                    </label>
+
+                    {/* Opção 3 */}
+                    <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${cpfDivergenceOption === "go_back_correct" ? "border-slate-500 bg-slate-700/50" : "border-slate-700 hover:border-slate-500"}`}>
+                      <input type="radio" name="cpf_divergence" value="go_back_correct" checked={cpfDivergenceOption === "go_back_correct"} onChange={() => setCpfDivergenceOption("go_back_correct")} className="mt-0.5 accent-amber-500" />
+                      <div>
+                        <p className="text-white text-sm font-medium">Não — corrigir o CPF do cliente</p>
+                        <p className="text-slate-400 text-xs mt-0.5">Volte ao passo 1 para corrigir o CPF cadastrado.</p>
+                      </div>
+                    </label>
+                  </div>
+
+                  {cpfDivergenceOption === "ownership_change_pending" && (
+                    <div className="flex items-start gap-2 bg-amber-400/10 border border-amber-400/20 rounded-xl p-3 mt-2">
+                      <AlertTriangle size={14} className="text-amber-400 shrink-0 mt-0.5" />
+                      <p className="text-amber-300 text-xs">⚠️ Atenção: o projeto terá uma pendência de mudança de titularidade da conta de energia. Isso precisará ser resolvido antes do protocolo na EDP.</p>
+                    </div>
+                  )}
                 </div>
               )}
 
