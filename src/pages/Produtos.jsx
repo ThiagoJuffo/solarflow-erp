@@ -240,6 +240,51 @@ export default function Produtos() {
                 ))}
               </div>
 
+              {/* Campos técnicos de inversores */}
+              {["inversor_string", "microinversor", "hibrido"].includes(form.tipo) && (
+                <div className="bg-slate-800 rounded-xl p-4 space-y-3">
+                  <p className="text-blue-400 text-xs font-semibold">Dados Elétricos AC</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: "Potência AC (W)", key: "potencia_ac_w", type: "number" },
+                      { label: "Tensão Nominal AC (V)", key: "tensao_nominal_ac_v", type: "number" },
+                      { label: "Corrente Máx. AC (A)", key: "corrente_max_ac_a", type: "number" },
+                      { label: "Frequência (Hz)", key: "frequencia_operacao_hz", type: "number" },
+                      { label: "Range de Frequência", key: "range_frequencia_hz" },
+                      { label: "Fator de Potência", key: "fator_potencia", type: "number" },
+                    ].map(f => (
+                      <div key={f.key}>
+                        <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
+                        <input type={f.type || "text"} value={form[f.key] || ""} onChange={e => set(f.key, f.type === "number" ? Number(e.target.value) : e.target.value)}
+                          className="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {["inversor_string", "microinversor", "hibrido"].includes(form.tipo) && (
+                <div className="bg-slate-800 rounded-xl p-4 space-y-3">
+                  <p className="text-violet-400 text-xs font-semibold">Dados Elétricos DC</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: "Corrente Máx. DC (A)", key: "corrente_max_dc_a", type: "number" },
+                      { label: "Tensão Mín. DC / Start (V)", key: "tensao_min_dc_v", type: "number" },
+                      { label: "Tensão Máx. DC (V)", key: "tensao_max_dc_v", type: "number" },
+                      { label: "Nº MPPT", key: "num_mppt", type: "number" },
+                      { label: "Entradas por MPPT", key: "entradas_por_mppt", type: "number" },
+                      { label: "Range de Temperatura", key: "range_temperatura" },
+                    ].map(f => (
+                      <div key={f.key}>
+                        <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
+                        <input type={f.type || "text"} value={form[f.key] || ""} onChange={e => set(f.key, f.type === "number" ? Number(e.target.value) : e.target.value)}
+                          className="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* INMETRO (para inversores e micro) */}
               {["inversor_string", "microinversor", "hibrido"].includes(form.tipo) && (
                 <div className="bg-slate-800 rounded-xl p-4 space-y-3">
