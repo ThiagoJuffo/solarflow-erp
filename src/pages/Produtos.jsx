@@ -36,6 +36,7 @@ export default function Produtos() {
   const [form, setForm] = useState(PRODUTO_VAZIO);
   const [saving, setSaving] = useState(false);
   const [uploadingInmetro, setUploadingInmetro] = useState(false);
+  const [preenchendoIA, setPreenchendoIA] = useState(false);
 
   useEffect(() => {
     base44.entities.Produto.list("-created_date", 200).then(p => {
