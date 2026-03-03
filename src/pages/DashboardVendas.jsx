@@ -207,37 +207,39 @@ export default function DashboardVendas() {
         </div>
       </div>
 
-      {/* Tabela mensal detalhada */}
+      {/* Lista de vendas do mês */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 overflow-x-auto">
-        <h3 className="text-white font-semibold mb-4">Detalhamento Mensal</h3>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-slate-400 text-xs uppercase tracking-wide border-b border-slate-800">
-              <th className="text-left py-2 pb-3">Mês</th>
-              <th className="text-right py-2 pb-3">Fechamentos</th>
-              <th className="text-right py-2 pb-3">Volume</th>
-              <th className="text-right py-2 pb-3">Ticket Médio</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dadosMensais.map((row, i) => (
-              <tr key={i} className={`border-b border-slate-800/50 ${i === mesAtual && anoSelecionado === new Date().getFullYear() ? "text-amber-300" : "text-white"}`}>
-                <td className="py-2.5">{row.mes}</td>
-                <td className="text-right">{row.fechamentos}</td>
-                <td className="text-right">{formatMoeda(row.valor)}</td>
-                <td className="text-right text-slate-400">{row.fechamentos > 0 ? formatMoeda(row.valor / row.fechamentos) : "—"}</td>
+        <h3 className="text-white font-semibold mb-4">Vendas de {MESES[mesSelecionado]}/{anoSelecionado}</h3>
+        {doMes.length === 0 ? (
+          <p className="text-slate-500 text-sm text-center py-6">Nenhuma venda neste mês</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-slate-400 text-xs uppercase tracking-wide border-b border-slate-800">
+                <th className="text-left py-2 pb-3">Cliente</th>
+                <th className="text-left py-2 pb-3">Vendedor</th>
+                <th className="text-left py-2 pb-3">Pagamento</th>
+                <th className="text-right py-2 pb-3">Valor</th>
               </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="text-amber-400 font-semibold border-t border-slate-700">
-              <td className="pt-3">Total</td>
-              <td className="text-right pt-3">{totalAno}</td>
-              <td className="text-right pt-3">{formatMoeda(valorTotalAno)}</td>
-              <td className="text-right pt-3 text-slate-400">{totalAno > 0 ? formatMoeda(valorTotalAno / totalAno) : "—"}</td>
-            </tr>
-          </tfoot>
-        </table>
+            </thead>
+            <tbody>
+              {doMes.map((pp) => (
+                <tr key={pp.id} className="border-b border-slate-800/50 text-white hover:bg-slate-800/30">
+                  <td className="py-2.5">{pp.nome_cliente}</td>
+                  <td className="py-2.5 text-slate-400">{pp.vendedor_nome || "—"}</td>
+                  <td className="py-2.5 text-slate-400">{FORMA_LABELS[pp.forma_pagamento] || "—"}</td>
+                  <td className="text-right text-amber-400 font-medium">{pp.valor_projeto ? formatMoeda(parseMoeda(pp.valor_projeto)) : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="text-amber-400 font-semibold border-t border-slate-700">
+                <td className="pt-3" colSpan={3}>Total</td>
+                <td className="text-right pt-3">{formatMoeda(valorTotalMes)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        )}
       </div>
     </div>
   );
