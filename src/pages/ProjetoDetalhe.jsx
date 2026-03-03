@@ -280,8 +280,26 @@ export default function ProjetoDetalhe() {
 
 // ---- Sub-componentes inline para cada aba ----
 
-function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit }) {
-  const [ucForm, setUcForm] = useState(uc || {});
+function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto }) {
+  // Pré-preencher com dados extraídos do pré-projeto se UC ainda não tiver dados
+  const dadosIniciais = () => {
+    if (uc && Object.keys(uc).length > 1) return uc;
+    const de = preProjeto?.dados_extraidos || {};
+    return {
+      numero_uc: uc?.numero_uc || de.numero_uc || "",
+      titular: uc?.titular || de.titular || preProjeto?.nome_cliente || "",
+      concessionaria: uc?.concessionaria || de.concessionaria || "EDP",
+      endereco: uc?.endereco || de.endereco || "",
+      cidade: uc?.cidade || de.cidade || "",
+      estado: uc?.estado || de.estado || "",
+      cep: uc?.cep || de.cep || "",
+      tipo_ligacao: uc?.tipo_ligacao || de.tipo_ligacao || "",
+      situacao_padrao: uc?.situacao_padrao || "",
+      ...(uc || {})
+    };
+  };
+
+  const [ucForm, setUcForm] = useState(dadosIniciais);
   const [rtForm, setRtForm] = useState(resumoTec || {});
   const [saving, setSaving] = useState(false);
 
