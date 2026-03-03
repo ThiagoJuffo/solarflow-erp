@@ -440,7 +440,7 @@ Retorne apenas o JSON.`;
               disabled={!extraido || (cpfMismatch && (!cpfDivergenceOption || cpfDivergenceOption === "go_back_correct"))}
               className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
             >
-              Próximo <ChevronRight size={16} />
+              {cpfDivergenceOption === "go_back_correct" ? "Voltar e corrigir CPF" : <>Próximo <ChevronRight size={16} /></>}
             </button>
           </div>
         </div>
