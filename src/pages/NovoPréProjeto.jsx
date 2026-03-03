@@ -246,6 +246,19 @@ Retorne apenas o JSON.`;
             ))}
           </div>
           <div>
+            <label className="text-slate-400 text-xs font-medium block mb-1.5">Vendedor Responsável</label>
+            <select
+              value={form.vendedor_id || ""}
+              onChange={e => set("vendedor_id", e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors"
+            >
+              <option value="">Selecionar vendedor...</option>
+              {vendedores.map(v => (
+                <option key={v.id} value={v.id}>{v.nome}</option>
+              ))}
+            </select>
+          </div>
+          <div>
             <label className="text-slate-400 text-xs font-medium block mb-1.5">Forma de Pagamento *</label>
             <select
               value={form.forma_pagamento || ""}
