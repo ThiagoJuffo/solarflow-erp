@@ -144,13 +144,13 @@ export default function DashboardVendas() {
         ))}
       </div>
 
-      {/* Gráfico mensal */}
+      {/* Gráfico por semana */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-        <h3 className="text-white font-semibold mb-5">Fechamentos por Mês — {anoSelecionado}</h3>
+        <h3 className="text-white font-semibold mb-5">Fechamentos por Semana — {MESES[mesSelecionado]} {anoSelecionado}</h3>
         <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={dadosMensais} barSize={24}>
+          <BarChart data={dadosSemanais} barSize={36}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-            <XAxis dataKey="mes" tick={{ fill: "#64748b", fontSize: 12 }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="semana" tick={{ fill: "#64748b", fontSize: 12 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: "#64748b", fontSize: 12 }} axisLine={false} tickLine={false} allowDecimals={false} />
             <Tooltip
               contentStyle={{ backgroundColor: "#0f172a", border: "1px solid #334155", borderRadius: "12px" }}
