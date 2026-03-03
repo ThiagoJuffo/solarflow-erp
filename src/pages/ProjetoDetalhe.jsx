@@ -37,6 +37,7 @@ export default function ProjetoDetalhe() {
 
   const [projeto, setProjeto] = useState(null);
   const [uc, setUC] = useState(null);
+  const [preProjeto, setPreProjeto] = useState(null);
   const [resumoTec, setResumoTec] = useState(null);
   const [documentos, setDocumentos] = useState([]);
   const [protocolos, setProtocolos] = useState([]);
@@ -57,14 +58,20 @@ export default function ProjetoDetalhe() {
       base44.entities.Protocolo.filter({ projeto_id: id }),
       base44.entities.VisitaTecnica.filter({ projeto_id: id }),
       base44.auth.me()
-    ]).then(([p, ucs, rt, docs, prots, vis, u]) => {
-      setProjeto(p[0] || null);
+    ]).then(async ([p, ucs, rt, docs, prots, vis, u]) => {
+      const proj = p[0] || null;
+      setProjeto(proj);
       setUC(ucs[0] || null);
       setResumoTec(rt[0] || null);
       setDocumentos(docs);
       setProtocolos(prots);
       setVisita(vis[0] || null);
       setUser(u);
+      // Buscar pré-projeto para pré-preencher dados da UC
+      if (proj?.pre_projeto_id) {
+        const pps = await base44.entities.PreProjeto.filter({ id: proj.pre_projeto_id });
+        setPreProjeto(pps[0] || null);
+      }
       setLoading(false);
     });
   }, [id]);
