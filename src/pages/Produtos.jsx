@@ -19,7 +19,11 @@ const TIPO_COLORS = {
 const PRODUTO_VAZIO = {
   tipo: "modulo_fv", fabricante: "", modelo: "", potencia_wp: "",
   potencia_kva: "", eficiencia: "", garantia_anos: "", dimensoes: "",
-  peso: "", inmetro_numero: "", inmetro_validade: "", observacoes: "", ativo: true
+  peso: "", inmetro_numero: "", inmetro_validade: "", observacoes: "", ativo: true,
+  potencia_ac_w: "", tensao_nominal_ac_v: "", corrente_max_ac_a: "",
+  frequencia_operacao_hz: "", range_frequencia_hz: "", fator_potencia: "",
+  corrente_max_dc_a: "", tensao_min_dc_v: "", tensao_max_dc_v: "",
+  num_mppt: "", entradas_por_mppt: "", range_temperatura: ""
 };
 
 export default function Produtos() {
