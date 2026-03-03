@@ -26,7 +26,17 @@ export default function DashboardVendas() {
   const [preProjetos, setPreProjetos] = useState([]);
   const [vendedores, setVendedores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [mesSelecionado, setMesSelecionado] = useState(new Date().getMonth());
   const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear());
+
+  const navegarMes = (dir) => {
+    setMesSelecionado(m => {
+      let novoMes = m + dir;
+      if (novoMes < 0) { setAnoSelecionado(a => a - 1); return 11; }
+      if (novoMes > 11) { setAnoSelecionado(a => a + 1); return 0; }
+      return novoMes;
+    });
+  };
 
   useEffect(() => {
     Promise.all([
