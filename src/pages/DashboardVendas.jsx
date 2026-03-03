@@ -59,42 +59,35 @@ export default function DashboardVendas() {
     );
   }
 
-  // Filtrar pelo ano selecionado
-  const doProjeto = preProjetos.filter(pp => {
-    const ano = new Date(pp.created_date).getFullYear();
-    return ano === anoSelecionado;
+  // Filtrar pelo mês/ano selecionado
+  const doMes = preProjetos.filter(pp => {
+    const d = new Date(pp.created_date);
+    return d.getMonth() === mesSelecionado && d.getFullYear() === anoSelecionado;
   });
 
-  // Dados por mês
-  const dadosMensais = MESES.map((mes, idx) => {
-    const doMes = doProjeto.filter(pp => new Date(pp.created_date).getMonth() === idx);
-    const totalValor = doMes.reduce((acc, pp) => acc + parseMoeda(pp.valor_projeto), 0);
-    return {
-      mes,
-      fechamentos: doMes.length,
-      valor: totalValor,
-    };
-  });
+  const totalMes = doMes.length;
+  const valorTotalMes = doMes.reduce((acc, pp) => acc + parseMoeda(pp.valor_projeto), 0);
+  const ticketMedio = totalMes > 0 ? valorTotalMes / totalMes : 0;
 
-  // Totais do ano
-  const totalAno = doProjeto.length;
-  const valorTotalAno = doProjeto.reduce((acc, pp) => acc + parseMoeda(pp.valor_projeto), 0);
+  // Fechamentos por semana do mês selecionado
+  const dadosSemanais = [1, 2, 3, 4, 5].map(semana => {
+    const vendas = doMes.filter(pp => {
+      const dia = new Date(pp.created_date).getDate();
+      return Math.ceil(dia / 7) === semana;
+    });
+    return { semana: `Sem ${semana}`, fechamentos: vendas.length, valor: vendas.reduce((acc, pp) => acc + parseMoeda(pp.valor_projeto), 0) };
+  }).filter(s => s.fechamentos > 0 || s.semana <= "Sem 4");
 
-  // Mes atual
-  const mesAtual = new Date().getMonth();
-  const doMesAtual = doProjeto.filter(pp => new Date(pp.created_date).getMonth() === mesAtual);
-  const valorMesAtual = doMesAtual.reduce((acc, pp) => acc + parseMoeda(pp.valor_projeto), 0);
-
-  // Ranking vendedores no ano
+  // Ranking vendedores no mês
   const rankingVendedores = vendedores.map(v => {
-    const vendas = doProjeto.filter(pp => pp.vendedor_id === v.id);
+    const vendas = doMes.filter(pp => pp.vendedor_id === v.id);
     const valor = vendas.reduce((acc, pp) => acc + parseMoeda(pp.valor_projeto), 0);
     return { nome: v.nome, fechamentos: vendas.length, valor };
   }).filter(v => v.fechamentos > 0).sort((a, b) => b.fechamentos - a.fechamentos);
 
   // Formas de pagamento
   const formasPagamento = Object.entries(
-    doProjeto.reduce((acc, pp) => {
+    doMes.reduce((acc, pp) => {
       const key = pp.forma_pagamento || "outros";
       acc[key] = (acc[key] || 0) + 1;
       return acc;
