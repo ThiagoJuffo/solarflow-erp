@@ -336,7 +336,7 @@ Preencha apenas os campos que encontrar com certeza. Deixe null para os demais.`
                       { label: "Eficiência do Módulo (%)", key: "eficiencia_modulo", type: "number" },
                       { label: "Corrente Máx Fusível (A)", key: "corrente_max_fusivel_a", type: "number" },
                       { label: "Coef. Temperatura", key: "coef_temperatura" },
-                      { label: "Área (m²)", key: "area_m2", type: "number" },
+                      { label: "Dimensões (mm)", key: "dimensoes" },
                     ].map(f => (
                       <div key={f.key} className={f.key === "coef_temperatura" ? "col-span-2" : ""}>
                         <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
