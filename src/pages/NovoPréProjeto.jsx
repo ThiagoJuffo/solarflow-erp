@@ -131,6 +131,8 @@ Retorne apenas o JSON.`;
       cpf_divergence_resolution: cpfMismatch ? cpfDivergenceOption : null,
       original_uc_holder_name: cpfDivergenceOption === "different_holder" ? extraido?.titular : null,
       ownership_change_pending: cpfDivergenceOption === "ownership_change_pending",
+      vendedor_id: form.vendedor_id || null,
+      vendedor_nome: vendedores.find(v => v.id === form.vendedor_id)?.nome || null,
       status: "aguardando_pagamento"
     });
 
