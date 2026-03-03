@@ -433,8 +433,11 @@ Retorne apenas o JSON.`;
           <div className="flex gap-3">
             <button onClick={() => setStep(1)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl text-sm font-medium transition-all">Voltar</button>
             <button
-              onClick={() => setStep(3)}
-              disabled={cpfMismatch || !extraido}
+              onClick={() => {
+                if (cpfDivergenceOption === "go_back_correct") { setStep(0); return; }
+                setStep(3);
+              }}
+              disabled={!extraido || (cpfMismatch && (!cpfDivergenceOption || cpfDivergenceOption === "go_back_correct"))}
               className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
             >
               Próximo <ChevronRight size={16} />
