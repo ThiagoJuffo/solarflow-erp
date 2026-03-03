@@ -100,7 +100,9 @@ Retorne apenas o JSON.`;
       if (resultado.cpf_extraido && form.cpf) {
         const cpfLimpo1 = form.cpf.replace(/\D/g, "");
         const cpfLimpo2 = resultado.cpf_extraido.replace(/\D/g, "");
-        setCpfMismatch(cpfLimpo1 !== cpfLimpo2 && cpfLimpo2.length >= 11);
+        const hasMismatch = cpfLimpo1 !== cpfLimpo2 && cpfLimpo2.length >= 11;
+        setCpfMismatch(hasMismatch);
+        if (!hasMismatch) setCpfDivergenceOption(null);
       }
     } finally {
       setExtracting(false);
