@@ -466,6 +466,25 @@ Retorne apenas o JSON.`;
                 <p className="text-slate-400 text-sm">Ligação: {extraido.tipo_ligacao || "—"} | {extraido.concessionaria || "EDP"}</p>
               </div>
             )}
+            {cpfDivergenceOption === "different_holder" && (
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex items-start gap-2">
+                <AlertTriangle size={14} className="text-blue-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-blue-300 text-sm font-medium">Projeto com 2 pessoas envolvidas</p>
+                  <p className="text-slate-400 text-xs mt-1">Decisor: <strong className="text-white">{form.nome_cliente}</strong> (CPF: {form.cpf})</p>
+                  <p className="text-slate-400 text-xs">Titular da conta: <strong className="text-white">{extraido?.titular || "—"}</strong></p>
+                </div>
+              </div>
+            )}
+            {cpfDivergenceOption === "ownership_change_pending" && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-start gap-2">
+                <AlertTriangle size={14} className="text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-amber-300 text-sm font-medium">⚠️ Pendência: Mudança de Titularidade</p>
+                  <p className="text-slate-400 text-xs mt-1">O cliente se comprometeu a efetuar a mudança de titularidade da conta de energia. Isso deverá ser resolvido antes do protocolo na EDP.</p>
+                </div>
+              </div>
+            )}
             <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
               <p className="text-amber-300 text-sm font-medium">Status inicial: <span className="text-white">Aguardando Pagamento</span></p>
               <p className="text-slate-400 text-xs mt-1">O projeto será iniciado após confirmação do pagamento pelo financeiro.</p>
