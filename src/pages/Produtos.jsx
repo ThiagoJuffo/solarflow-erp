@@ -322,6 +322,32 @@ Preencha apenas os campos que encontrar com certeza. Deixe null para os demais.`
                 ))}
               </div>
 
+              {/* Campos técnicos de módulos FV */}
+              {form.tipo === "modulo_fv" && (
+                <div className="bg-slate-800 rounded-xl p-4 space-y-3">
+                  <p className="text-amber-400 text-xs font-semibold">Dados Elétricos do Módulo (STC)</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: "Ppeak / Potência (Wp)", key: "potencia_wp", type: "number" },
+                      { label: "Tensão Vmp (V)", key: "vmp", type: "number" },
+                      { label: "Corrente Imp (A)", key: "imp", type: "number" },
+                      { label: "Tensão Voc (V)", key: "voc", type: "number" },
+                      { label: "Corrente Isc (A)", key: "isc", type: "number" },
+                      { label: "Eficiência do Módulo (%)", key: "eficiencia_modulo", type: "number" },
+                      { label: "Corrente Máx Fusível (A)", key: "corrente_max_fusivel_a", type: "number" },
+                      { label: "Coef. Temperatura", key: "coef_temperatura" },
+                      { label: "Área (m²)", key: "area_m2", type: "number" },
+                    ].map(f => (
+                      <div key={f.key} className={f.key === "coef_temperatura" ? "col-span-2" : ""}>
+                        <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
+                        <input type={f.type || "text"} value={form[f.key] || ""} onChange={e => set(f.key, f.type === "number" ? Number(e.target.value) : e.target.value)}
+                          className="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Campos técnicos de inversores */}
               {["inversor_string", "microinversor", "hibrido"].includes(form.tipo) && (
                 <div className="bg-slate-800 rounded-xl p-4 space-y-3">
