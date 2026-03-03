@@ -27,6 +27,8 @@ export default function NovoPréProjeto() {
   const [docFotoUrl, setDocFotoUrl] = useState("");
   const [extraido, setExtraido] = useState(null);
   const [cpfMismatch, setCpfMismatch] = useState(false);
+  const [cpfDivergenceOption, setCpfDivergenceOption] = useState(null);
+  // 'different_holder' | 'ownership_change_pending' | 'go_back_correct'
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 

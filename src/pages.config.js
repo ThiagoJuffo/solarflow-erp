@@ -49,9 +49,9 @@
  */
 import Dashboard from './pages/Dashboard';
 import novoprProjeto from './pages/NovoPréProjeto';
-import Projetos from './pages/Projetos';
-import ProjetoDetalhe from './pages/ProjetoDetalhe';
 import Produtos from './pages/Produtos';
+import ProjetoDetalhe from './pages/ProjetoDetalhe';
+import Projetos from './pages/Projetos';
 import Usuarios from './pages/Usuarios';
 import __Layout from './Layout.jsx';
 
@@ -59,9 +59,9 @@ import __Layout from './Layout.jsx';
 export const PAGES = {
     "Dashboard": Dashboard,
     "NovoPréProjeto": novoprProjeto,
-    "Projetos": Projetos,
-    "ProjetoDetalhe": ProjetoDetalhe,
     "Produtos": Produtos,
+    "ProjetoDetalhe": ProjetoDetalhe,
+    "Projetos": Projetos,
     "Usuarios": Usuarios,
 }
 
