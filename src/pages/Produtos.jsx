@@ -18,8 +18,8 @@ const TIPO_COLORS = {
 
 const PRODUTO_VAZIO = {
   tipo: "modulo_fv", fabricante: "", modelo: "", potencia_wp: "",
-  potencia_kva: "", eficiencia: "", garantia_anos: "", inmetro_numero: "",
-  inmetro_validade: "", observacoes: "", ativo: true
+  potencia_kva: "", eficiencia: "", garantia_anos: "", dimensoes: "",
+  peso: "", inmetro_numero: "", inmetro_validade: "", observacoes: "", ativo: true
 };
 
 export default function Produtos() {
