@@ -124,6 +124,9 @@ Retorne apenas o JSON.`;
       dados_extraidos: extraido,
       cpf_extraido: extraido?.cpf_extraido,
       cpf_validado: !cpfMismatch,
+      cpf_divergence_resolution: cpfMismatch ? cpfDivergenceOption : null,
+      original_uc_holder_name: cpfDivergenceOption === "different_holder" ? extraido?.titular : null,
+      ownership_change_pending: cpfDivergenceOption === "ownership_change_pending",
       status: "aguardando_pagamento"
     });
 
