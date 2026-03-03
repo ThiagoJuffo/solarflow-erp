@@ -390,8 +390,8 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto }
         {[
           { label: "Potência (kWp)", key: "potencia_kwp", type: "number" },
           { label: "Qtd. Módulos", key: "quantidade_modulos", type: "number" },
-          { label: "Módulo (descrição)", key: "modulo_descricao" },
-          { label: "Inversor (descrição)", key: "inversor_descricao" },
+          { label: "Potência (kWp)", key: "potencia_kwp", type: "number" },
+          { label: "Qtd. Módulos", key: "quantidade_modulos", type: "number" },
           { label: "Nº de Strings", key: "num_strings", type: "number" },
           { label: "Módulos por String", key: "modulos_por_string", type: "number" },
           { label: "ART Nº", key: "art_numero" },
