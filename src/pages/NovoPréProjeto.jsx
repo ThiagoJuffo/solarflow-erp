@@ -28,7 +28,11 @@ export default function NovoPréProjeto() {
   const [extraido, setExtraido] = useState(null);
   const [cpfMismatch, setCpfMismatch] = useState(false);
   const [cpfDivergenceOption, setCpfDivergenceOption] = useState(null);
-  // 'different_holder' | 'ownership_change_pending' | 'go_back_correct'
+  const [vendedores, setVendedores] = useState([]);
+
+  useEffect(() => {
+    base44.entities.Vendedor.filter({ ativo: true }).then(setVendedores).catch(() => {});
+  }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
