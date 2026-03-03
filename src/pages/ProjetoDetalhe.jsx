@@ -281,6 +281,11 @@ export default function ProjetoDetalhe() {
 // ---- Sub-componentes inline para cada aba ----
 
 function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto }) {
+  const [produtos, setProdutos] = useState([]);
+
+  useEffect(() => {
+    base44.entities.Produto.filter({ ativo: true }).then(setProdutos).catch(() => {});
+  }, []);
   // Pré-preencher com dados extraídos do pré-projeto se UC ainda não tiver dados
   const dadosIniciais = () => {
     if (uc && Object.keys(uc).length > 1) return uc;
