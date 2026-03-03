@@ -247,7 +247,7 @@ export default function Produtos() {
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { label: "Potência AC (W)", key: "potencia_ac_w", type: "number" },
-                      { label: "Tensão Nominal AC (V)", key: "tensao_nominal_ac_v", type: "number" },
+                      { label: "Tensão Nominal AC (V)", key: "tensao_nominal_ac_v" },
                       { label: "Corrente Máx. AC (A)", key: "corrente_max_ac_a", type: "number" },
                       { label: "Frequência (Hz)", key: "frequencia_operacao_hz", type: "number" },
                       { label: "Range de Frequência", key: "range_frequencia_hz" },
