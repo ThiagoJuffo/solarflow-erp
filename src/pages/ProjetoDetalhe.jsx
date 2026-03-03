@@ -387,9 +387,54 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto }
       {/* Resumo Técnico */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
         <h3 className="text-white font-semibold flex items-center gap-2"><Zap size={16} className="text-amber-400" /> Resumo Técnico</h3>
+
+        {/* Módulo - select de produtos cadastrados */}
+        <div>
+          <label className="text-slate-400 text-xs mb-1.5 block">Módulo FV</label>
+          <select
+            value={rtForm.modulo_produto_id || ""}
+            onChange={e => {
+              const prod = produtos.find(p => p.id === e.target.value);
+              setRtForm(p => ({
+                ...p,
+                modulo_produto_id: e.target.value,
+                modulo_descricao: prod ? `${prod.fabricante} ${prod.modelo} ${prod.potencia_wp}Wp` : ""
+              }));
+            }}
+            disabled={!canEdit}
+            className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+          >
+            <option value="">Selecionar módulo...</option>
+            {produtos.filter(p => p.tipo === "modulo_fv").map(p => (
+              <option key={p.id} value={p.id}>{p.fabricante} {p.modelo} — {p.potencia_wp}Wp</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Inversor - select de produtos cadastrados */}
+        <div>
+          <label className="text-slate-400 text-xs mb-1.5 block">Inversor</label>
+          <select
+            value={rtForm.inversor_produto_id || ""}
+            onChange={e => {
+              const prod = produtos.find(p => p.id === e.target.value);
+              setRtForm(p => ({
+                ...p,
+                inversor_produto_id: e.target.value,
+                inversor_descricao: prod ? `${prod.fabricante} ${prod.modelo} ${prod.potencia_kva}kVA` : ""
+              }));
+            }}
+            disabled={!canEdit}
+            className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+          >
+            <option value="">Selecionar inversor...</option>
+            {produtos.filter(p => ["inversor_string","microinversor","hibrido"].includes(p.tipo)).map(p => (
+              <option key={p.id} value={p.id}>{p.fabricante} {p.modelo} — {p.potencia_kva}kVA</option>
+            ))}
+          </select>
+        </div>
+
         {[
-          { label: "Potência (kWp)", key: "potencia_kwp", type: "number" },
-          { label: "Qtd. Módulos", key: "quantidade_modulos", type: "number" },
           { label: "Potência (kWp)", key: "potencia_kwp", type: "number" },
           { label: "Qtd. Módulos", key: "quantidade_modulos", type: "number" },
           { label: "Nº de Strings", key: "num_strings", type: "number" },
