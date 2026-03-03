@@ -283,16 +283,14 @@ Preencha apenas os campos que encontrar com certeza. Deixe null para os demais.`
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-white font-bold text-lg">{editando ? "Editar Produto" : "Novo Produto"}</h3>
               <div className="flex items-center gap-2">
-                {["inversor_string", "microinversor", "hibrido"].includes(form.tipo) && (
-                  <button
-                    onClick={handlePreencherIA}
-                    disabled={preenchendoIA || !form.fabricante || !form.modelo}
-                    className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                  >
-                    {preenchendoIA ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                    {preenchendoIA ? "Buscando..." : "Preencher com IA"}
-                  </button>
-                )}
+                <button
+                  onClick={handlePreencherIA}
+                  disabled={preenchendoIA || !form.fabricante || !form.modelo}
+                  className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                >
+                  {preenchendoIA ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                  {preenchendoIA ? "Buscando..." : "Preencher com IA"}
+                </button>
                 <button onClick={() => setModal(false)} className="text-slate-400 hover:text-white"><X size={18} /></button>
               </div>
             </div>
