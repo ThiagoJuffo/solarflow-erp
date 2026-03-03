@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Package, Plus, Search, Upload, FileText, CheckCircle, Loader2, X, Filter } from "lucide-react";
+import { Package, Plus, Search, Upload, FileText, CheckCircle, Loader2, X, Filter, Sparkles } from "lucide-react";
 
 const TIPOS = {
   modulo_fv: "Módulo FV",
