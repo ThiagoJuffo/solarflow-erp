@@ -129,10 +129,10 @@ export default function DashboardVendas() {
       {/* Cards de resumo */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Fechamentos no Ano", value: totalAno, icon: Calendar, color: "amber" },
-          { label: "Volume Total no Ano", value: formatMoeda(valorTotalAno), icon: DollarSign, color: "emerald" },
-          { label: `Fechamentos em ${MESES[mesAtual]}`, value: doMesAtual.length, icon: Users, color: "blue" },
-          { label: `Volume em ${MESES[mesAtual]}`, value: formatMoeda(valorMesAtual), icon: Award, color: "violet" },
+          { label: "Fechamentos no Mês", value: totalMes, icon: Calendar, color: "amber" },
+          { label: "Volume Total no Mês", value: formatMoeda(valorTotalMes), icon: DollarSign, color: "emerald" },
+          { label: "Ticket Médio", value: formatMoeda(ticketMedio), icon: Award, color: "blue" },
+          { label: "Vendedores Ativos", value: rankingVendedores.length, icon: Users, color: "violet" },
         ].map((card, i) => (
           <div key={i} className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 bg-${card.color}-500/10`}>
