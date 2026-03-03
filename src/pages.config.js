@@ -53,6 +53,8 @@ import Produtos from './pages/Produtos';
 import ProjetoDetalhe from './pages/ProjetoDetalhe';
 import Projetos from './pages/Projetos';
 import Usuarios from './pages/Usuarios';
+import Vendedores from './pages/Vendedores';
+import DashboardVendas from './pages/DashboardVendas';
 import __Layout from './Layout.jsx';
 
 
@@ -63,6 +65,8 @@ export const PAGES = {
     "ProjetoDetalhe": ProjetoDetalhe,
     "Projetos": Projetos,
     "Usuarios": Usuarios,
+    "Vendedores": Vendedores,
+    "DashboardVendas": DashboardVendas,
 }
 
 export const pagesConfig = {
