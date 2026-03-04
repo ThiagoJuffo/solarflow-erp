@@ -305,8 +305,64 @@ Retorne apenas o JSON.`;
       {step === 1 && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
           <h2 className="text-white font-semibold flex items-center gap-2"><Upload size={16} className="text-amber-400" /> Upload de Documentos</h2>
-          <p className="text-slate-400 text-sm">Os documentos serão processados para extração automática de dados.</p>
+          
+          {/* Toggle manual/automático */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setModoManual(false)}
+              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${!modoManual ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}
+            >
+              Upload automático (IA)
+            </button>
+            <button
+              onClick={() => setModoManual(true)}
+              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${modoManual ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}
+            >
+              Digitar manualmente
+            </button>
+          </div>
 
+          {modoManual ? (
+            <div className="space-y-3">
+              <p className="text-slate-400 text-sm">Preencha os dados da UC e do titular manualmente.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  { label: "Número UC / Instalação *", key: "numero_uc" },
+                  { label: "Nome do Titular (Conta)", key: "titular" },
+                  { label: "CPF do Titular", key: "cpf_extraido" },
+                  { label: "Concessionária", key: "concessionaria" },
+                  { label: "Endereço completo", key: "endereco", full: true },
+                  { label: "Cidade", key: "cidade" },
+                  { label: "UF", key: "estado" },
+                  { label: "CEP", key: "cep" },
+                ].map(f => (
+                  <div key={f.key} className={f.full ? "col-span-2" : ""}>
+                    <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
+                    <input
+                      value={dadosManuais[f.key] || ""}
+                      onChange={e => setDadosManuais(d => ({ ...d, [f.key]: e.target.value }))}
+                      className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500"
+                    />
+                  </div>
+                ))}
+                <div className="col-span-2">
+                  <label className="text-slate-400 text-xs mb-1.5 block">Tipo de Ligação</label>
+                  <select
+                    value={dadosManuais.tipo_ligacao || ""}
+                    onChange={e => setDadosManuais(d => ({ ...d, tipo_ligacao: e.target.value }))}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+                  >
+                    <option value="">Selecionar...</option>
+                    <option value="monofasico">Monofásico</option>
+                    <option value="bifasico">Bifásico</option>
+                    <option value="trifasico">Trifásico</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+          <p className="text-slate-400 text-sm">Os documentos serão processados para extração automática de dados.</p>
           {[
             { label: "Conta de Energia (EDP) *", sub: "PDF ou foto. Usado para extrair UC, endereço e tipo de ligação.", handler: handleUploadConta, url: contaEnergiaUrl, icon: FileText },
             { label: "Documento com Foto (CNH/RG) *", sub: "Para validação de identidade e CPF.", handler: handleUploadDoc, url: docFotoUrl, icon: User },
