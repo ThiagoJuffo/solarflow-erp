@@ -154,7 +154,7 @@ Retorne apenas o JSON.`;
         tipo_ligacao: extraido.tipo_ligacao,
         concessionaria: extraido.concessionaria || "EDP",
         score_confianca: extraido.score_confianca,
-        fonte_extracao: "conta_energia",
+        fonte_extracao: modoManual ? "manual" : "conta_energia",
         situacao_padrao: "a_confirmar"
       });
     }
