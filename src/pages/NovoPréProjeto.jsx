@@ -241,72 +241,173 @@ Retorne apenas o JSON.`;
 
       {/* Step 0: Dados */}
       {step === 0 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6">
           <h2 className="text-white font-semibold flex items-center gap-2"><User size={16} className="text-amber-400" /> Dados do Cliente</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { label: "Nome Completo *", key: "nome_cliente", type: "text", placeholder: "João da Silva" },
-              { label: "CPF *", key: "cpf", type: "text", placeholder: "000.000.000-00" },
-              { label: "Telefone / WhatsApp", key: "telefone", type: "text", placeholder: "(11) 99999-9999" },
-              { label: "E-mail", key: "email", type: "email", placeholder: "joao@email.com" },
-              { label: "Valor do Projeto (R$) *", key: "valor_projeto", type: "text", placeholder: "R$ 25.000,00" },
-            ].map(f => (
-              <div key={f.key}>
-                <label className="text-slate-400 text-xs font-medium block mb-1.5">{f.label}</label>
-                <input
-                  type={f.type}
-                  value={form[f.key]}
-                  onChange={e => set(f.key, e.target.value)}
-                  placeholder={f.placeholder}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors"
-                />
-              </div>
-            ))}
-          </div>
-          <div>
-            <label className="text-slate-400 text-xs font-medium block mb-1.5">Vendedor Responsável</label>
-            <select
-              value={form.vendedor_id || ""}
-              onChange={e => set("vendedor_id", e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors"
-            >
-              <option value="">Selecionar vendedor...</option>
-              {vendedores.map(v => (
-                <option key={v.id} value={v.id}>{v.nome}</option>
+
+          {/* Cliente */}
+          <div className="space-y-3">
+            <p className="text-amber-400 text-xs font-semibold uppercase tracking-wide">Identificação</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {[
+                { label: "Nome Completo (contrato) *", key: "nome_cliente", placeholder: "João da Silva" },
+                { label: "CPF *", key: "cpf", placeholder: "000.000.000-00" },
+                { label: "Telefone / WhatsApp *", key: "telefone", placeholder: "(11) 99999-9999" },
+                { label: "E-mail", key: "email", type: "email", placeholder: "joao@email.com" },
+              ].map(f => (
+                <div key={f.key}>
+                  <label className="text-slate-400 text-xs font-medium block mb-1.5">{f.label}</label>
+                  <input type={f.type || "text"} value={form[f.key] || ""} onChange={e => set(f.key, e.target.value)} placeholder={f.placeholder}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors" />
+                </div>
               ))}
-            </select>
+            </div>
           </div>
-          <div>
-            <label className="text-slate-400 text-xs font-medium block mb-1.5">Forma de Pagamento *</label>
-            <select
-              value={form.forma_pagamento || ""}
-              onChange={e => set("forma_pagamento", e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors"
-            >
-              <option value="">Selecionar...</option>
-              <option value="a_vista">À Vista</option>
-              <option value="financiamento">Financiamento</option>
-              <option value="consorcio">Consórcio</option>
-              <option value="parcelado_cartao">Parcelado no Cartão</option>
-              <option value="boleto_parcelado">Boleto Parcelado</option>
-            </select>
+
+          {/* Comercial */}
+          <div className="space-y-3">
+            <p className="text-amber-400 text-xs font-semibold uppercase tracking-wide">Comercial</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">Valor do Projeto (R$) *</label>
+                <input value={form.valor_projeto || ""} onChange={e => set("valor_projeto", e.target.value)} placeholder="R$ 25.000,00"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors" />
+              </div>
+              <div>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">Forma de Pagamento *</label>
+                <select value={form.forma_pagamento || ""} onChange={e => set("forma_pagamento", e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors">
+                  <option value="">Selecionar...</option>
+                  <option value="a_vista">À Vista</option>
+                  <option value="financiamento">Financiamento</option>
+                  <option value="consorcio">Consórcio</option>
+                  <option value="parcelado_cartao">Parcelado no Cartão</option>
+                  <option value="boleto_parcelado">Boleto Parcelado</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">Vendedor Responsável</label>
+                <select value={form.vendedor_id || ""} onChange={e => set("vendedor_id", e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors">
+                  <option value="">Selecionar vendedor...</option>
+                  {vendedores.map(v => <option key={v.id} value={v.id}>{v.nome}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Sistema */}
+          <div className="space-y-3">
+            <p className="text-amber-400 text-xs font-semibold uppercase tracking-wide">Sistema Fotovoltaico</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">Potência de Pico (kWp) *</label>
+                <input type="number" value={form.potencia_pico_kwp || ""} onChange={e => set("potencia_pico_kwp", e.target.value)} placeholder="ex: 5.5"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors" />
+              </div>
+              <div>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">kWh prometidos na venda *</label>
+                <input type="number" value={form.kwh_prometidos || ""} onChange={e => set("kwh_prometidos", e.target.value)} placeholder="ex: 600"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors" />
+              </div>
+              <div>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">Marca e Modelo do Inversor *</label>
+                <input value={form.inversor_marca_modelo || ""} onChange={e => set("inversor_marca_modelo", e.target.value)} placeholder="ex: Growatt MIN 5000TL-X"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors" />
+              </div>
+              <div>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">Quantidade de Inversores *</label>
+                <input type="number" value={form.inversor_quantidade || ""} onChange={e => set("inversor_quantidade", e.target.value)} placeholder="ex: 1"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors" />
+              </div>
+              <div>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">Marca e Modelo dos Módulos *</label>
+                <input value={form.modulo_marca_modelo || ""} onChange={e => set("modulo_marca_modelo", e.target.value)} placeholder="ex: Canadian Solar CS6R-405MS"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors" />
+              </div>
+              <div>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">Quantidade de Módulos *</label>
+                <input type="number" value={form.modulo_quantidade || ""} onChange={e => set("modulo_quantidade", e.target.value)} placeholder="ex: 12"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors" />
+              </div>
+              <div>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">Tipo de Telhado *</label>
+                <select value={form.tipo_telhado || ""} onChange={e => set("tipo_telhado", e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors">
+                  <option value="">Selecionar...</option>
+                  <option value="ceramica">Cerâmica</option>
+                  <option value="fibrocimento">Fibrocimento</option>
+                  <option value="metalico">Metálico</option>
+                  <option value="laje">Laje</option>
+                  <option value="sanduiche">Sanduíche</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">Tipo de Instalação *</label>
+                <select value={form.tipo_instalacao || "simples"} onChange={e => set("tipo_instalacao", e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors">
+                  <option value="simples">Simples</option>
+                  <option value="agrupamento">Agrupamento de UCs</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Infraestrutura */}
+          <div className="space-y-3">
+            <p className="text-amber-400 text-xs font-semibold uppercase tracking-wide">Infraestrutura Elétrica</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {[
+                { label: "Modificação de padrão?", key: "modificacao_padrao" },
+                { label: "Aumento de carga?", key: "aumento_carga" },
+                { label: "Vai usar transformador?", key: "usar_transformador" },
+              ].map(f => (
+                <label key={f.key} className="flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 cursor-pointer hover:border-amber-500/40 transition-colors">
+                  <input type="checkbox" checked={form[f.key] || false} onChange={e => set(f.key, e.target.checked)} className="w-4 h-4 accent-amber-500" />
+                  <span className="text-slate-300 text-sm">{f.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Envio de créditos */}
+          <div className="space-y-3">
+            <p className="text-amber-400 text-xs font-semibold uppercase tracking-wide">Envio de Créditos</p>
+            <label className="flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 cursor-pointer hover:border-amber-500/40 transition-colors">
+              <input type="checkbox" checked={form.envio_creditos || false} onChange={e => set("envio_creditos", e.target.checked)} className="w-4 h-4 accent-amber-500" />
+              <span className="text-slate-300 text-sm">Haverá envio de crédito após a instalação?</span>
+            </label>
+
+            {form.envio_creditos && (
+              <div className="space-y-2">
+                <p className="text-slate-400 text-xs">Informe as UCs receptoras e o percentual a ser enviado para cada uma:</p>
+                {(form.ucs_credito || []).map((uc, i) => (
+                  <div key={i} className="flex gap-2 items-center">
+                    <input value={uc.numero_uc || ""} onChange={e => { const arr = [...form.ucs_credito]; arr[i] = { ...arr[i], numero_uc: e.target.value }; set("ucs_credito", arr); }} placeholder="Número UC receptora"
+                      className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                    <input type="number" value={uc.percentual || ""} onChange={e => { const arr = [...form.ucs_credito]; arr[i] = { ...arr[i], percentual: Number(e.target.value) }; set("ucs_credito", arr); }} placeholder="% envio"
+                      className="w-24 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                    <button onClick={() => set("ucs_credito", form.ucs_credito.filter((_, idx) => idx !== i))} className="text-red-400 hover:text-red-300 p-1.5"><Trash2 size={14} /></button>
+                  </div>
+                ))}
+                <button onClick={() => set("ucs_credito", [...(form.ucs_credito || []), { numero_uc: "", percentual: "" }])}
+                  className="flex items-center gap-1.5 text-amber-400 hover:text-amber-300 text-xs font-medium transition-colors">
+                  <Plus size={13} /> Adicionar UC receptora
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3 p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl">
-            <input
-              type="checkbox"
-              id="usina"
-              checked={form.usina_fechada}
-              onChange={e => set("usina_fechada", e.target.checked)}
-              className="w-4 h-4 accent-amber-500"
-            />
+            <input type="checkbox" id="usina" checked={form.usina_fechada} onChange={e => set("usina_fechada", e.target.checked)} className="w-4 h-4 accent-amber-500" />
             <label htmlFor="usina" className="text-slate-300 text-sm cursor-pointer">
               <span className="font-semibold text-white">Usina fechada</span> — cliente já aprovou a proposta comercial
             </label>
           </div>
+
           <button
             onClick={() => setStep(1)}
-            disabled={!form.nome_cliente || !form.cpf || !form.valor_projeto || !form.forma_pagamento}
+            disabled={!form.nome_cliente || !form.cpf || !form.telefone || !form.valor_projeto || !form.forma_pagamento || !form.potencia_pico_kwp || !form.kwh_prometidos || !form.inversor_marca_modelo || !form.modulo_marca_modelo || !form.tipo_telhado}
             className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
           >
             Próximo <ChevronRight size={16} />
