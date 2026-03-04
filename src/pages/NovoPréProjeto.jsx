@@ -25,6 +25,11 @@ export default function NovoPréProjeto() {
   const [docFotoFile, setDocFotoFile] = useState(null);
   const [contaEnergiaUrl, setContaEnergiaUrl] = useState("");
   const [docFotoUrl, setDocFotoUrl] = useState("");
+  const [modoManual, setModoManual] = useState(false);
+  const [dadosManuais, setDadosManuais] = useState({
+    numero_uc: "", titular: "", cpf_extraido: "", endereco: "", cidade: "",
+    estado: "", cep: "", tipo_ligacao: "", concessionaria: "EDP"
+  });
   const [extraido, setExtraido] = useState(null);
   const [cpfMismatch, setCpfMismatch] = useState(false);
   const [cpfDivergenceOption, setCpfDivergenceOption] = useState(null);
