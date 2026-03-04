@@ -308,16 +308,10 @@ Retorne apenas o JSON.`;
           
           {/* Toggle manual/automático */}
           <div className="flex gap-2">
-            <button
-              onClick={() => setModoManual(false)}
-              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${!modoManual ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}
-            >
+            <button onClick={() => setModoManual(false)} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${!modoManual ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}>
               Upload automático (IA)
             </button>
-            <button
-              onClick={() => setModoManual(true)}
-              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${modoManual ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}
-            >
+            <button onClick={() => setModoManual(true)} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${modoManual ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}>
               Digitar manualmente
             </button>
           </div>
@@ -338,20 +332,14 @@ Retorne apenas o JSON.`;
                 ].map(f => (
                   <div key={f.key} className={f.full ? "col-span-2" : ""}>
                     <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
-                    <input
-                      value={dadosManuais[f.key] || ""}
-                      onChange={e => setDadosManuais(d => ({ ...d, [f.key]: e.target.value }))}
-                      className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500"
-                    />
+                    <input value={dadosManuais[f.key] || ""} onChange={e => setDadosManuais(d => ({ ...d, [f.key]: e.target.value }))}
+                      className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
                   </div>
                 ))}
                 <div className="col-span-2">
                   <label className="text-slate-400 text-xs mb-1.5 block">Tipo de Ligação</label>
-                  <select
-                    value={dadosManuais.tipo_ligacao || ""}
-                    onChange={e => setDadosManuais(d => ({ ...d, tipo_ligacao: e.target.value }))}
-                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
-                  >
+                  <select value={dadosManuais.tipo_ligacao || ""} onChange={e => setDadosManuais(d => ({ ...d, tipo_ligacao: e.target.value }))}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
                     <option value="">Selecionar...</option>
                     <option value="monofasico">Monofásico</option>
                     <option value="bifasico">Bifásico</option>
@@ -362,36 +350,41 @@ Retorne apenas o JSON.`;
             </div>
           ) : (
             <>
-          <p className="text-slate-400 text-sm">Os documentos serão processados para extração automática de dados.</p>
-          {[
-            { label: "Conta de Energia (EDP) *", sub: "PDF ou foto. Usado para extrair UC, endereço e tipo de ligação.", handler: handleUploadConta, url: contaEnergiaUrl, icon: FileText },
-            { label: "Documento com Foto (CNH/RG) *", sub: "Para validação de identidade e CPF.", handler: handleUploadDoc, url: docFotoUrl, icon: User },
-          ].map((item) => (
-            <div key={item.label} className="border border-slate-700 rounded-xl p-4">
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-9 h-9 bg-amber-500/10 rounded-lg flex items-center justify-center shrink-0">
-                  <item.icon size={16} className="text-amber-400" />
+              <p className="text-slate-400 text-sm">Os documentos serão processados para extração automática de dados.</p>
+              {[
+                { label: "Conta de Energia (EDP) *", sub: "PDF ou foto. Usado para extrair UC, endereço e tipo de ligação.", handler: handleUploadConta, url: contaEnergiaUrl, icon: FileText },
+                { label: "Documento com Foto (CNH/RG) *", sub: "Para validação de identidade e CPF.", handler: handleUploadDoc, url: docFotoUrl, icon: User },
+              ].map((item) => (
+                <div key={item.label} className="border border-slate-700 rounded-xl p-4">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-9 h-9 bg-amber-500/10 rounded-lg flex items-center justify-center shrink-0">
+                      <item.icon size={16} className="text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-white text-sm font-medium">{item.label}</p>
+                      <p className="text-slate-400 text-xs mt-0.5">{item.sub}</p>
+                    </div>
+                    {item.url && <CheckCircle size={16} className="text-emerald-400 ml-auto shrink-0" />}
+                  </div>
+                  <label className="cursor-pointer">
+                    <div className="border border-dashed border-slate-600 hover:border-amber-500/50 rounded-lg p-3 text-center transition-colors">
+                      <p className="text-slate-400 text-xs">{item.url ? "✓ Arquivo enviado — clique para substituir" : "Clique para selecionar arquivo"}</p>
+                    </div>
+                    <input type="file" className="hidden" accept="image/*,.pdf" onChange={item.handler} />
+                  </label>
                 </div>
-                <div>
-                  <p className="text-white text-sm font-medium">{item.label}</p>
-                  <p className="text-slate-400 text-xs mt-0.5">{item.sub}</p>
-                </div>
-                {item.url && <CheckCircle size={16} className="text-emerald-400 ml-auto shrink-0" />}
-              </div>
-              <label className="cursor-pointer">
-                <div className="border border-dashed border-slate-600 hover:border-amber-500/50 rounded-lg p-3 text-center transition-colors">
-                  <p className="text-slate-400 text-xs">{item.url ? "✓ Arquivo enviado — clique para substituir" : "Clique para selecionar arquivo"}</p>
-                </div>
-                <input type="file" className="hidden" accept="image/*,.pdf" onChange={item.handler} />
-              </label>
-            </div>
-          ))}
+              ))}
+            </>
+          )}
 
           <div className="flex gap-3">
             <button onClick={() => setStep(0)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl text-sm font-medium transition-all">Voltar</button>
             <button
-              onClick={() => setStep(2)}
-              disabled={!contaEnergiaUrl && !docFotoUrl}
+              onClick={() => {
+                if (modoManual) { setExtraido({ ...dadosManuais }); setCpfMismatch(false); setStep(3); }
+                else { setStep(2); }
+              }}
+              disabled={modoManual ? !dadosManuais.numero_uc : (!contaEnergiaUrl && !docFotoUrl)}
               className="flex-2 flex-1 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
             >
               Próximo <ChevronRight size={16} />
