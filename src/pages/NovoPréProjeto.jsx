@@ -19,6 +19,19 @@ export default function NovoPréProjeto() {
     telefone: "",
     email: "",
     usina_fechada: false,
+    potencia_pico_kwp: "",
+    kwh_prometidos: "",
+    inversor_marca_modelo: "",
+    inversor_quantidade: "",
+    modulo_marca_modelo: "",
+    modulo_quantidade: "",
+    tipo_telhado: "",
+    modificacao_padrao: false,
+    aumento_carga: false,
+    usar_transformador: false,
+    tipo_instalacao: "simples",
+    envio_creditos: false,
+    ucs_credito: [],
   });
 
   const [contaEnergiaFile, setContaEnergiaFile] = useState(null);
