@@ -234,6 +234,35 @@ export default function ProjetoDetalhe() {
                     </div>
                   </div>
                 )}
+                {/* Pendência: Transformador */}
+                {preProjeto?.usar_transformador && (
+                  <div className={`border rounded-2xl p-4 flex items-start gap-3 ${projeto.transformador_confirmado ? "bg-emerald-500/5 border-emerald-500/30" : "bg-orange-500/5 border-orange-500/30"}`}>
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${projeto.transformador_confirmado ? "bg-emerald-500/20" : "bg-orange-500/20"}`}>
+                      <Zap size={16} className={projeto.transformador_confirmado ? "text-emerald-400" : "text-orange-400"} />
+                    </div>
+                    <div className="flex-1">
+                      <p className={`font-semibold text-sm ${projeto.transformador_confirmado ? "text-emerald-300" : "text-orange-300"}`}>
+                        {projeto.transformador_confirmado ? "Transformador: compra confirmada" : "Pendente: confirmação da compra do transformador"}
+                      </p>
+                      {projeto.transformador_confirmado ? (
+                        <p className="text-emerald-400/70 text-xs mt-0.5">
+                          Confirmado por <strong className="text-emerald-400">{projeto.transformador_confirmado_por}</strong>
+                          {projeto.transformador_confirmado_em ? ` em ${new Date(projeto.transformador_confirmado_em).toLocaleString("pt-BR")}` : ""}
+                        </p>
+                      ) : (
+                        <p className="text-orange-400/80 text-xs mt-0.5">O vendedor indicou que este projeto utiliza transformador. Aguardando confirmação da compra por Admin ou Financeiro.</p>
+                      )}
+                    </div>
+                    {!projeto.transformador_confirmado && canEditFinancial && (
+                      <button
+                        onClick={confirmarTransformador}
+                        className="text-xs bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 shrink-0"
+                      >
+                        <CheckCircle size={12} /> Confirmar
+                      </button>
+                    )}
+                  </div>
+                )}
                 {/* Info básica */}
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
                   <h3 className="text-white font-semibold mb-4 flex items-center gap-2"><Sun size={16} className="text-amber-400" /> Dados do Projeto</h3>
