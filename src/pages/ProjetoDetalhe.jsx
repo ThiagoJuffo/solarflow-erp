@@ -298,6 +298,7 @@ export default function ProjetoDetalhe() {
 function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, projeto, canConfirmarEquipamentos, onConfirmarEquipamentos }) {
   const [produtos, setProdutos] = useState([]);
 
+
   useEffect(() => {
     base44.entities.Produto.filter({ ativo: true }).then(setProdutos).catch(() => {});
   }, []);
