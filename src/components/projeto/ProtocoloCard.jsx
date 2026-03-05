@@ -70,6 +70,17 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
               </button>
             ))}
           </div>
+          <div className="flex gap-2">
+            {["convencional", "fast_track"].map(m => (
+              <button
+                key={m}
+                onClick={() => setModalidade(m)}
+                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${modalidade === m ? (m === "fast_track" ? "bg-sky-500 text-white" : "bg-slate-500 text-white") : "bg-slate-700 text-slate-400 hover:text-white"}`}
+              >
+                {m === "fast_track" ? "Fast Track" : "Convencional"}
+              </button>
+            ))}
+          </div>
           <input
             value={numero}
             onChange={e => setNumero(e.target.value)}
