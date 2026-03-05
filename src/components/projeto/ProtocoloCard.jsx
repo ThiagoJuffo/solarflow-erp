@@ -25,6 +25,9 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
   const [data, setData] = useState("");
   const [modalidade, setModalidade] = useState("convencional");
   const [saving, setSaving] = useState(false);
+  const [expandido, setExpandido] = useState(null);
+  const [editandoStatus, setEditandoStatus] = useState({});
+  const [salvanidoStatus, setSalvandoStatus] = useState({});
 
   const handleCriar = async () => {
     setSaving(true);
