@@ -166,9 +166,16 @@ export default function Dashboard() {
                   <p className="text-white font-medium text-sm truncate">{p.nome_cliente}</p>
                   <p className="text-slate-400 text-xs">UC: {p.uc_geradora || "—"}</p>
                 </div>
-                <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${statusColor(p.status)}`}>
-                  {STATUS_LABELS[p.status] || p.status}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${statusColor(p.status)}`}>
+                    {STATUS_LABELS[p.status] || p.status}
+                  </span>
+                  {p.status === "pago_projeto_iniciado" && !p.equipamentos_confirmados && (
+                    <span className="text-xs font-medium px-2.5 py-1 rounded-lg text-orange-400 bg-orange-400/10 flex items-center gap-1">
+                      <Package size={10} /> Kit Pendente
+                    </span>
+                  )}
+                </div>
                 <ArrowRight size={14} className="text-slate-600 group-hover:text-amber-400 transition-colors shrink-0" />
               </Link>
             ))}
