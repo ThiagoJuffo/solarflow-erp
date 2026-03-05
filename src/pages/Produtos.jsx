@@ -409,12 +409,22 @@ Preencha apenas os campos que encontrar com certeza. Deixe null para os demais.`
                         className="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
                     </div>
                   </div>
+                  {form.inmetro_url && (
+                    <a
+                      href={form.inmetro_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-center gap-2 w-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 py-2.5 rounded-xl text-xs font-medium transition-all"
+                    >
+                      <FileText size={13} /> Download PDF INMETRO
+                    </a>
+                  )}
                   <label className="cursor-pointer">
-                    <div className={`border border-dashed rounded-xl p-3 text-center transition-all ${form.inmetro_url ? "border-emerald-500/40 bg-emerald-500/5" : "border-slate-600 hover:border-amber-500/40"}`}>
+                    <div className={`border border-dashed rounded-xl p-3 text-center transition-all ${form.inmetro_url ? "border-slate-600 hover:border-amber-500/40" : "border-slate-600 hover:border-amber-500/40"}`}>
                       {uploadingInmetro ? (
                         <Loader2 size={14} className="animate-spin text-amber-400 mx-auto" />
                       ) : form.inmetro_url ? (
-                        <p className="text-emerald-400 text-xs flex items-center justify-center gap-1"><CheckCircle size={12} /> PDF INMETRO enviado</p>
+                        <p className="text-slate-400 text-xs flex items-center justify-center gap-1"><Upload size={12} /> Substituir PDF</p>
                       ) : (
                         <p className="text-slate-500 text-xs">Upload do certificado INMETRO (PDF)</p>
                       )}
