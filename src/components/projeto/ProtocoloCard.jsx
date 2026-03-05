@@ -46,6 +46,18 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
     onUpdate && onUpdate(novo);
   };
 
+  const handleAtualizarStatus = async (protocoloId, novoStatus, motivoRejeicao = "") => {
+    setSalvandoStatus(prev => ({ ...prev, [protocoloId]: true }));
+    const updates = { status: novoStatus };
+    if (novoStatus === "indeferido") {
+      updates.resultado = motivoRejeicao;
+    }
+    await base44.entities.Protocolo.update(protocoloId, updates);
+    setSalvandoStatus(prev => ({ ...prev, [protocoloId]: false }));
+    setEditandoStatus(prev => ({ ...prev, [protocoloId]: false }));
+    onUpdate && onUpdate({ id: protocoloId, status: novoStatus });
+  };
+
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
       <div className="flex items-center justify-between">
