@@ -99,6 +99,31 @@ export default function Projetos() {
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+      {/* Modal aviso sem permissão */}
+      {avisoSemPermissao && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center shrink-0">
+                <Lock size={18} className="text-amber-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-semibold text-sm">Ação não permitida</p>
+                <p className="text-slate-400 text-xs mt-1">Apenas usuários com perfil <strong className="text-amber-400">Financeiro</strong> ou <strong className="text-amber-400">Admin</strong> podem confirmar pagamentos. Por favor, solicite ao responsável financeiro.</p>
+              </div>
+              <button onClick={() => setAvisoSemPermissao(false)} className="text-slate-500 hover:text-white transition-colors shrink-0">
+                <X size={16} />
+              </button>
+            </div>
+            <button
+              onClick={() => setAvisoSemPermissao(false)}
+              className="mt-4 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm font-medium transition-all"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
