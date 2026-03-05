@@ -50,9 +50,15 @@ export default function NovoPréProjeto() {
   const [cpfMismatch, setCpfMismatch] = useState(false);
   const [cpfDivergenceOption, setCpfDivergenceOption] = useState(null);
   const [vendedores, setVendedores] = useState([]);
+  const [inversores, setInversores] = useState([]);
+  const [modulos, setModulos] = useState([]);
 
   useEffect(() => {
     base44.entities.Vendedor.filter({ ativo: true }).then(setVendedores).catch(() => {});
+    base44.entities.Produto.filter({ ativo: true }).then(produtos => {
+      setInversores(produtos.filter(p => ["inversor_string", "microinversor", "hibrido"].includes(p.tipo)));
+      setModulos(produtos.filter(p => p.tipo === "modulo_fv"));
+    }).catch(() => {});
   }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
