@@ -411,13 +411,6 @@ Retorne apenas o JSON.`;
             )}
           </div>
 
-          <div className="flex items-center gap-3 p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl">
-            <input type="checkbox" id="usina" checked={form.usina_fechada} onChange={e => set("usina_fechada", e.target.checked)} className="w-4 h-4 accent-amber-500" />
-            <label htmlFor="usina" className="text-slate-300 text-sm cursor-pointer">
-              <span className="font-semibold text-white">Usina fechada</span> — cliente já aprovou a proposta comercial
-            </label>
-          </div>
-
           <button
             onClick={() => setStep(1)}
             disabled={!form.nome_cliente || !form.cpf || !form.telefone || !form.valor_projeto || !form.forma_pagamento || !form.potencia_pico_kwp || !form.kwh_prometidos || !form.inversor_marca_modelo || !form.modulo_marca_modelo || !form.tipo_telhado}
