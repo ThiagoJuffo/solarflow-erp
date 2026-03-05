@@ -20,6 +20,8 @@ export default function NovoPréProjeto() {
     email: "",
     usina_fechada: false,
     aprovacao_xpress: false,
+    xpress_limite_fast_track: false,
+    xpress_envio_credito: false,
     potencia_pico_kwp: "",
     kwh_prometidos: "",
     inversor_marca_modelo: "",
