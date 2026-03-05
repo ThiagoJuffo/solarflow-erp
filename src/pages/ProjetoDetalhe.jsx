@@ -295,7 +295,7 @@ export default function ProjetoDetalhe() {
 
 // ---- Sub-componentes inline para cada aba ----
 
-function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto }) {
+function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, projeto, canConfirmarEquipamentos, onConfirmarEquipamentos }) {
   const [produtos, setProdutos] = useState([]);
 
   useEffect(() => {
