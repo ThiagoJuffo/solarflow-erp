@@ -171,7 +171,7 @@ Retorne apenas o JSON.`;
       usar_transformador: form.usar_transformador || false,
       tipo_instalacao: form.tipo_instalacao,
       envio_creditos: form.envio_creditos || false,
-      ucs_credito: form.envio_creditos ? form.ucs_credito : [],
+      ucs_credito: form.envio_creditos ? (form.ucs_credito || []).map(uc => ({ ...uc, percentual: uc.percentual !== null && uc.percentual !== "" ? Number(uc.percentual) : null })) : [],
       aprovacao_xpress: form.aprovacao_xpress || false,
       xpress_limite_fast_track: form.xpress_limite_fast_track || false,
       xpress_envio_credito: form.xpress_envio_credito || false,
