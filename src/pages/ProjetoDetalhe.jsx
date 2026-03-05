@@ -26,8 +26,8 @@ const STATUS_LABELS = {
   assinaturas_concluidas: "Assinaturas OK", dossie_ok: "Dossiê OK",
   protocolado_edp: "Protocolado EDP", aguardando_aprovacao: "Aguard. Aprovação",
   aprovado: "Aprovado", instalacao_agendada: "Instal. Agendada",
-  sistema_instalado: "Instalado", vistoria_solicitada: "Vistoria Solic.",
-  aguardando_vistoria: "Aguard. Vistoria", vistoria_aprovada: "Vistoria Aprovada",
+  sistema_instalado: "Instalado", protocolo_vistoria: "Protocolo Vistoria",
+  vistoria_aprovada: "Vistoria Aprovada",
   monitoramento_cadastrado: "Monitoramento OK", concluido: "Concluído"
 };
 
