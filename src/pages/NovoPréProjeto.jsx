@@ -324,11 +324,7 @@ Retorne apenas o JSON.`;
           <div className="space-y-3">
             <p className="text-amber-400 text-xs font-semibold uppercase tracking-wide">Sistema Fotovoltaico</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="text-slate-400 text-xs font-medium block mb-1.5">Potência de Pico (kWp) *</label>
-                <input type="number" value={form.potencia_pico_kwp || ""} onChange={e => set("potencia_pico_kwp", e.target.value)} placeholder="ex: 5.5"
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors" />
-              </div>
+
               <div>
                 <label className="text-slate-400 text-xs font-medium block mb-1.5">kWh prometidos na venda *</label>
                 <input type="number" value={form.kwh_prometidos || ""} onChange={e => set("kwh_prometidos", e.target.value)} placeholder="ex: 600"
