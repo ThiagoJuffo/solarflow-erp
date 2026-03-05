@@ -711,8 +711,6 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
           </div>
 
           {[
-            { label: "Nº de Strings", key: "num_strings", type: "number" },
-            { label: "Módulos por String", key: "modulos_por_string", type: "number" },
             { label: "ART Nº", key: "art_numero" },
             { label: "Responsável Técnico", key: "responsavel_tecnico" },
             { label: "CREA", key: "crea_responsavel" },
