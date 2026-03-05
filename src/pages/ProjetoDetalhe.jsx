@@ -364,6 +364,11 @@ export default function ProjetoDetalhe() {
             <VisitaTab projetoId={id} visita={visita} setVisita={setVisita} canEdit={canEdit} />
           )}
 
+          {/* TAB: INSTALAÇÃO */}
+          {tab === "Instalação" && (
+            <InstalacaoTab projeto={projeto} updateProjeto={updateProjeto} canEdit={canEdit} />
+          )}
+
           {/* TAB: PROTOCOLOS */}
           {tab === "Protocolos" && (
             <div className="max-w-2xl">
