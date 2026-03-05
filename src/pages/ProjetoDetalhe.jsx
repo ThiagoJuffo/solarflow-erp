@@ -1039,6 +1039,69 @@ function UCsCreditoSection({ preProjeto, projeto, canEdit }) {
   );
 }
 
+function InstalacaoTab({ projeto, updateProjeto, canEdit }) {
+  const [form, setForm] = useState({
+    data_instalacao: projeto.data_instalacao || "",
+    data_comissionamento: projeto.data_comissionamento || "",
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    await updateProjeto(form);
+    setSaving(false);
+  };
+
+  return (
+    <div className="max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+      <h3 className="text-white font-semibold flex items-center gap-2">
+        <Clock size={16} className="text-amber-400" /> Agendamento de Instalação
+      </h3>
+
+      <div>
+        <label className="text-slate-400 text-xs mb-1.5 block">Data de Instalação</label>
+        <input
+          type="date"
+          value={form.data_instalacao}
+          onChange={e => setForm(p => ({ ...p, data_instalacao: e.target.value }))}
+          disabled={!canEdit}
+          className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+        />
+      </div>
+
+      <div>
+        <label className="text-slate-400 text-xs mb-1.5 block">Data de Comissionamento</label>
+        <input
+          type="date"
+          value={form.data_comissionamento}
+          onChange={e => setForm(p => ({ ...p, data_comissionamento: e.target.value }))}
+          disabled={!canEdit}
+          className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+        />
+      </div>
+
+      {canEdit && (
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-white py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
+        >
+          {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />} Salvar
+        </button>
+      )}
+
+      {projeto.data_instalacao && (
+        <div className="pt-3 border-t border-slate-800 space-y-1">
+          <p className="text-slate-400 text-xs">Instalação agendada para: <span className="text-white font-medium">{new Date(projeto.data_instalacao + "T12:00:00").toLocaleDateString("pt-BR")}</span></p>
+          {projeto.data_comissionamento && (
+            <p className="text-slate-400 text-xs">Comissionamento previsto: <span className="text-white font-medium">{new Date(projeto.data_comissionamento + "T12:00:00").toLocaleDateString("pt-BR")}</span></p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MonitoramentoTab({ projeto, updateProjeto, canSeePassword, user, senhaVisivel, setSenhaVisivel }) {
   const [form, setForm] = useState({
     monitoramento_portal: projeto.monitoramento_portal || "",
