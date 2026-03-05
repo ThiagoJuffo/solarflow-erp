@@ -117,7 +117,14 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
                 {STATUS_ICONS[p.status]}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-medium">{p.tipo}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-white text-sm font-medium">{p.tipo}</p>
+                  {p.modalidade && (
+                    <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium ${p.modalidade === "fast_track" ? "bg-sky-500/15 text-sky-400" : "bg-slate-700 text-slate-400"}`}>
+                      {p.modalidade === "fast_track" ? "Fast Track" : "Convencional"}
+                    </span>
+                  )}
+                </div>
                 <p className="text-slate-400 text-xs">Nº {p.numero_protocolo || "—"} · {p.data_entrada || "sem data"}</p>
               </div>
               <span className={`text-xs px-2 py-1 rounded-lg ${p.status === "concluido" ? "bg-emerald-400/10 text-emerald-400" : p.status === "indeferido" ? "bg-red-400/10 text-red-400" : "bg-slate-700 text-slate-400"}`}>
