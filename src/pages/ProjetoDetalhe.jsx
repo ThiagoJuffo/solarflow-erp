@@ -407,151 +407,147 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
         {/* UC */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
           <h3 className="text-white font-semibold flex items-center gap-2"><MapPin size={16} className="text-amber-400" /> Unidade Consumidora</h3>
-        {[
-          { label: "Número UC / Instalação", key: "numero_uc" },
-          { label: "Titular na Conta", key: "titular" },
-          { label: "Concessionária", key: "concessionaria" },
-          { label: "Endereço", key: "endereco" },
-          { label: "Cidade", key: "cidade" },
-          { label: "Estado (UF)", key: "estado" },
-          { label: "CEP", key: "cep" },
-        ].map(f => (
-          <div key={f.key}>
-            <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
-            <input
-              value={ucForm[f.key] || ""}
-              onChange={e => setUcForm(p => ({ ...p, [f.key]: e.target.value }))}
+          {[
+            { label: "Número UC / Instalação", key: "numero_uc" },
+            { label: "Titular na Conta", key: "titular" },
+            { label: "Concessionária", key: "concessionaria" },
+            { label: "Endereço", key: "endereco" },
+            { label: "Cidade", key: "cidade" },
+            { label: "Estado (UF)", key: "estado" },
+            { label: "CEP", key: "cep" },
+          ].map(f => (
+            <div key={f.key}>
+              <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
+              <input
+                value={ucForm[f.key] || ""}
+                onChange={e => setUcForm(p => ({ ...p, [f.key]: e.target.value }))}
+                disabled={!canEdit}
+                className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+              />
+            </div>
+          ))}
+          <div>
+            <label className="text-slate-400 text-xs mb-1.5 block">Tipo de Ligação</label>
+            <select
+              value={ucForm.tipo_ligacao || ""}
+              onChange={e => setUcForm(p => ({ ...p, tipo_ligacao: e.target.value }))}
               disabled={!canEdit}
               className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
-            />
+            >
+              <option value="">Selecionar...</option>
+              <option value="monofasico">Monofásico</option>
+              <option value="bifasico">Bifásico</option>
+              <option value="trifasico">Trifásico</option>
+            </select>
           </div>
-        ))}
-        <div>
-          <label className="text-slate-400 text-xs mb-1.5 block">Tipo de Ligação</label>
-          <select
-            value={ucForm.tipo_ligacao || ""}
-            onChange={e => setUcForm(p => ({ ...p, tipo_ligacao: e.target.value }))}
-            disabled={!canEdit}
-            className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
-          >
-            <option value="">Selecionar...</option>
-            <option value="monofasico">Monofásico</option>
-            <option value="bifasico">Bifásico</option>
-            <option value="trifasico">Trifásico</option>
-          </select>
-        </div>
-        <div>
-          <label className="text-slate-400 text-xs mb-1.5 block">Situação do Padrão *</label>
-          <select
-            value={ucForm.situacao_padrao || ""}
-            onChange={e => setUcForm(p => ({ ...p, situacao_padrao: e.target.value }))}
-            disabled={!canEdit}
-            className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
-          >
-            <option value="">Selecionar...</option>
-            <option value="adequado">Adequado</option>
-            <option value="precisa_aumento_carga">Precisa aumento de carga</option>
-            <option value="a_confirmar">A confirmar (vistoria necessária)</option>
-          </select>
-          {ucForm.situacao_padrao === "precisa_aumento_carga" && (
-            <div className="mt-2 bg-amber-400/10 border border-amber-400/20 rounded-xl p-3 flex items-start gap-2">
-              <AlertTriangle size={14} className="text-amber-400 mt-0.5 shrink-0" />
-              <p className="text-amber-300 text-xs">Pendência criada: adequação de padrão necessária antes de protocolar.</p>
-            </div>
+          <div>
+            <label className="text-slate-400 text-xs mb-1.5 block">Situação do Padrão *</label>
+            <select
+              value={ucForm.situacao_padrao || ""}
+              onChange={e => setUcForm(p => ({ ...p, situacao_padrao: e.target.value }))}
+              disabled={!canEdit}
+              className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+            >
+              <option value="">Selecionar...</option>
+              <option value="adequado">Adequado</option>
+              <option value="precisa_aumento_carga">Precisa aumento de carga</option>
+              <option value="a_confirmar">A confirmar (vistoria necessária)</option>
+            </select>
+            {ucForm.situacao_padrao === "precisa_aumento_carga" && (
+              <div className="mt-2 bg-amber-400/10 border border-amber-400/20 rounded-xl p-3 flex items-start gap-2">
+                <AlertTriangle size={14} className="text-amber-400 mt-0.5 shrink-0" />
+                <p className="text-amber-300 text-xs">Pendência criada: adequação de padrão necessária antes de protocolar.</p>
+              </div>
+            )}
+          </div>
+          {canEdit && (
+            <button onClick={handleSaveUC} disabled={saving} className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-white py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2">
+              {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />} Salvar UC
+            </button>
           )}
         </div>
-        {canEdit && (
-          <button onClick={handleSaveUC} disabled={saving} className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-white py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2">
-            {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />} Salvar UC
-          </button>
-        )}
-      </div>
 
-      {/* Resumo Técnico */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-        <h3 className="text-white font-semibold flex items-center gap-2"><Zap size={16} className="text-amber-400" /> Resumo Técnico</h3>
-
-        {/* Módulo - select de produtos cadastrados */}
-        <div>
-          <label className="text-slate-400 text-xs mb-1.5 block">Módulo FV</label>
-          <select
-            value={rtForm.modulo_produto_id || ""}
-            onChange={e => {
-              const prod = produtos.find(p => p.id === e.target.value);
-              setRtForm(p => ({
-                ...p,
-                modulo_produto_id: e.target.value,
-                modulo_descricao: prod ? `${prod.fabricante} ${prod.modelo} ${prod.potencia_wp}Wp` : ""
-              }));
-            }}
-            disabled={!canEdit}
-            className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
-          >
-            <option value="">Selecionar módulo...</option>
-            {produtos.filter(p => p.tipo === "modulo_fv").map(p => (
-              <option key={p.id} value={p.id}>{p.fabricante} {p.modelo} — {p.potencia_wp}Wp</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Inversor - select de produtos cadastrados */}
-        <div>
-          <label className="text-slate-400 text-xs mb-1.5 block">Inversor</label>
-          <select
-            value={rtForm.inversor_produto_id || ""}
-            onChange={e => {
-              const prod = produtos.find(p => p.id === e.target.value);
-              setRtForm(p => ({
-                ...p,
-                inversor_produto_id: e.target.value,
-                inversor_descricao: prod ? `${prod.fabricante} ${prod.modelo} ${prod.potencia_kva}kVA` : ""
-              }));
-            }}
-            disabled={!canEdit}
-            className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
-          >
-            <option value="">Selecionar inversor...</option>
-            {produtos.filter(p => ["inversor_string","microinversor","hibrido"].includes(p.tipo)).map(p => (
-              <option key={p.id} value={p.id}>{p.fabricante} {p.modelo} — {p.potencia_kva}kVA</option>
-            ))}
-          </select>
-        </div>
-
-        {[
-          { label: "Potência (kWp)", key: "potencia_kwp", type: "number" },
-          { label: "Qtd. Módulos", key: "quantidade_modulos", type: "number" },
-          { label: "Nº de Strings", key: "num_strings", type: "number" },
-          { label: "Módulos por String", key: "modulos_por_string", type: "number" },
-          { label: "ART Nº", key: "art_numero" },
-          { label: "Responsável Técnico", key: "responsavel_tecnico" },
-          { label: "CREA", key: "crea_responsavel" },
-        ].map(f => (
-          <div key={f.key}>
-            <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
-            <input
-              type={f.type || "text"}
-              value={rtForm[f.key] || ""}
-              onChange={e => setRtForm(p => ({ ...p, [f.key]: f.type === "number" ? Number(e.target.value) : e.target.value }))}
+        {/* Resumo Técnico */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <h3 className="text-white font-semibold flex items-center gap-2"><Zap size={16} className="text-amber-400" /> Resumo Técnico</h3>
+          <div>
+            <label className="text-slate-400 text-xs mb-1.5 block">Módulo FV</label>
+            <select
+              value={rtForm.modulo_produto_id || ""}
+              onChange={e => {
+                const prod = produtos.find(p => p.id === e.target.value);
+                setRtForm(p => ({
+                  ...p,
+                  modulo_produto_id: e.target.value,
+                  modulo_descricao: prod ? `${prod.fabricante} ${prod.modelo} ${prod.potencia_wp}Wp` : ""
+                }));
+              }}
               disabled={!canEdit}
               className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+            >
+              <option value="">Selecionar módulo...</option>
+              {produtos.filter(p => p.tipo === "modulo_fv").map(p => (
+                <option key={p.id} value={p.id}>{p.fabricante} {p.modelo} — {p.potencia_wp}Wp</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-slate-400 text-xs mb-1.5 block">Inversor</label>
+            <select
+              value={rtForm.inversor_produto_id || ""}
+              onChange={e => {
+                const prod = produtos.find(p => p.id === e.target.value);
+                setRtForm(p => ({
+                  ...p,
+                  inversor_produto_id: e.target.value,
+                  inversor_descricao: prod ? `${prod.fabricante} ${prod.modelo} ${prod.potencia_kva}kVA` : ""
+                }));
+              }}
+              disabled={!canEdit}
+              className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+            >
+              <option value="">Selecionar inversor...</option>
+              {produtos.filter(p => ["inversor_string","microinversor","hibrido"].includes(p.tipo)).map(p => (
+                <option key={p.id} value={p.id}>{p.fabricante} {p.modelo} — {p.potencia_kva}kVA</option>
+              ))}
+            </select>
+          </div>
+          {[
+            { label: "Potência (kWp)", key: "potencia_kwp", type: "number" },
+            { label: "Qtd. Módulos", key: "quantidade_modulos", type: "number" },
+            { label: "Nº de Strings", key: "num_strings", type: "number" },
+            { label: "Módulos por String", key: "modulos_por_string", type: "number" },
+            { label: "ART Nº", key: "art_numero" },
+            { label: "Responsável Técnico", key: "responsavel_tecnico" },
+            { label: "CREA", key: "crea_responsavel" },
+          ].map(f => (
+            <div key={f.key}>
+              <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
+              <input
+                type={f.type || "text"}
+                value={rtForm[f.key] || ""}
+                onChange={e => setRtForm(p => ({ ...p, [f.key]: f.type === "number" ? Number(e.target.value) : e.target.value }))}
+                disabled={!canEdit}
+                className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+              />
+            </div>
+          ))}
+          <div>
+            <label className="text-slate-400 text-xs mb-1.5 block">Observações Técnicas</label>
+            <textarea
+              value={rtForm.observacoes_tecnicas || ""}
+              onChange={e => setRtForm(p => ({ ...p, observacoes_tecnicas: e.target.value }))}
+              disabled={!canEdit}
+              rows={3}
+              className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500 resize-none"
             />
           </div>
-        ))}
-        <div>
-          <label className="text-slate-400 text-xs mb-1.5 block">Observações Técnicas</label>
-          <textarea
-            value={rtForm.observacoes_tecnicas || ""}
-            onChange={e => setRtForm(p => ({ ...p, observacoes_tecnicas: e.target.value }))}
-            disabled={!canEdit}
-            rows={3}
-            className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500 resize-none"
-          />
+          {canEdit && (
+            <button onClick={handleSaveRT} disabled={saving} className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-white py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2">
+              {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />} Salvar Técnico
+            </button>
+          )}
         </div>
-        {canEdit && (
-          <button onClick={handleSaveRT} disabled={saving} className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-white py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2">
-            {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />} Salvar Técnico
-          </button>
-        )}
       </div>
     </div>
   );
