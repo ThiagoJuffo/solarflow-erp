@@ -56,7 +56,16 @@ export default function NovoPréProjeto() {
   useEffect(() => {
     base44.entities.Vendedor.filter({ ativo: true }).then(setVendedores).catch(() => {});
     base44.entities.Produto.filter({ ativo: true }).then(produtos => {
-      setInversores(produtos.filter(p => ["inversor_string", "microinversor", "hibrido"].includes(p.tipo)));
+      const allInversores = produtos.filter(p => ["inversor_string", "microinversor", "hibrido"].includes(p.tipo));
+      const prioridade = ["solplanet", "tsun", "tsuness"];
+      allInversores.sort((a, b) => {
+        const aIdx = prioridade.findIndex(m => a.fabricante?.toLowerCase().includes(m));
+        const bIdx = prioridade.findIndex(m => b.fabricante?.toLowerCase().includes(m));
+        const aScore = aIdx === -1 ? 99 : aIdx;
+        const bScore = bIdx === -1 ? 99 : bIdx;
+        return aScore - bScore;
+      });
+      setInversores(allInversores);
       setModulos(produtos.filter(p => p.tipo === "modulo_fv"));
     }).catch(() => {});
   }, []);
