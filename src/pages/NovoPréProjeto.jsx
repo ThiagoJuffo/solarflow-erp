@@ -388,13 +388,29 @@ Retorne apenas o JSON.`;
           {/* Aprovação Xpress */}
           <div className="space-y-3">
             <p className="text-amber-400 text-xs font-semibold uppercase tracking-wide">Elegibilidade Fast Track</p>
-            <label className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 cursor-pointer hover:border-red-400/50 transition-colors">
-              <input type="checkbox" checked={form.aprovacao_xpress || false} onChange={e => set("aprovacao_xpress", e.target.checked)} className="w-4 h-4 accent-red-500 mt-0.5" />
-              <div>
-                <span className="text-white text-sm font-semibold">Requer Aprovação Xpress</span>
-                <p className="text-slate-400 text-xs mt-0.5">O porte do cliente ultrapassa o limite do Fast Track e necessita de aprovação especial antes de prosseguir.</p>
+            <p className="text-slate-500 text-xs">Marque caso algum dos critérios abaixo se aplique — o projeto precisará de Aprovação Xpress.</p>
+            <div className="space-y-2">
+              <label className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 cursor-pointer hover:border-red-400/50 transition-colors">
+                <input type="checkbox" checked={form.xpress_limite_fast_track || false} onChange={e => { set("xpress_limite_fast_track", e.target.checked); set("aprovacao_xpress", e.target.checked || (form.xpress_envio_credito || false)); }} className="w-4 h-4 accent-red-500 mt-0.5" />
+                <div>
+                  <span className="text-white text-sm font-semibold">Ultrapassa o limite do Fast Track</span>
+                  <p className="text-slate-400 text-xs mt-0.5">O porte do sistema ou valor do projeto excede o limite permitido para aprovação automática.</p>
+                </div>
+              </label>
+              <label className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 cursor-pointer hover:border-red-400/50 transition-colors">
+                <input type="checkbox" checked={form.xpress_envio_credito || false} onChange={e => { set("xpress_envio_credito", e.target.checked); set("aprovacao_xpress", e.target.checked || (form.xpress_limite_fast_track || false)); }} className="w-4 h-4 accent-red-500 mt-0.5" />
+                <div>
+                  <span className="text-white text-sm font-semibold">Envio de crédito para outra UC obrigatório</span>
+                  <p className="text-slate-400 text-xs mt-0.5">O projeto envolve obrigatoriamente o envio de créditos de energia para outra unidade consumidora.</p>
+                </div>
+              </label>
+            </div>
+            {form.aprovacao_xpress && (
+              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-2.5">
+                <AlertTriangle size={14} className="text-red-400 shrink-0" />
+                <p className="text-red-300 text-xs font-medium">Este projeto requer <strong>Aprovação Xpress</strong> antes de prosseguir.</p>
               </div>
-            </label>
+            )}
           </div>
 
           {/* Envio de créditos */}
