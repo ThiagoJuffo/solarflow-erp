@@ -39,6 +39,7 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
     setSaving(false);
     setCriando(false);
     setNumero("");
+    setModalidade("convencional");
     onUpdate && onUpdate(novo);
   };
 
