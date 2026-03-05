@@ -114,8 +114,8 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Pre-projetos alert */}
-      {prePagas > 0 && (
+      {/* Pre-projetos alert - apenas para admin/financeiro */}
+      {prePagas > 0 && canConfirmPayment && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
             <AlertTriangle size={18} className="text-amber-400" />
