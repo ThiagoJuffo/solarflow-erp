@@ -403,10 +403,10 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
         </div>
       )}
 
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* UC */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-        <h3 className="text-white font-semibold flex items-center gap-2"><MapPin size={16} className="text-amber-400" /> Unidade Consumidora</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* UC */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <h3 className="text-white font-semibold flex items-center gap-2"><MapPin size={16} className="text-amber-400" /> Unidade Consumidora</h3>
         {[
           { label: "Número UC / Instalação", key: "numero_uc" },
           { label: "Titular na Conta", key: "titular" },
