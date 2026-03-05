@@ -155,6 +155,7 @@ Retorne apenas o JSON.`;
       tipo_instalacao: form.tipo_instalacao,
       envio_creditos: form.envio_creditos || false,
       ucs_credito: form.envio_creditos ? form.ucs_credito : [],
+      aprovacao_xpress: form.aprovacao_xpress || false,
       conta_energia_url: contaEnergiaUrl,
       documento_foto_url: docFotoUrl,
       dados_extraidos: extraido,
