@@ -5,6 +5,7 @@ const ITEMS_CHECKLIST = [
   { key: "art", label: "ART anexada e assinada", obrigatorio: true },
   { key: "memorial_tecnico", label: "Memorial Técnico gerado", obrigatorio: true },
   { key: "inmetro", label: "Certificado INMETRO anexado", obrigatorio: true },
+  { key: "projeto_unifilar", label: "Projeto Unifilar", obrigatorio: true },
   { key: "formulario_creditos", label: "Formulário de créditos (se aplicável)", obrigatorio: false },
 ];
 
