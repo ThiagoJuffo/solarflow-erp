@@ -662,51 +662,50 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
         {/* Resumo Técnico */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
           <h3 className="text-white font-semibold flex items-center gap-2"><Zap size={16} className="text-amber-400" /> Resumo Técnico</h3>
+
+          {/* Módulo FV - espelhado dos equipamentos confirmados */}
           <div>
             <label className="text-slate-400 text-xs mb-1.5 block">Módulo FV</label>
-            <select
-              value={rtForm.modulo_produto_id || ""}
-              onChange={e => {
-                const prod = produtos.find(p => p.id === e.target.value);
-                setRtForm(p => ({
-                  ...p,
-                  modulo_produto_id: e.target.value,
-                  modulo_descricao: prod ? `${prod.fabricante} ${prod.modelo} ${prod.potencia_wp}Wp` : ""
-                }));
-              }}
-              disabled={!canEdit}
-              className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
-            >
-              <option value="">Selecionar módulo...</option>
-              {produtos.filter(p => p.tipo === "modulo_fv").map(p => (
-                <option key={p.id} value={p.id}>{p.fabricante} {p.modelo} — {p.potencia_wp}Wp</option>
-              ))}
-            </select>
+            <div className="w-full bg-slate-800/50 border border-slate-700 text-slate-300 rounded-xl px-3 py-2 text-sm opacity-70 cursor-not-allowed">
+              {preProjeto?.modulo_marca_modelo || "Não definido"}
+              {preProjeto?.modulo_quantidade ? ` — ${preProjeto.modulo_quantidade} un.` : ""}
+            </div>
           </div>
+
+          {/* Inversor - espelhado dos equipamentos confirmados */}
           <div>
             <label className="text-slate-400 text-xs mb-1.5 block">Inversor</label>
-            <select
-              value={rtForm.inversor_produto_id || ""}
-              onChange={e => {
-                const prod = produtos.find(p => p.id === e.target.value);
-                setRtForm(p => ({
-                  ...p,
-                  inversor_produto_id: e.target.value,
-                  inversor_descricao: prod ? `${prod.fabricante} ${prod.modelo} ${prod.potencia_kva}kVA` : ""
-                }));
-              }}
-              disabled={!canEdit}
-              className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
-            >
-              <option value="">Selecionar inversor...</option>
-              {produtos.filter(p => ["inversor_string","microinversor","hibrido"].includes(p.tipo)).map(p => (
-                <option key={p.id} value={p.id}>{p.fabricante} {p.modelo} — {p.potencia_kva}kVA</option>
-              ))}
-            </select>
+            <div className="w-full bg-slate-800/50 border border-slate-700 text-slate-300 rounded-xl px-3 py-2 text-sm opacity-70 cursor-not-allowed">
+              {preProjeto?.inversor_marca_modelo || "Não definido"}
+              {preProjeto?.inversor_quantidade ? ` — ${preProjeto.inversor_quantidade} un.` : ""}
+            </div>
           </div>
+
+          {/* Potência calculada automaticamente */}
+          <div>
+            <label className="text-slate-400 text-xs mb-1.5 block">Potência (kWp) <span className="text-slate-500 normal-case font-normal">— calculado automaticamente</span></label>
+            {(() => {
+              const moduloProd = produtos.find(p => `${p.fabricante} ${p.modelo}` === preProjeto?.modulo_marca_modelo);
+              const qtd = preProjeto?.modulo_quantidade;
+              const potWp = moduloProd?.potencia_wp;
+              const kwp = moduloProd && qtd && potWp ? ((potWp * qtd) / 1000).toFixed(2) : rtForm.potencia_kwp || "";
+              return (
+                <div className="w-full bg-slate-800/50 border border-slate-700 text-slate-300 rounded-xl px-3 py-2 text-sm opacity-70 cursor-not-allowed">
+                  {kwp ? `${kwp} kWp` : "Aguardando dados dos equipamentos"}
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Qtd. Módulos - espelhado */}
+          <div>
+            <label className="text-slate-400 text-xs mb-1.5 block">Qtd. Módulos</label>
+            <div className="w-full bg-slate-800/50 border border-slate-700 text-slate-300 rounded-xl px-3 py-2 text-sm opacity-70 cursor-not-allowed">
+              {preProjeto?.modulo_quantidade || "—"}
+            </div>
+          </div>
+
           {[
-            { label: "Potência (kWp)", key: "potencia_kwp", type: "number" },
-            { label: "Qtd. Módulos", key: "quantidade_modulos", type: "number" },
             { label: "Nº de Strings", key: "num_strings", type: "number" },
             { label: "Módulos por String", key: "modulos_por_string", type: "number" },
             { label: "ART Nº", key: "art_numero" },
