@@ -343,7 +343,6 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
 
   return (
     <div className="space-y-6">
-      {/* Equipamentos vendidos (do pré-projeto) + confirmação */}
       {preProjeto && (
         <div className={`border rounded-2xl p-5 space-y-4 ${projeto?.equipamentos_confirmados ? "bg-emerald-500/5 border-emerald-500/30" : "bg-amber-500/5 border-amber-500/30"}`}>
           <div className="flex items-center justify-between gap-3 flex-wrap">
