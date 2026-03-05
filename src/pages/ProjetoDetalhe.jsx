@@ -134,6 +134,14 @@ export default function ProjetoDetalhe() {
   const canSeePassword = user?.role === "admin";
   const canConfirmarEquipamentos = user?.role === "admin" || user?.role === "financeiro" || user?.role === "suprimentos";
 
+  const confirmarTransformador = async () => {
+    await updateProjeto({
+      transformador_confirmado: true,
+      transformador_confirmado_por: user?.email,
+      transformador_confirmado_em: new Date().toISOString(),
+    });
+  };
+
   const confirmarEquipamentos = async () => {
     const timeline = [...(projeto.timeline_eventos || []), {
       tipo: "status_alterado",
