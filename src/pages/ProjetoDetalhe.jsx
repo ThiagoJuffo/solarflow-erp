@@ -8,7 +8,7 @@ import ProtocoloCard from "../components/projeto/ProtocoloCard";
 import {
   ChevronLeft, Sun, MapPin, Zap, FileText, Camera, Package,
   Settings, Eye, EyeOff, CheckCircle, AlertTriangle, Loader2,
-  Upload, Plus, Clock, ShieldCheck
+  Upload, Plus, Clock, ShieldCheck, Pencil
 } from "lucide-react";
 
 const TABS = ["Resumo", "UC & Técnico", "Documentos", "Visita", "Protocolos", "Monitoramento"];
