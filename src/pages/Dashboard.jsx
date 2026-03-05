@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Sun, Zap, Clock, CheckCircle, AlertTriangle, TrendingUp, FolderKanban, ArrowRight } from "lucide-react";
+import { Sun, Zap, Clock, CheckCircle, AlertTriangle, TrendingUp, FolderKanban, ArrowRight, Package } from "lucide-react";
 
 const STATUS_LABELS = {
   pago_projeto_iniciado: "Projeto Iniciado",
