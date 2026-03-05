@@ -590,6 +590,11 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
         </div>
       )}
 
+      {/* Compartilhamento de Créditos */}
+      {preProjeto?.envio_creditos && (
+        <UCsCreditoSection preProjeto={preProjeto} projeto={projeto} canEdit={canEdit} />
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* UC */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
