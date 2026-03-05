@@ -188,9 +188,16 @@ export default function Projetos() {
                   <p className="text-slate-500 text-xs mt-0.5">CPF: {item.cpf}</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-lg border ${statusColor(item.status)}`}>
-                    {STATUS_LABELS[item.status] || item.status}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-lg border ${statusColor(item.status)}`}>
+                      {STATUS_LABELS[item.status] || item.status}
+                    </span>
+                    {item._tipo === "projeto" && item.status === "pago_projeto_iniciado" && !item.equipamentos_confirmados && (
+                      <span className="text-xs font-medium px-2.5 py-1 rounded-lg border border-orange-400/20 text-orange-400 bg-orange-400/10 flex items-center gap-1">
+                        <Package size={10} /> Kit Pendente
+                      </span>
+                    )}
+                  </div>
 
                   {/* Ação: confirmar pagamento */}
                   {item._tipo === "pre_projeto" && item.status === "aguardando_pagamento" && (
