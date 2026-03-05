@@ -123,31 +123,86 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
       )}
 
       {protocolos.length === 0 && !criando ? (
-        <p className="text-slate-500 text-sm text-center py-4">Nenhum protocolo registrado</p>
+       <p className="text-slate-500 text-sm text-center py-4">Nenhum protocolo registrado</p>
       ) : (
-        <div className="space-y-2">
-          {protocolos.map(p => (
-            <div key={p.id} className="flex items-center gap-3 p-3 bg-slate-800 rounded-xl">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${p.tipo === "PROJETO" ? "bg-blue-500/10" : "bg-violet-500/10"}`}>
-                {STATUS_ICONS[p.status]}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-white text-sm font-medium">{p.tipo}</p>
-                  {p.modalidade && (
-                    <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium ${p.modalidade === "fast_track" ? "bg-sky-500/15 text-sky-400" : "bg-slate-700 text-slate-400"}`}>
-                      {p.modalidade === "fast_track" ? "Fast Track" : "Convencional"}
-                    </span>
-                  )}
-                </div>
-                <p className="text-slate-400 text-xs">Nº {p.numero_protocolo || "—"} · {p.data_entrada || "sem data"}</p>
-              </div>
-              <span className={`text-xs px-2 py-1 rounded-lg ${p.status === "concluido" ? "bg-emerald-400/10 text-emerald-400" : p.status === "indeferido" ? "bg-red-400/10 text-red-400" : "bg-slate-700 text-slate-400"}`}>
-                {STATUS_LABELS[p.status] || p.status}
-              </span>
-            </div>
-          ))}
-        </div>
+       <div className="space-y-2">
+         {protocolos.map(p => (
+           <div key={p.id} className="space-y-2">
+             <button
+               onClick={() => setExpandido(expandido === p.id ? null : p.id)}
+               className="w-full flex items-center gap-3 p-3 bg-slate-800 hover:bg-slate-700 rounded-xl transition-all text-left"
+             >
+               <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${p.tipo === "PROJETO" ? "bg-blue-500/10" : "bg-violet-500/10"}`}>
+                 {STATUS_ICONS[p.status]}
+               </div>
+               <div className="flex-1 min-w-0">
+                 <div className="flex items-center gap-2">
+                   <p className="text-white text-sm font-medium">{p.tipo}</p>
+                   {p.modalidade && (
+                     <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium ${p.modalidade === "fast_track" ? "bg-sky-500/15 text-sky-400" : "bg-slate-700 text-slate-400"}`}>
+                       {p.modalidade === "fast_track" ? "Fast Track" : "Convencional"}
+                     </span>
+                   )}
+                 </div>
+                 <p className="text-slate-400 text-xs">Nº {p.numero_protocolo || "—"} · {p.data_entrada || "sem data"}</p>
+               </div>
+               <span className={`text-xs px-2 py-1 rounded-lg ${p.status === "concluido" ? "bg-emerald-400/10 text-emerald-400" : p.status === "indeferido" ? "bg-red-400/10 text-red-400" : "bg-slate-700 text-slate-400"}`}>
+                 {STATUS_LABELS[p.status] || p.status}
+               </span>
+             </button>
+
+             {expandido === p.id && (
+               <div className="bg-slate-800 rounded-xl p-4 space-y-3 ml-2 border-l-2 border-amber-500/30">
+                 <p className="text-slate-400 text-xs font-semibold">Alterar Status</p>
+                 {!editandoStatus[p.id] ? (
+                   <div className="flex flex-wrap gap-2">
+                     {["em_analise", "concluido", "indeferido"].map(s => (
+                       <button
+                         key={s}
+                         onClick={() => {
+                           if (s === "indeferido") {
+                             setEditandoStatus(prev => ({ ...prev, [p.id]: "motivo" }));
+                           } else {
+                             handleAtualizarStatus(p.id, s);
+                           }
+                         }}
+                         className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${s === "em_analise" ? "bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20" : s === "concluido" ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20"}`}
+                       >
+                         {s === "em_analise" ? "Em Análise" : s === "concluido" ? "Aprovado" : "Rejeitado"}
+                       </button>
+                     ))}
+                   </div>
+                 ) : editandoStatus[p.id] === "motivo" ? (
+                   <div className="space-y-2">
+                     <textarea
+                       placeholder="Descrever motivo da rejeição..."
+                       defaultValue={p.resultado || ""}
+                       onChange={e => setEditandoStatus(prev => ({ ...prev, [p.id]: { motivo: e.target.value } }))}
+                       className="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 text-xs placeholder-slate-500 focus:outline-none focus:border-red-500 resize-none"
+                       rows={3}
+                     />
+                     <div className="flex gap-2">
+                       <button
+                         onClick={() => setEditandoStatus(prev => ({ ...prev, [p.id]: false }))}
+                         className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 py-1.5 rounded-lg text-xs transition-all"
+                       >
+                         Cancelar
+                       </button>
+                       <button
+                         onClick={() => handleAtualizarStatus(p.id, "indeferido", editandoStatus[p.id]?.motivo || "")}
+                         disabled={salvanidoStatus[p.id]}
+                         className="flex-1 bg-red-500 hover:bg-red-400 disabled:opacity-50 text-white py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1"
+                       >
+                         {salvanidoStatus[p.id] ? <Loader2 size={12} className="animate-spin" /> : "Confirmar"}
+                       </button>
+                     </div>
+                   </div>
+                 ) : null}
+               </div>
+             )}
+           </div>
+         ))}
+       </div>
       )}
     </div>
   );
