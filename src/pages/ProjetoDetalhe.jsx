@@ -853,6 +853,14 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
                       Gerar documento
                     </button>
                   )}
+                  {tipo.fromProduto && inversorProduto?.inmetro_url && (
+                    <a href={inversorProduto.inmetro_url} target="_blank" rel="noreferrer" className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-all flex items-center gap-1">
+                      <FileText size={12} /> Download INMETRO ({preProjeto?.inversor_marca_modelo})
+                    </a>
+                  )}
+                  {tipo.fromProduto && inversorProduto && !inversorProduto.inmetro_url && (
+                    <span className="text-xs text-slate-500 italic">Certificado não cadastrado para este inversor</span>
+                  )}
                   {doc?.url_gerado && (
                     <a href={doc.url_gerado} target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:underline flex items-center gap-1">
                       <FileText size={12} /> Ver original
