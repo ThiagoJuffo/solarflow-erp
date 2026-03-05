@@ -1007,6 +1007,34 @@ function VisitaTab({ projetoId, visita, setVisita, canEdit }) {
   );
 }
 
+function UCsCreditoSection({ preProjeto, projeto, canEdit }) {
+  const ucs = preProjeto?.ucs_credito || [];
+  return (
+    <div className="bg-slate-900 border border-amber-500/20 rounded-2xl p-5 space-y-3">
+      <h3 className="text-white font-semibold flex items-center gap-2">
+        <Zap size={16} className="text-amber-400" /> Compartilhamento de Créditos
+      </h3>
+      <p className="text-slate-400 text-xs">Este projeto possui envio de créditos de energia para outras UCs:</p>
+      {ucs.length === 0 ? (
+        <p className="text-slate-500 text-sm">Nenhuma UC receptora cadastrada.</p>
+      ) : (
+        <div className="space-y-2">
+          {ucs.map((uc, i) => (
+            <div key={i} className="flex items-center justify-between bg-slate-800 rounded-xl px-4 py-2.5">
+              <div>
+                <p className="text-white text-sm font-medium">UC: {uc.numero_uc || "—"}</p>
+              </div>
+              <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-lg font-semibold">
+                {uc.percentual != null ? `${uc.percentual}%` : "—"}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MonitoramentoTab({ projeto, updateProjeto, canSeePassword, user, senhaVisivel, setSenhaVisivel }) {
   const [form, setForm] = useState({
     monitoramento_portal: projeto.monitoramento_portal || "",
