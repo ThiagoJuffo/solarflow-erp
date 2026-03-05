@@ -749,9 +749,18 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
   );
 }
 
-function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit }) {
+function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProjeto }) {
   const [uploading, setUploading] = useState(null);
   const [gerando, setGerando] = useState(null);
+  const [inversorProduto, setInversorProduto] = useState(null);
+
+  useEffect(() => {
+    if (!preProjeto?.inversor_marca_modelo) return;
+    base44.entities.Produto.filter({ ativo: true }).then(produtos => {
+      const inv = produtos.find(p => `${p.fabricante} ${p.modelo}` === preProjeto.inversor_marca_modelo);
+      setInversorProduto(inv || null);
+    }).catch(() => {});
+  }, [preProjeto?.inversor_marca_modelo]);
 
   const TIPOS = [
     { key: "procuracao", label: "Procuração", gerarivel: true },
