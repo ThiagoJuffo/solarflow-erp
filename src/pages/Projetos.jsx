@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Sun, ChevronRight, Search, CheckCircle, Clock, Zap, X, Lock } from "lucide-react";
+import { Sun, ChevronRight, Search, CheckCircle, Clock, Zap, X, Lock, Package } from "lucide-react";
 
 const STATUS_LABELS = {
   rascunho: "Rascunho",
