@@ -158,6 +158,8 @@ Retorne apenas o JSON.`;
       envio_creditos: form.envio_creditos || false,
       ucs_credito: form.envio_creditos ? form.ucs_credito : [],
       aprovacao_xpress: form.aprovacao_xpress || false,
+      xpress_limite_fast_track: form.xpress_limite_fast_track || false,
+      xpress_envio_credito: form.xpress_envio_credito || false,
       conta_energia_url: contaEnergiaUrl,
       documento_foto_url: docFotoUrl,
       dados_extraidos: extraido,
