@@ -33,7 +33,8 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
       tipo,
       numero_protocolo: numero,
       data_entrada: data,
-      status: "aberto"
+      status: "aberto",
+      modalidade
     });
     setSaving(false);
     setCriando(false);
