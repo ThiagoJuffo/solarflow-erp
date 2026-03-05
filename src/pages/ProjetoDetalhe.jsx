@@ -161,7 +161,8 @@ export default function ProjetoDetalhe() {
             {(user?.role === "admin" || user?.role === "engenharia") && (
               <button
                 onClick={avancarStatus}
-                disabled={projeto.status === "concluido"}
+                disabled={projeto.status === "concluido" || (projeto.status === "pago_projeto_iniciado" && !projeto.equipamentos_confirmados)}
+                title={projeto.status === "pago_projeto_iniciado" && !projeto.equipamentos_confirmados ? "Aguardando confirmação dos equipamentos" : ""}
                 className="text-xs bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
               >
                 <Zap size={12} /> Próxima etapa
