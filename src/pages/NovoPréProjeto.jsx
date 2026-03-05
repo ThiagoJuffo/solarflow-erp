@@ -384,6 +384,18 @@ Retorne apenas o JSON.`;
             </div>
           </div>
 
+          {/* Aprovação Xpress */}
+          <div className="space-y-3">
+            <p className="text-amber-400 text-xs font-semibold uppercase tracking-wide">Elegibilidade Fast Track</p>
+            <label className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 cursor-pointer hover:border-red-400/50 transition-colors">
+              <input type="checkbox" checked={form.aprovacao_xpress || false} onChange={e => set("aprovacao_xpress", e.target.checked)} className="w-4 h-4 accent-red-500 mt-0.5" />
+              <div>
+                <span className="text-white text-sm font-semibold">Requer Aprovação Xpress</span>
+                <p className="text-slate-400 text-xs mt-0.5">O porte do cliente ultrapassa o limite do Fast Track e necessita de aprovação especial antes de prosseguir.</p>
+              </div>
+            </label>
+          </div>
+
           {/* Envio de créditos */}
           <div className="space-y-3">
             <p className="text-amber-400 text-xs font-semibold uppercase tracking-wide">Envio de Créditos</p>
