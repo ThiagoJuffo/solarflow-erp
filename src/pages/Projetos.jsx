@@ -222,6 +222,15 @@ export default function Projetos() {
                     </button>
                   )}
 
+                  {user?.role === "admin" && (
+                    <button
+                      onClick={(e) => handleDeletar(item, e)}
+                      className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-red-500/20 flex items-center justify-center text-slate-500 hover:text-red-400 transition-all"
+                      title="Apagar projeto"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                   {item._tipo === "projeto" && (
                     <Link
                       to={createPageUrl(`ProjetoDetalhe?id=${item.id}`)}
