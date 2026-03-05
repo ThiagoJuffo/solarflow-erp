@@ -9,6 +9,7 @@ const ETAPAS = [
   { key: "protocolado_edp", label: "Protocolado EDP" },
   { key: "aprovado", label: "Aprovado EDP" },
   { key: "sistema_instalado", label: "Instalado" },
+  { key: "protocolo_vistoria", label: "Protocolo Vistoria" },
   { key: "vistoria_aprovada", label: "Vistoria Aprovada" },
   { key: "concluido", label: "Concluído" },
 ];
