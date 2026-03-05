@@ -135,10 +135,19 @@ export default function ProjetoDetalhe() {
   const canConfirmarEquipamentos = user?.role === "admin" || user?.role === "financeiro" || user?.role === "suprimentos";
 
   const confirmarEquipamentos = async () => {
+    const timeline = [...(projeto.timeline_eventos || []), {
+      tipo: "status_alterado",
+      de: projeto.status,
+      para: "kit_confirmado",
+      data: new Date().toISOString(),
+      usuario: user?.email
+    }];
     await updateProjeto({
       equipamentos_confirmados: true,
       equipamentos_confirmados_por: user?.email,
-      equipamentos_confirmados_em: new Date().toISOString()
+      equipamentos_confirmados_em: new Date().toISOString(),
+      status: "kit_confirmado",
+      timeline_eventos: timeline
     });
   };
 
