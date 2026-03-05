@@ -168,9 +168,9 @@ export default function Projetos() {
                   </span>
 
                   {/* Ação: confirmar pagamento */}
-                  {item._tipo === "pre_projeto" && item.status === "aguardando_pagamento" && canConfirmPayment && (
+                  {item._tipo === "pre_projeto" && item.status === "aguardando_pagamento" && (
                     <button
-                      onClick={() => confirmarPagamento(item)}
+                      onClick={() => canConfirmPayment ? confirmarPagamento(item) : setAvisoSemPermissao(true)}
                       className="text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
                     >
                       <CheckCircle size={12} /> Confirmar Pagamento
