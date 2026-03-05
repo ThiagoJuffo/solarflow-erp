@@ -55,6 +55,7 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
     await base44.entities.Protocolo.update(protocoloId, updates);
     setSalvandoStatus(prev => ({ ...prev, [protocoloId]: false }));
     setEditandoStatus(prev => ({ ...prev, [protocoloId]: false }));
+    setExpandido(null);
     onUpdate && onUpdate({ id: protocoloId, status: novoStatus });
   };
 
