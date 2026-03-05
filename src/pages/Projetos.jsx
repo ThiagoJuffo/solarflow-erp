@@ -48,6 +48,7 @@ export default function Projetos() {
   const [search, setSearch] = useState("");
   const [filtroGrupo, setFiltroGrupo] = useState("Todos");
   const [user, setUser] = useState(null);
+  const [avisoSemPermissao, setAvisoSemPermissao] = useState(false);
 
   useEffect(() => {
     Promise.all([
