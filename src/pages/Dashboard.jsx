@@ -92,6 +92,24 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Alerta: equipamentos aguardando confirmação */}
+      {aguardandoKitConfirmacao.length > 0 && (
+        <div className="bg-orange-500/10 border border-orange-500/30 rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center shrink-0">
+            <Package size={18} className="text-orange-400" />
+          </div>
+          <div className="flex-1">
+            <p className="text-orange-300 font-semibold text-sm">{aguardandoKitConfirmacao.length} projeto(s) aguardando confirmação de equipamentos</p>
+            <p className="text-orange-400/70 text-xs mt-0.5">
+              {aguardandoKitConfirmacao.slice(0, 3).map(p => p.nome_cliente).join(", ")}{aguardandoKitConfirmacao.length > 3 ? ` e mais ${aguardandoKitConfirmacao.length - 3}...` : ""}
+            </p>
+          </div>
+          <Link to={createPageUrl("Projetos")} className="text-orange-400 hover:text-orange-300 text-sm flex items-center gap-1">
+            Ver <ArrowRight size={14} />
+          </Link>
+        </div>
+      )}
+
       {/* Pre-projetos alert */}
       {prePagas > 0 && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex items-center gap-4">
