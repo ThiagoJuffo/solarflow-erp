@@ -163,7 +163,14 @@ export default function Dashboard() {
                   <Sun size={16} className="text-amber-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-medium text-sm truncate">{p.nome_cliente}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-white font-medium text-sm truncate">{p.nome_cliente}</p>
+                    {preProjetos.find(pp => pp.id === p.pre_projeto_id)?.aprovacao_xpress && (
+                      <span className="text-xs font-semibold px-1.5 py-0.5 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 flex items-center gap-1 shrink-0">
+                        <ShieldCheck size={9} /> Xpress
+                      </span>
+                    )}
+                  </div>
                   <p className="text-slate-400 text-xs">UC: {p.uc_geradora || "—"}</p>
                 </div>
                 <div className="flex items-center gap-1.5">
