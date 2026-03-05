@@ -455,7 +455,7 @@ Retorne apenas o JSON.`;
                   <div key={i} className="flex gap-2 items-center">
                     <input value={uc.numero_uc || ""} onChange={e => { const arr = [...form.ucs_credito]; arr[i] = { ...arr[i], numero_uc: e.target.value }; set("ucs_credito", arr); }} placeholder="Número UC receptora"
                       className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
-                    <input type="number" value={uc.percentual || ""} onChange={e => { const arr = [...form.ucs_credito]; arr[i] = { ...arr[i], percentual: Number(e.target.value) }; set("ucs_credito", arr); }} placeholder="% envio"
+                    <input type="number" value={uc.percentual || ""} onChange={e => { const arr = [...form.ucs_credito]; arr[i] = { ...arr[i], percentual: e.target.value === "" ? null : Number(e.target.value) }; set("ucs_credito", arr); }} placeholder="% envio"
                       className="w-24 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
                     <button onClick={() => set("ucs_credito", form.ucs_credito.filter((_, idx) => idx !== i))} className="text-red-400 hover:text-red-300 p-1.5"><Trash2 size={14} /></button>
                   </div>
