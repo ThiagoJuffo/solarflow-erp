@@ -97,6 +97,19 @@ export default function Projetos() {
 
   const canConfirmPayment = user?.role === "admin" || user?.role === "financeiro";
 
+  const handleDeletar = async (item, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!window.confirm(`Tem certeza que deseja apagar o projeto de "${item.nome_cliente}"? Esta ação não pode ser desfeita.`)) return;
+    if (item._tipo === "projeto") {
+      await base44.entities.Projeto.delete(item.id);
+      setProjetos(prev => prev.filter(p => p.id !== item.id));
+    } else {
+      await base44.entities.PreProjeto.delete(item.id);
+      setPreProjetos(prev => prev.filter(p => p.id !== item.id));
+    }
+  };
+
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
       {/* Modal aviso sem permissão */}
