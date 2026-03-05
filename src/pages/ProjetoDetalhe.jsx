@@ -557,7 +557,6 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit }) {
   const [uploading, setUploading] = useState(null);
   const [gerando, setGerando] = useState(null);
 
-
   const TIPOS = [
     { key: "procuracao", label: "Procuração", gerarivel: true },
     { key: "memorial_tecnico", label: "Memorial Técnico", gerarivel: true },
