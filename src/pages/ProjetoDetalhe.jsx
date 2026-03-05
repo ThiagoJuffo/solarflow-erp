@@ -212,6 +212,20 @@ export default function ProjetoDetalhe() {
           {tab === "Resumo" && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
               <div className="lg:col-span-2 space-y-5">
+                {/* Alerta Aprovação Xpress */}
+                {preProjeto?.aprovacao_xpress && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 flex items-start gap-3">
+                    <div className="w-9 h-9 bg-red-500/20 rounded-xl flex items-center justify-center shrink-0">
+                      <ShieldCheck size={16} className="text-red-400" />
+                    </div>
+                    <div>
+                      <p className="text-red-300 font-semibold text-sm">⚡ Este projeto requer Aprovação Xpress</p>
+                      <p className="text-red-400/80 text-xs mt-1">
+                        {[preProjeto.xpress_limite_fast_track && "Ultrapassa o limite do Fast Track", preProjeto.xpress_envio_credito && "Envio de crédito para outra UC obrigatório"].filter(Boolean).join(" · ")}
+                      </p>
+                    </div>
+                  </div>
+                )}
                 {/* Info básica */}
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
                   <h3 className="text-white font-semibold mb-4 flex items-center gap-2"><Sun size={16} className="text-amber-400" /> Dados do Projeto</h3>
