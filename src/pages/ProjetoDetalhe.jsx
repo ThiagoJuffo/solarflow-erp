@@ -258,7 +258,12 @@ export default function ProjetoDetalhe() {
 
           {/* TAB: UC & TÉCNICO */}
           {tab === "UC & Técnico" && (
-            <UCTecnicoTab uc={uc} resumoTec={resumoTec} saveUC={saveUC} saveResumo={saveResumo} canEdit={canEdit} preProjeto={preProjeto} />
+            <UCTecnicoTab
+              uc={uc} resumoTec={resumoTec} saveUC={saveUC} saveResumo={saveResumo}
+              canEdit={canEdit} preProjeto={preProjeto} projeto={projeto}
+              canConfirmarEquipamentos={canConfirmarEquipamentos}
+              onConfirmarEquipamentos={confirmarEquipamentos}
+            />
           )}
 
           {/* TAB: DOCUMENTOS */}
