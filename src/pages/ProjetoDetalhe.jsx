@@ -11,7 +11,7 @@ import {
   Upload, Plus, Clock, ShieldCheck, Pencil
 } from "lucide-react";
 
-const TABS = ["Resumo", "UC & Técnico", "Documentos", "Visita", "Protocolos", "Monitoramento"];
+const TABS = ["Resumo", "UC & Técnico", "Documentos", "Visita", "Instalação", "Protocolos", "Monitoramento"];
 
 const STATUS_FLOW = [
   "pago_projeto_iniciado","kit_confirmado","documentos_gerados","assinaturas_pendentes",
