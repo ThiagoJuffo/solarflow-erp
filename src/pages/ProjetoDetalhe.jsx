@@ -297,10 +297,48 @@ export default function ProjetoDetalhe() {
 
 function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, projeto, canConfirmarEquipamentos, onConfirmarEquipamentos }) {
   const [produtos, setProdutos] = useState([]);
+  const [editandoEq, setEditandoEq] = useState(false);
+  const [eqForm, setEqForm] = useState({
+    inversor_marca_modelo: preProjeto?.inversor_marca_modelo || "",
+    inversor_quantidade: preProjeto?.inversor_quantidade || "",
+    modulo_marca_modelo: preProjeto?.modulo_marca_modelo || "",
+    modulo_quantidade: preProjeto?.modulo_quantidade || "",
+    potencia_pico_kwp: preProjeto?.potencia_pico_kwp || "",
+    kwh_prometidos: preProjeto?.kwh_prometidos || "",
+  });
+  const [savingEq, setSavingEq] = useState(false);
 
   useEffect(() => {
     base44.entities.Produto.filter({ ativo: true }).then(setProdutos).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    setEqForm({
+      inversor_marca_modelo: preProjeto?.inversor_marca_modelo || "",
+      inversor_quantidade: preProjeto?.inversor_quantidade || "",
+      modulo_marca_modelo: preProjeto?.modulo_marca_modelo || "",
+      modulo_quantidade: preProjeto?.modulo_quantidade || "",
+      potencia_pico_kwp: preProjeto?.potencia_pico_kwp || "",
+      kwh_prometidos: preProjeto?.kwh_prometidos || "",
+    });
+  }, [preProjeto]);
+
+  const handleSaveEq = async () => {
+    setSavingEq(true);
+    await base44.entities.PreProjeto.update(preProjeto.id, {
+      inversor_marca_modelo: eqForm.inversor_marca_modelo,
+      inversor_quantidade: eqForm.inversor_quantidade ? Number(eqForm.inversor_quantidade) : null,
+      modulo_marca_modelo: eqForm.modulo_marca_modelo,
+      modulo_quantidade: eqForm.modulo_quantidade ? Number(eqForm.modulo_quantidade) : null,
+      potencia_pico_kwp: eqForm.potencia_pico_kwp ? Number(eqForm.potencia_pico_kwp) : null,
+      kwh_prometidos: eqForm.kwh_prometidos ? Number(eqForm.kwh_prometidos) : null,
+    });
+    setSavingEq(false);
+    setEditandoEq(false);
+    // Atualizar os dados localmente
+    Object.assign(preProjeto, eqForm);
+  };
+
   // Pré-preencher com dados extraídos do pré-projeto se UC ainda não tiver dados
   const dadosIniciais = () => {
     if (uc && Object.keys(uc).length > 1) return uc;
@@ -341,6 +379,9 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
     setConfirmandoEq(false);
   };
 
+  const inversores = produtos.filter(p => ["inversor_string", "microinversor", "hibrido"].includes(p.tipo));
+  const modulos = produtos.filter(p => p.tipo === "modulo_fv");
+
   return (
     <div className="space-y-6">
       {preProjeto && (
@@ -353,16 +394,26 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
                 <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-lg ml-1">Confirmado</span>
               )}
             </h3>
-            {!projeto?.equipamentos_confirmados && canConfirmarEquipamentos && (
-              <button
-                onClick={handleConfirmarEquipamentos}
-                disabled={confirmandoEq}
-                className="text-xs bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
-              >
-                {confirmandoEq ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
-                Confirmar Kit
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {!projeto?.equipamentos_confirmados && canConfirmarEquipamentos && !editandoEq && (
+                <button
+                  onClick={() => setEditandoEq(true)}
+                  className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
+                >
+                  <Pencil size={12} /> Editar
+                </button>
+              )}
+              {!projeto?.equipamentos_confirmados && canConfirmarEquipamentos && !editandoEq && (
+                <button
+                  onClick={handleConfirmarEquipamentos}
+                  disabled={confirmandoEq}
+                  className="text-xs bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
+                >
+                  {confirmandoEq ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
+                  Confirmar Kit
+                </button>
+              )}
+            </div>
           </div>
 
           {!projeto?.equipamentos_confirmados && (
@@ -372,26 +423,75 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="bg-slate-800/60 rounded-xl p-3">
-              <p className="text-slate-400 text-xs mb-1">Inversor</p>
-              <p className="text-white text-sm font-medium">{preProjeto.inversor_marca_modelo || "—"}</p>
-              <p className="text-slate-500 text-xs mt-0.5">Qtd: {preProjeto.inversor_quantidade || "—"}</p>
+          {editandoEq ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-slate-400 text-xs mb-1.5 block">Inversor</label>
+                  <select value={eqForm.inversor_marca_modelo} onChange={e => setEqForm(f => ({ ...f, inversor_marca_modelo: e.target.value }))}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
+                    <option value="">Selecionar...</option>
+                    {inversores.map(p => <option key={p.id} value={`${p.fabricante} ${p.modelo}`}>{p.fabricante} {p.modelo}{p.potencia_kva ? ` — ${p.potencia_kva} kVA` : ""}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-slate-400 text-xs mb-1.5 block">Qtd. Inversores</label>
+                  <input type="number" value={eqForm.inversor_quantidade} onChange={e => setEqForm(f => ({ ...f, inversor_quantidade: e.target.value }))}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                </div>
+                <div>
+                  <label className="text-slate-400 text-xs mb-1.5 block">Módulos FV</label>
+                  <select value={eqForm.modulo_marca_modelo} onChange={e => setEqForm(f => ({ ...f, modulo_marca_modelo: e.target.value }))}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
+                    <option value="">Selecionar...</option>
+                    {modulos.map(p => <option key={p.id} value={`${p.fabricante} ${p.modelo}`}>{p.fabricante} {p.modelo}{p.potencia_wp ? ` — ${p.potencia_wp} Wp` : ""}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-slate-400 text-xs mb-1.5 block">Qtd. Módulos</label>
+                  <input type="number" value={eqForm.modulo_quantidade} onChange={e => setEqForm(f => ({ ...f, modulo_quantidade: e.target.value }))}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                </div>
+                <div>
+                  <label className="text-slate-400 text-xs mb-1.5 block">Potência pico (kWp)</label>
+                  <input type="number" value={eqForm.potencia_pico_kwp} onChange={e => setEqForm(f => ({ ...f, potencia_pico_kwp: e.target.value }))}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                </div>
+                <div>
+                  <label className="text-slate-400 text-xs mb-1.5 block">kWh prometidos</label>
+                  <input type="number" value={eqForm.kwh_prometidos} onChange={e => setEqForm(f => ({ ...f, kwh_prometidos: e.target.value }))}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => setEditandoEq(false)} className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 py-2 rounded-xl text-xs font-medium transition-all">Cancelar</button>
+                <button onClick={handleSaveEq} disabled={savingEq} className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-white py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1">
+                  {savingEq ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />} Salvar alterações
+                </button>
+              </div>
             </div>
-            <div className="bg-slate-800/60 rounded-xl p-3">
-              <p className="text-slate-400 text-xs mb-1">Módulos FV</p>
-              <p className="text-white text-sm font-medium">{preProjeto.modulo_marca_modelo || "—"}</p>
-              <p className="text-slate-500 text-xs mt-0.5">Qtd: {preProjeto.modulo_quantidade || "—"}</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="bg-slate-800/60 rounded-xl p-3">
+                <p className="text-slate-400 text-xs mb-1">Inversor</p>
+                <p className="text-white text-sm font-medium">{preProjeto.inversor_marca_modelo || "—"}</p>
+                <p className="text-slate-500 text-xs mt-0.5">Qtd: {preProjeto.inversor_quantidade || "—"}</p>
+              </div>
+              <div className="bg-slate-800/60 rounded-xl p-3">
+                <p className="text-slate-400 text-xs mb-1">Módulos FV</p>
+                <p className="text-white text-sm font-medium">{preProjeto.modulo_marca_modelo || "—"}</p>
+                <p className="text-slate-500 text-xs mt-0.5">Qtd: {preProjeto.modulo_quantidade || "—"}</p>
+              </div>
+              <div className="bg-slate-800/60 rounded-xl p-3">
+                <p className="text-slate-400 text-xs mb-1">Potência pico</p>
+                <p className="text-white text-sm font-medium">{preProjeto.potencia_pico_kwp ? `${preProjeto.potencia_pico_kwp} kWp` : "—"}</p>
+              </div>
+              <div className="bg-slate-800/60 rounded-xl p-3">
+                <p className="text-slate-400 text-xs mb-1">kWh prometidos</p>
+                <p className="text-white text-sm font-medium">{preProjeto.kwh_prometidos ? `${preProjeto.kwh_prometidos} kWh/mês` : "—"}</p>
+              </div>
             </div>
-            <div className="bg-slate-800/60 rounded-xl p-3">
-              <p className="text-slate-400 text-xs mb-1">Potência pico</p>
-              <p className="text-white text-sm font-medium">{preProjeto.potencia_pico_kwp ? `${preProjeto.potencia_pico_kwp} kWp` : "—"}</p>
-            </div>
-            <div className="bg-slate-800/60 rounded-xl p-3">
-              <p className="text-slate-400 text-xs mb-1">kWh prometidos</p>
-              <p className="text-white text-sm font-medium">{preProjeto.kwh_prometidos ? `${preProjeto.kwh_prometidos} kWh/mês` : "—"}</p>
-            </div>
-          </div>
+          )}
 
           {projeto?.equipamentos_confirmados && (
             <p className="text-emerald-400/70 text-xs">
