@@ -160,7 +160,14 @@ export default function ProjetoDetalhe() {
             <ChevronLeft size={20} />
           </Link>
           <div className="flex-1 min-w-0">
-            <h1 className="text-white font-bold text-lg truncate">{projeto.nome_cliente}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-white font-bold text-lg truncate">{projeto.nome_cliente}</h1>
+              {preProjeto?.aprovacao_xpress && (
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 flex items-center gap-1 shrink-0">
+                  <ShieldCheck size={10} /> Aprovação Xpress
+                </span>
+              )}
+            </div>
             <p className="text-slate-400 text-xs">CPF: {projeto.cpf}</p>
           </div>
           <div className="flex items-center gap-2">
