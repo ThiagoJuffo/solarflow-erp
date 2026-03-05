@@ -334,7 +334,75 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
     setSaving(false);
   };
 
+  const [confirmandoEq, setConfirmandoEq] = useState(false);
+  const handleConfirmarEquipamentos = async () => {
+    setConfirmandoEq(true);
+    await onConfirmarEquipamentos();
+    setConfirmandoEq(false);
+  };
+
   return (
+    <div className="space-y-6">
+      {/* Equipamentos vendidos (do pré-projeto) + confirmação */}
+      {preProjeto && (
+        <div className={`border rounded-2xl p-5 space-y-4 ${projeto?.equipamentos_confirmados ? "bg-emerald-500/5 border-emerald-500/30" : "bg-amber-500/5 border-amber-500/30"}`}>
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <h3 className="text-white font-semibold flex items-center gap-2">
+              <Package size={16} className={projeto?.equipamentos_confirmados ? "text-emerald-400" : "text-amber-400"} />
+              Equipamentos da Venda
+              {projeto?.equipamentos_confirmados && (
+                <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-lg ml-1">Confirmado</span>
+              )}
+            </h3>
+            {!projeto?.equipamentos_confirmados && canConfirmarEquipamentos && (
+              <button
+                onClick={handleConfirmarEquipamentos}
+                disabled={confirmandoEq}
+                className="text-xs bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
+              >
+                {confirmandoEq ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
+                Confirmar Kit
+              </button>
+            )}
+          </div>
+
+          {!projeto?.equipamentos_confirmados && (
+            <div className="flex items-start gap-2 bg-amber-400/10 border border-amber-400/20 rounded-xl p-3">
+              <AlertTriangle size={13} className="text-amber-400 shrink-0 mt-0.5" />
+              <p className="text-amber-300 text-xs">Aguardando confirmação do kit pelo financeiro / suprimentos. O projeto não pode avançar para "Kit Confirmado" sem esta aprovação.</p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="bg-slate-800/60 rounded-xl p-3">
+              <p className="text-slate-400 text-xs mb-1">Inversor</p>
+              <p className="text-white text-sm font-medium">{preProjeto.inversor_marca_modelo || "—"}</p>
+              <p className="text-slate-500 text-xs mt-0.5">Qtd: {preProjeto.inversor_quantidade || "—"}</p>
+            </div>
+            <div className="bg-slate-800/60 rounded-xl p-3">
+              <p className="text-slate-400 text-xs mb-1">Módulos FV</p>
+              <p className="text-white text-sm font-medium">{preProjeto.modulo_marca_modelo || "—"}</p>
+              <p className="text-slate-500 text-xs mt-0.5">Qtd: {preProjeto.modulo_quantidade || "—"}</p>
+            </div>
+            <div className="bg-slate-800/60 rounded-xl p-3">
+              <p className="text-slate-400 text-xs mb-1">Potência pico</p>
+              <p className="text-white text-sm font-medium">{preProjeto.potencia_pico_kwp ? `${preProjeto.potencia_pico_kwp} kWp` : "—"}</p>
+            </div>
+            <div className="bg-slate-800/60 rounded-xl p-3">
+              <p className="text-slate-400 text-xs mb-1">kWh prometidos</p>
+              <p className="text-white text-sm font-medium">{preProjeto.kwh_prometidos ? `${preProjeto.kwh_prometidos} kWh/mês` : "—"}</p>
+            </div>
+          </div>
+
+          {projeto?.equipamentos_confirmados && (
+            <p className="text-emerald-400/70 text-xs">
+              Confirmado por <strong className="text-emerald-400">{projeto.equipamentos_confirmados_por}</strong>
+              {projeto.equipamentos_confirmados_em ? ` em ${new Date(projeto.equipamentos_confirmados_em).toLocaleString("pt-BR")}` : ""}
+            </p>
+          )}
+        </div>
+      )}
+
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* UC */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
