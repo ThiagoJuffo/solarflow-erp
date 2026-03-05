@@ -46,6 +46,8 @@ export default function Dashboard() {
   const concluidos = projetos.filter(p => p.status === "concluido").length;
   const emAndamento = projetos.filter(p => p.status !== "concluido").length;
   const aguardandoAprovacao = projetos.filter(p => p.status === "aguardando_aprovacao").length;
+  const aguardandoInstalacao = projetos.filter(p => ["aprovado", "instalacao_agendada"].includes(p.status)).length;
+  const aguardandoVistoria = projetos.filter(p => ["sistema_instalado", "vistoria_solicitada", "aguardando_vistoria"].includes(p.status)).length;
   const canConfirmPayment = user?.role === "admin" || user?.role === "financeiro";
   const prePagas = preProjetos.filter(p => p.status === "aguardando_pagamento").length;
   const aguardandoKitConfirmacao = projetos.filter(p => p.status === "pago_projeto_iniciado" && !p.equipamentos_confirmados);
