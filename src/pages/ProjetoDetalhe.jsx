@@ -554,7 +554,6 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
         )}
       </div>
     </div>
-    </div>
   );
 }
 
