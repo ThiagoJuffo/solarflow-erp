@@ -66,6 +66,8 @@ export default function Dashboard() {
     { label: "Em Andamento", value: emAndamento, icon: TrendingUp, color: "from-amber-500 to-amber-600" },
     { label: "Concluídos", value: concluidos, icon: CheckCircle, color: "from-emerald-500 to-emerald-600" },
     { label: "Aguard. Aprovação EDP", value: aguardandoAprovacao, icon: Clock, color: "from-violet-500 to-violet-600" },
+    { label: "Aguard. Instalação", value: aguardandoInstalacao, icon: Zap, color: "from-orange-500 to-orange-600" },
+    { label: "Aguard. Vistoria", value: aguardandoVistoria, icon: Sun, color: "from-sky-500 to-sky-600" },
   ];
 
   return (
