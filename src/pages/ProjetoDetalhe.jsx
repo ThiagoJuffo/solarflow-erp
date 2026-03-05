@@ -310,8 +310,8 @@ export default function ProjetoDetalhe() {
                     </div>
                     <div>
                       <p className="text-slate-400 text-xs mb-1">Envio de Créditos</p>
-                      <span className={`text-xs px-2 py-1 rounded-lg ${projeto.envio_creditos ? "bg-amber-400/10 text-amber-400" : "bg-slate-800 text-slate-400"}`}>
-                        {projeto.envio_creditos ? "Sim" : "Não"}
+                      <span className={`text-xs px-2 py-1 rounded-lg ${(preProjeto?.envio_creditos || projeto.envio_creditos) ? "bg-amber-400/10 text-amber-400" : "bg-slate-800 text-slate-400"}`}>
+                        {(preProjeto?.envio_creditos || projeto.envio_creditos) ? "Sim" : "Não"}
                       </span>
                     </div>
                   </div>
