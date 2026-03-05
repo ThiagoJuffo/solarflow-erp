@@ -398,9 +398,8 @@ Retorne apenas o JSON.`;
           {/* Infraestrutura */}
           <div className="space-y-3">
             <p className="text-amber-400 text-xs font-semibold uppercase tracking-wide">Infraestrutura Elétrica</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {[
-                { label: "Modificação de padrão?", key: "modificacao_padrao" },
                 { label: "Aumento de carga?", key: "aumento_carga" },
                 { label: "Vai usar transformador?", key: "usar_transformador" },
               ].map(f => (
