@@ -336,8 +336,14 @@ Retorne apenas o JSON.`;
               </div>
               <div>
                 <label className="text-slate-400 text-xs font-medium block mb-1.5">Marca e Modelo do Inversor *</label>
-                <input value={form.inversor_marca_modelo || ""} onChange={e => set("inversor_marca_modelo", e.target.value)} placeholder="ex: Growatt MIN 5000TL-X"
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors" />
+                <select value={form.inversor_marca_modelo || ""} onChange={e => set("inversor_marca_modelo", e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors">
+                  <option value="">Selecionar inversor...</option>
+                  {inversores.map(p => (
+                    <option key={p.id} value={`${p.fabricante} ${p.modelo}`}>{p.fabricante} {p.modelo}{p.potencia_kva ? ` — ${p.potencia_kva} kVA` : ""}</option>
+                  ))}
+                  {inversores.length === 0 && <option disabled>Nenhum inversor cadastrado na biblioteca</option>}
+                </select>
               </div>
               <div>
                 <label className="text-slate-400 text-xs font-medium block mb-1.5">Quantidade de Inversores *</label>
@@ -346,8 +352,14 @@ Retorne apenas o JSON.`;
               </div>
               <div>
                 <label className="text-slate-400 text-xs font-medium block mb-1.5">Marca e Modelo dos Módulos *</label>
-                <input value={form.modulo_marca_modelo || ""} onChange={e => set("modulo_marca_modelo", e.target.value)} placeholder="ex: Canadian Solar CS6R-405MS"
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors" />
+                <select value={form.modulo_marca_modelo || ""} onChange={e => set("modulo_marca_modelo", e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors">
+                  <option value="">Selecionar módulo...</option>
+                  {modulos.map(p => (
+                    <option key={p.id} value={`${p.fabricante} ${p.modelo}`}>{p.fabricante} {p.modelo}{p.potencia_wp ? ` — ${p.potencia_wp} Wp` : ""}</option>
+                  ))}
+                  {modulos.length === 0 && <option disabled>Nenhum módulo cadastrado na biblioteca</option>}
+                </select>
               </div>
               <div>
                 <label className="text-slate-400 text-xs font-medium block mb-1.5">Quantidade de Módulos *</label>
