@@ -132,6 +132,15 @@ export default function ProjetoDetalhe() {
   const canEdit = user?.role === "admin" || user?.role === "engenharia";
   const canEditFinancial = user?.role === "admin" || user?.role === "financeiro";
   const canSeePassword = user?.role === "admin";
+  const canConfirmarEquipamentos = user?.role === "admin" || user?.role === "financeiro" || user?.role === "suprimentos";
+
+  const confirmarEquipamentos = async () => {
+    await updateProjeto({
+      equipamentos_confirmados: true,
+      equipamentos_confirmados_por: user?.email,
+      equipamentos_confirmados_em: new Date().toISOString()
+    });
+  };
 
   return (
     <div className="flex flex-col h-full">
