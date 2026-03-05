@@ -153,7 +153,7 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
              </button>
 
              {expandido === p.id && (
-               <div className="bg-slate-800 rounded-xl p-4 space-y-3 ml-2 border-l-2 border-amber-500/30">
+               <div className="bg-slate-800 rounded-xl p-4 space-y-3">
                  <p className="text-slate-400 text-xs font-semibold">Alterar Status</p>
                  {!editandoStatus[p.id] ? (
                    <div className="flex flex-wrap gap-2">
