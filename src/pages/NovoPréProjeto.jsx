@@ -658,6 +658,7 @@ Retorne apenas o JSON.`;
                   { label: "Tipo de Ligação", key: "tipo_ligacao" },
                   { label: "Endereço UC", key: "endereco" },
                   { label: "Cidade / UF", key: "cidade" },
+                  { label: "CEP", key: "cep" },
                 ].map(f => (
                   <div key={f.key} className="bg-slate-800 rounded-xl p-3">
                     <p className="text-slate-400 text-xs mb-1 flex items-center">
