@@ -510,7 +510,7 @@ Retorne apenas o JSON.`;
 
           <button
             onClick={() => setStep(1)}
-            disabled={!form.nome_cliente || !form.cpf || !form.telefone || !form.valor_projeto || !form.forma_pagamento || !form.kwh_prometidos || !form.inversor_marca_modelo || !form.modulo_marca_modelo || !form.tipo_telhado}
+            disabled={!form.nome_cliente || !form.cpf || !form.telefone || !form.valor_projeto || !form.forma_pagamento || !form.kwh_prometidos || !(form.inversores?.some(i => i.marca_modelo)) || !form.modulo_marca_modelo || !form.tipo_telhado}
             className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
           >
             Próximo <ChevronRight size={16} />
