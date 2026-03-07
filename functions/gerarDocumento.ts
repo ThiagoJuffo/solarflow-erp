@@ -386,7 +386,7 @@ ${(() => {
   <tr><th colspan="2" style="background-color:#00b050;color:#fff;font-weight:bold;text-align:center;">Estimativa de geração e Considerações Gerais</th></tr>
   <tr><td style="background-color:#00b050;color:#fff;">Potência instalada do circuito DC (<u>kWp</u>)</td><td>${potKwp}</td></tr>
   <tr><td style="background-color:#00b050;color:#fff;">Potência instalada do circuito AC (kW)</td><td>${potInversorKw}</td></tr>
-  <tr><td style="background-color:#00b050;color:#fff;">Hora de Sol Pico</td><td></td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Hora de Sol Pico</td><td>${(() => { const kwp = parseFloat(potKwp); return (kwhMedio && kwp) ? (kwhMedio / kwp / 30).toFixed(2) + " h" : "—"; })()}</td></tr>
   <tr><td style="background-color:#00b050;color:#fff;">Estimativa de geração média mensal (kWh/Mês)</td><td>${kwhMedio || "—"}</td></tr>
 </table>
 
