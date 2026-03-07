@@ -267,11 +267,27 @@ function gerarMemorial({ projeto, uc, rt, RESP_TECNICO, CREA, RESP_ENDERECO, RES
 </html>`;
 }
 
-function gerarSolicitacaoART({ projeto, uc, rt, dataExtenso }) {
-  const potKwp = rt.potencia_kwp || "—";
-  const potInversor = rt.potencia_kva || "—";
-  const potGeracao = Math.min(Number(potKwp) || 0, Number(potInversor) || 0) || "—";
-  const kit = rt.arranjo_descricao || `${rt.quantidade_modulos || "?"} módulos ${rt.modulo_descricao || ""} + ${rt.inversor_descricao || ""}`;
+function gerarSolicitacaoART({ projeto, uc, rt, preProjeto, moduloProduto, inversorProduto, dataExtenso }) {
+  // Potência das placas em kWp: calculada a partir dos módulos
+  const qtdModulos = preProjeto?.modulo_quantidade || rt.quantidade_modulos || 0;
+  const potWpModulo = moduloProduto?.potencia_wp || 0;
+  const potKwpCalculado = (qtdModulos && potWpModulo) ? ((potWpModulo * qtdModulos) / 1000).toFixed(2) : null;
+  const potKwp = potKwpCalculado || rt.potencia_kwp || preProjeto?.potencia_pico_kwp || "—";
+
+  // Potência do inversor em kW (potencia_ac_w em W → kW, ou potencia_kva)
+  const potInversorKw = inversorProduto?.potencia_ac_w
+    ? (inversorProduto.potencia_ac_w / 1000).toFixed(2)
+    : inversorProduto?.potencia_kva || rt.potencia_kva || "—";
+  const potInversor = potInversorKw;
+
+  // Potência de geração = menor entre os dois
+  const numKwp = parseFloat(potKwp) || 0;
+  const numInv = parseFloat(potInversor) || 0;
+  const potGeracao = (numKwp && numInv) ? Math.min(numKwp, numInv).toFixed(2) : "—";
+
+  const modDesc = preProjeto?.modulo_marca_modelo || rt.modulo_descricao || "";
+  const invDesc = preProjeto?.inversor_marca_modelo || rt.inversor_descricao || "";
+  const kit = rt.arranjo_descricao || `${qtdModulos || "?"} módulos ${modDesc} + ${invDesc}`;
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
