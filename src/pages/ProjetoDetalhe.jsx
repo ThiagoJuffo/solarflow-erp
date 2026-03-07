@@ -629,19 +629,21 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
             { label: "Cidade", key: "cidade" },
             { label: "Estado (UF)", key: "estado" },
             { label: "CEP", key: "cep" },
-          { label: "Latitude", key: "latitude", type: "number" },
-          { label: "Longitude", key: "longitude", type: "number" },
-          ].map(f => (
+            { label: "Latitude", key: "latitude", type: "number" },
+            { label: "Longitude", key: "longitude", type: "number" },
+            ].map(f => (
             <div key={f.key}>
               <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
               <input
-                value={ucForm[f.key] || ""}
-                onChange={e => setUcForm(p => ({ ...p, [f.key]: e.target.value }))}
+                type={f.type || "text"}
+                value={ucForm[f.key] ?? ""}
+                onChange={e => setUcForm(p => ({ ...p, [f.key]: f.type === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value }))}
                 disabled={!canEdit}
-                className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500"
+                placeholder={f.key === "latitude" ? "ex: -20.277672" : f.key === "longitude" ? "ex: -40.406445" : ""}
+                className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500 placeholder-slate-600"
               />
             </div>
-          ))}
+            ))}
           <div>
             <label className="text-slate-400 text-xs mb-1.5 block">Tipo de Ligação</label>
             <select
