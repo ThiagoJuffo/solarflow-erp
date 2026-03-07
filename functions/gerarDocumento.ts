@@ -217,7 +217,8 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
   const dataInstalacaoObj = new Date(hoje.getTime() + 60 * 24 * 60 * 60 * 1000);
   const dataInstalacaoFormatada = dataInstalacaoObj.toLocaleDateString("pt-BR");
   const dataInstalacao = rt.data_prevista_instalacao ? new Date(rt.data_prevista_instalacao + "T12:00:00").toLocaleDateString("pt-BR") : dataInstalacaoFormatada;
-  const dataComissionamento = rt.data_prevista_comissionamento ? new Date(rt.data_prevista_comissionamento + "T12:00:00").toLocaleDateString("pt-BR") : "—";
+  const dataComissionamentoObj = new Date(hoje.getTime() + 65 * 24 * 60 * 60 * 1000);
+  const dataComissionamento = rt.data_prevista_comissionamento ? new Date(rt.data_prevista_comissionamento + "T12:00:00").toLocaleDateString("pt-BR") : dataComissionamentoObj.toLocaleDateString("pt-BR");
 
   const nomeCliente = projeto.nome_cliente;
   const cpfCliente = projeto.cpf;
