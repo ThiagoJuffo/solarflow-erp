@@ -12,6 +12,7 @@ export default function NovoPréProjeto() {
   const [saving, setSaving] = useState(false);
   const [concluido, setConcluido] = useState(false);
   const [extracting, setExtracting] = useState(false);
+  const [extractAbortController, setExtractAbortController] = useState(null);
 
   const [form, setForm] = useState({
     nome_cliente: "",
