@@ -264,7 +264,7 @@ export default function Projetos() {
                       </span>
                     )}
                     {item._tipo === "projeto" && (() => {
-                      const faltando = getItensFaltando(documentosPorProjeto[item.id] || []);
+                      const faltando = getItensFaltando(documentosPorProjeto[item.id] || [], inmetroPorProjeto[item.id] || false);
                       if (faltando.length === 0) return null;
                       return (
                         <span
