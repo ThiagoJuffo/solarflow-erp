@@ -597,10 +597,18 @@ Retorne apenas o JSON.`;
           )}
 
           {extracting && (
-            <div className="text-center py-8">
-              <Loader2 size={36} className="text-amber-400 animate-spin mx-auto mb-4" />
-              <p className="text-white font-semibold">Analisando documentos...</p>
-              <p className="text-slate-400 text-sm mt-1">Isso pode levar alguns segundos</p>
+            <div className="text-center py-8 space-y-4">
+              <Loader2 size={36} className="text-amber-400 animate-spin mx-auto" />
+              <div>
+                <p className="text-white font-semibold">Analisando documentos...</p>
+                <p className="text-slate-400 text-sm mt-1">Isso pode levar alguns segundos</p>
+              </div>
+              <button
+                onClick={handleCancelarExtracao}
+                className="inline-flex items-center gap-2 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-4 py-2 rounded-lg transition-all"
+              >
+                ✕ Cancelar análise
+              </button>
             </div>
           )}
 
