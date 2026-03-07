@@ -614,6 +614,9 @@ Retorne apenas o JSON.`;
 
           {extraido && (
             <div className="space-y-4">
+              <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-xl px-3 py-2">
+                <span className="text-blue-400 text-xs">✏️ Os campos abaixo são editáveis — corrija qualquer informação antes de prosseguir.</span>
+              </div>
               {cpfMismatch && (
                 <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 space-y-4">
                   <div className="flex items-start gap-3">
