@@ -166,8 +166,10 @@ Retorne apenas o JSON.`;
       forma_pagamento: form.forma_pagamento,
       potencia_pico_kwp: form.potencia_pico_kwp ? Number(form.potencia_pico_kwp) : null,
       kwh_prometidos: form.kwh_prometidos ? Number(form.kwh_prometidos) : null,
-      inversor_marca_modelo: form.inversor_marca_modelo,
-      inversor_quantidade: form.inversor_quantidade ? Number(form.inversor_quantidade) : null,
+      inversores: (form.inversores || []).filter(i => i.marca_modelo).map(i => ({ marca_modelo: i.marca_modelo, quantidade: Number(i.quantidade) || 1 })),
+      // campos legado para compatibilidade
+      inversor_marca_modelo: form.inversores?.[0]?.marca_modelo || "",
+      inversor_quantidade: form.inversores?.[0]?.quantidade ? Number(form.inversores[0].quantidade) : null,
       modulo_marca_modelo: form.modulo_marca_modelo,
       modulo_quantidade: form.modulo_quantidade ? Number(form.modulo_quantidade) : null,
       tipo_telhado: form.tipo_telhado,
