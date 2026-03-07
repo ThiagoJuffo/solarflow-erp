@@ -45,12 +45,25 @@ Deno.serve(async (req) => {
     } catch (_e) {}
   }
 
-  // Buscar produto do inversor para obter potência AC
-  let inversorProduto = null;
-  if (preProjeto?.inversor_marca_modelo) {
+  // Buscar produtos dos inversores (suporta múltiplos modelos)
+  let inversorProdutos = []; // array de { produto, quantidade }
+  let inversorProduto = null; // legado: primeiro inversor
+  {
     try {
-      const produtos = await base44.asServiceRole.entities.Produto.filter({ ativo: true });
-      inversorProduto = produtos.find(p => `${p.fabricante} ${p.modelo}` === preProjeto.inversor_marca_modelo) || null;
+      const todosProdutos = await base44.asServiceRole.entities.Produto.filter({ ativo: true });
+      // Suporte ao novo campo "inversores" (array)
+      const inversoresArr = preProjeto?.inversores?.length
+        ? preProjeto.inversores
+        : preProjeto?.inversor_marca_modelo
+          ? [{ marca_modelo: preProjeto.inversor_marca_modelo, quantidade: preProjeto?.inversor_quantidade || 1 }]
+          : [];
+
+      inversorProdutos = inversoresArr.map(inv => ({
+        produto: todosProdutos.find(p => `${p.fabricante} ${p.modelo}` === inv.marca_modelo) || null,
+        marca_modelo: inv.marca_modelo,
+        quantidade: Number(inv.quantidade) || 1,
+      }));
+      inversorProduto = inversorProdutos[0]?.produto || null;
     } catch (_e) {}
   }
 
