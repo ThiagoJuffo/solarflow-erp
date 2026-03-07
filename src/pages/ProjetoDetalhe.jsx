@@ -391,9 +391,13 @@ export default function ProjetoDetalhe() {
 function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, projeto, canConfirmarEquipamentos, onConfirmarEquipamentos }) {
   const [produtos, setProdutos] = useState([]);
   const [editandoEq, setEditandoEq] = useState(false);
+  const getInversoresIniciais = (pp) => {
+    if (pp?.inversores?.length) return pp.inversores.map(i => ({ marca_modelo: i.marca_modelo, quantidade: i.quantidade }));
+    if (pp?.inversor_marca_modelo) return [{ marca_modelo: pp.inversor_marca_modelo, quantidade: pp.inversor_quantidade || 1 }];
+    return [{ marca_modelo: "", quantidade: 1 }];
+  };
   const [eqForm, setEqForm] = useState({
-    inversor_marca_modelo: preProjeto?.inversor_marca_modelo || "",
-    inversor_quantidade: preProjeto?.inversor_quantidade || "",
+    inversores: getInversoresIniciais(preProjeto),
     modulo_marca_modelo: preProjeto?.modulo_marca_modelo || "",
     modulo_quantidade: preProjeto?.modulo_quantidade || "",
     potencia_pico_kwp: preProjeto?.potencia_pico_kwp || "",
