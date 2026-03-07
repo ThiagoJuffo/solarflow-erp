@@ -276,14 +276,18 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
 
 <h2>3. Dados Preliminares</h2>
 <table>
-  <tr><th colspan="2">Resumo do Sistema – <strong>${nomeCliente}</strong></th></tr>
-  <tr><td>Potência-pico do Sistema Fotovoltaico (kWp)</td><td>${potKwp} kWp</td></tr>
-  <tr><td>Módulos Fotovoltaicos</td><td>${modDescricao}</td></tr>
-  <tr><td>Quantidade Total de Módulos</td><td>${qtdModulos}</td></tr>
-  <tr><td>Inversor(es)</td><td>${invDescricao}</td></tr>
-  <tr><td>Potência Total dos Inversores</td><td>${potInversorKw}</td></tr>
-  <tr><td>Data de Instalação (Previsão)</td><td>${dataInstalacao}</td></tr>
-  <tr><td>Data de Comissionamento (Previsão)</td><td>${dataComissionamento}</td></tr>
+  <tr><th colspan="2" style="background-color:#00b050;color:#fff;font-weight:bold;text-align:center;">Nome para Registro:<br/>${nomeCliente}</th></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Potência-pico do Sistema Fotovoltaico conectado à rede (kWp)</td><td>${potKwp}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Fabricante dos módulos</td><td>${moduloProduto?.fabricante || "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Modelo dos módulos</td><td>${moduloProduto?.modelo || modDescricao}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Tecnologia dos módulos</td><td>Silício Monocristalino</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Quantidade Total de módulos fotovoltaicos</td><td>${qtdModulos}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Fabricante do(s) Inversor(es)</td><td>${inversoresArr.map(inv => inv.produto?.fabricante || inv.marca_modelo.split(" ")[0]).join(" / ") || "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Modelo do(s) Inversor(es)</td><td>${inversoresArr.map(inv => inv.produto?.modelo || inv.marca_modelo).join(" / ") || "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Potência Nominal Total do(s) Inversor(es) (kW)</td><td>${potInversorKw}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Quantidade de Inversores</td><td>${inversoresArr.reduce((sum, inv) => sum + inv.quantidade, 0) || "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Data de Instalação (Previsão)</td><td>${dataInstalacao}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Data de Comissionamento (Previsão)</td><td>${dataComissionamento}</td></tr>
 </table>
 
 <h3>3.1 Identificação do Proprietário e Local de Instalação</h3>
