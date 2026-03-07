@@ -26,6 +26,7 @@ const STATUS_LABELS = {
 export default function Dashboard() {
   const [projetos, setProjetos] = useState([]);
   const [preProjetos, setPreProjetos] = useState([]);
+  const [ucsPorProjeto, setUcsPorProjeto] = useState({});
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
 
@@ -33,11 +34,15 @@ export default function Dashboard() {
     Promise.all([
       base44.entities.Projeto.list("-created_date", 100),
       base44.entities.PreProjeto.list("-created_date", 50),
+      base44.entities.UC.list("-created_date", 200),
       base44.auth.me()
-    ]).then(([p, pp, u]) => {
+    ]).then(([p, pp, ucs, u]) => {
       setProjetos(p);
       setPreProjetos(pp);
       setUser(u);
+      const grouped = {};
+      ucs.forEach(uc => { if (uc.projeto_id) grouped[uc.projeto_id] = uc; });
+      setUcsPorProjeto(grouped);
       setLoading(false);
     });
   }, []);
