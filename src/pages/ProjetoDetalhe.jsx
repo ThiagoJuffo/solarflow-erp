@@ -928,20 +928,33 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
                   )}
                   {canEdit && (
                     <>
-                      <label className="cursor-pointer">
-                        <span className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1">
-                          {uploading === tipo.key ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                          {doc ? "Substituir PDF" : "Upload PDF"}
-                        </span>
-                        <input type="file" className="hidden" accept=".pdf,image/*" onChange={e => e.target.files[0] && handleUpload(tipo.key, e.target.files[0])} />
-                      </label>
-                      {doc && doc.status !== "assinado" && (
+                      {UPLOAD_DIRETO_ASSINADO.includes(tipo.key) ? (
+                        // Para tipos que vão direto para assinado (ex: Projeto Unifilar)
                         <label className="cursor-pointer">
                           <span className="text-xs bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1">
-                            <CheckCircle size={12} /> Upload assinado
+                            {uploading === tipo.key ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                            {doc ? "Substituir PDF" : "Upload PDF"}
                           </span>
-                          <input type="file" className="hidden" accept=".pdf,image/*" onChange={e => e.target.files[0] && handleUpload(tipo.key, e.target.files[0], true)} />
+                          <input type="file" className="hidden" accept=".pdf,image/*" onChange={e => e.target.files[0] && handleUpload(tipo.key, e.target.files[0])} />
                         </label>
+                      ) : (
+                        <>
+                          <label className="cursor-pointer">
+                            <span className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1">
+                              {uploading === tipo.key ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                              {doc ? "Substituir PDF" : "Upload PDF"}
+                            </span>
+                            <input type="file" className="hidden" accept=".pdf,image/*" onChange={e => e.target.files[0] && handleUpload(tipo.key, e.target.files[0])} />
+                          </label>
+                          {doc && doc.status !== "assinado" && (
+                            <label className="cursor-pointer">
+                              <span className="text-xs bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1">
+                                <CheckCircle size={12} /> Upload assinado
+                              </span>
+                              <input type="file" className="hidden" accept=".pdf,image/*" onChange={e => e.target.files[0] && handleUpload(tipo.key, e.target.files[0], true)} />
+                            </label>
+                          )}
+                        </>
                       )}
                     </>
                   )}
