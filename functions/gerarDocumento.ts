@@ -155,6 +155,14 @@ function gerarProcuracao({ projeto, uc, rt, RESP_TECNICO, RESP_CPF, RESP_RG, RES
 </html>`;
 }
 
+// Fatores mensais de irradiação (% relativa à média anual) para ES/Serra
+const FATORES_MENSAIS = {
+  Jan: 1.1491, Fev: 1.1014, Mar: 1.1068,
+  Abr: 0.9964, Mai: 0.9840, Jun: 0.8471,
+  Jul: 0.9134, Ago: 1.0152, Set: 0.8919,
+  Out: 1.0296, Nov: 0.9154, Dez: 1.0496
+};
+
 function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorProdutos, RESP_TECNICO, CREA, RESP_ENDERECO, RESP_TELEFONE, RESP_EMAIL, dataExtenso, cidade, estado, EMPRESA }) {
   // --- Dados dos equipamentos (prioridade: produto cadastrado > preProjeto > rt) ---
   const qtdModulos = preProjeto?.modulo_quantidade || rt.quantidade_modulos || "—";
