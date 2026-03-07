@@ -694,12 +694,19 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
             </div>
           </div>
 
-          {/* Inversor - espelhado dos equipamentos confirmados */}
+          {/* Inversores - espelhado dos equipamentos confirmados */}
           <div>
-            <label className="text-slate-400 text-xs mb-1.5 block">Inversor</label>
-            <div className="w-full bg-slate-800/50 border border-slate-700 text-slate-300 rounded-xl px-3 py-2 text-sm opacity-70 cursor-not-allowed">
-              {preProjeto?.inversor_marca_modelo || "Não definido"}
-              {preProjeto?.inversor_quantidade ? ` — ${preProjeto.inversor_quantidade} un.` : ""}
+            <label className="text-slate-400 text-xs mb-1.5 block">Inversores</label>
+            <div className="w-full bg-slate-800/50 border border-slate-700 text-slate-300 rounded-xl px-3 py-2 text-sm opacity-70 cursor-not-allowed space-y-1">
+              {(preProjeto?.inversores?.length
+                ? preProjeto.inversores
+                : preProjeto?.inversor_marca_modelo
+                  ? [{ marca_modelo: preProjeto.inversor_marca_modelo, quantidade: preProjeto.inversor_quantidade }]
+                  : []
+              ).map((inv, i) => (
+                <div key={i}>{inv.marca_modelo || "—"} — {inv.quantidade || "?"} un.</div>
+              ))}
+              {!preProjeto?.inversores?.length && !preProjeto?.inversor_marca_modelo && "Não definido"}
             </div>
           </div>
 
