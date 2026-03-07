@@ -155,11 +155,53 @@ function gerarProcuracao({ projeto, uc, rt, RESP_TECNICO, RESP_CPF, RESP_RG, RES
 </html>`;
 }
 
-function gerarMemorial({ projeto, uc, rt, RESP_TECNICO, CREA, RESP_ENDERECO, RESP_TELEFONE, RESP_EMAIL, dataExtenso, cidade, estado, EMPRESA }) {
-  const potKwp = rt.potencia_kwp || "—";
-  const qtdModulos = rt.quantidade_modulos || "—";
-  const modDescricao = rt.modulo_descricao || "—";
-  const invDescricao = rt.inversor_descricao || "—";
+function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorProdutos, RESP_TECNICO, CREA, RESP_ENDERECO, RESP_TELEFONE, RESP_EMAIL, dataExtenso, cidade, estado, EMPRESA }) {
+  // --- Dados dos equipamentos (prioridade: produto cadastrado > preProjeto > rt) ---
+  const qtdModulos = preProjeto?.modulo_quantidade || rt.quantidade_modulos || "—";
+  const modDescricao = preProjeto?.modulo_marca_modelo || rt.modulo_descricao || "—";
+
+  // Potência em kWp calculada a partir dos módulos
+  const potWpModulo = moduloProduto?.potencia_wp || 0;
+  const potKwpCalculado = (potWpModulo && preProjeto?.modulo_quantidade)
+    ? ((potWpModulo * preProjeto.modulo_quantidade) / 1000).toFixed(2)
+    : null;
+  const potKwp = potKwpCalculado || rt.potencia_kwp || preProjeto?.potencia_pico_kwp || "—";
+
+  // Dados do módulo da biblioteca de produtos
+  const modPotencia = moduloProduto?.potencia_wp ? `${moduloProduto.potencia_wp} Wp` : "—";
+  const modVmp = moduloProduto?.vmp ? `${moduloProduto.vmp} V` : "—";
+  const modImp = moduloProduto?.imp ? `${moduloProduto.imp} A` : "—";
+  const modVoc = moduloProduto?.voc ? `${moduloProduto.voc} V` : "—";
+  const modIsc = moduloProduto?.isc ? `${moduloProduto.isc} A` : "—";
+  const modEficiencia = moduloProduto?.eficiencia_modulo ? `${moduloProduto.eficiencia_modulo}%` : "—";
+  const modArea = moduloProduto?.area_m2 ? `${moduloProduto.area_m2} m²` : "—";
+  const modCoefTemp = moduloProduto?.coef_temperatura || "—";
+  const modFusivel = moduloProduto?.corrente_max_fusivel_a ? `${moduloProduto.corrente_max_fusivel_a} A` : "—";
+  const modGarantia = moduloProduto?.garantia_anos ? `${moduloProduto.garantia_anos} anos` : "—";
+  const modInmetro = moduloProduto?.inmetro_numero || "—";
+
+  // Inversores
+  const inversoresArr = inversorProdutos.length ? inversorProdutos : [];
+  let invDescricao = "—";
+  if (inversoresArr.length > 0) {
+    invDescricao = inversoresArr.map(inv => `${inv.quantidade}x ${inv.marca_modelo}`).join(" + ");
+  } else if (preProjeto?.inversor_marca_modelo) {
+    invDescricao = preProjeto.inversor_marca_modelo;
+  } else {
+    invDescricao = rt.inversor_descricao || "—";
+  }
+
+  // Potência total dos inversores
+  let potInversorTotal = 0;
+  for (const inv of inversoresArr) {
+    const potUnit = inv.produto?.potencia_ac_w
+      ? inv.produto.potencia_ac_w / 1000
+      : inv.produto?.potencia_kva || 0;
+    potInversorTotal += potUnit * inv.quantidade;
+  }
+  const potInversorKw = potInversorTotal > 0 ? `${potInversorTotal.toFixed(2)} kW` : "—";
+
+  // Strings e arranjo
   const numStrings = rt.num_strings || "—";
   const modPorString = rt.modulos_por_string || "—";
   const artNumero = rt.art_numero || "—";
