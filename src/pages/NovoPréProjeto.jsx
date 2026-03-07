@@ -95,6 +95,11 @@ export default function NovoPréProjeto() {
     setDocFotoUrl(url);
   };
 
+  const handleCancelarExtracao = () => {
+    setExtracting(false);
+    setExtractAbortController(null);
+  };
+
   const handleExtrair = async () => {
     setExtracting(true);
     try {
