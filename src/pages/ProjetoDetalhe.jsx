@@ -751,8 +751,6 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
 
           {[
             { label: "ART Nº", key: "art_numero" },
-            { label: "Responsável Técnico", key: "responsavel_tecnico" },
-            { label: "CREA", key: "crea_responsavel" },
           ].map(f => (
             <div key={f.key}>
               <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
