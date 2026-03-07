@@ -302,7 +302,7 @@ export default function ProjetoDetalhe() {
                     </div>
                     <div>
                       <p className="text-slate-400 text-xs mb-1">UC Geradora</p>
-                      <p className="text-white text-sm">{projeto.uc_geradora || uc?.numero_uc || "—"}</p>
+                      <p className="text-white text-sm">{uc?.numero_uc || projeto.uc_geradora || "—"}</p>
                     </div>
                     <div>
                       <p className="text-slate-400 text-xs mb-1">Data Pagamento</p>
