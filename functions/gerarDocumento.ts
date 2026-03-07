@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
   }
 
   if (!projetoData) return Response.json({ error: 'Projeto não encontrado' }, { status: 404 });
-  const projeto = projetoData;
+  projeto = projetoData;
 
   // Responsável técnico fixo (configurável no futuro)
   const RESP_TECNICO = rt.responsavel_tecnico || "Thiago Fernandes Juffo Fontes";
