@@ -322,18 +322,20 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
 
 <h3>4.1 Módulo Fotovoltaico – ${modDescricao}</h3>
 <table>
-  <tr><th colspan="2">Dados Elétricos – ${modDescricao}</th></tr>
-  <tr><td>Potência de Pico (Ppeak)</td><td>${modPotencia}</td></tr>
-  <tr><td>Tensão de Funcionamento Ótimo (Vmp)</td><td>${modVmp}</td></tr>
-  <tr><td>Corrente de Funcionamento Ótimo (Imp)</td><td>${modImp}</td></tr>
-  <tr><td>Tensão em Circuito Aberto (Voc)</td><td>${modVoc}</td></tr>
-  <tr><td>Corrente de Curto-Circuito (Isc)</td><td>${modIsc}</td></tr>
-  <tr><td>Eficiência do Módulo</td><td>${modEficiencia}</td></tr>
-  <tr><td>Área do Módulo</td><td>${modArea}</td></tr>
-  <tr><td>Corrente Máxima por Fusível em Série</td><td>${modFusivel}</td></tr>
-  <tr><td>Coeficiente de Temperatura</td><td>${modCoefTemp}</td></tr>
-  <tr><td>Certificado INMETRO Nº</td><td>${modInmetro}</td></tr>
-  <tr><td>Garantia</td><td>${modGarantia}</td></tr>
+  <tr><th colspan="3" style="background-color:#00b050;color:#fff;font-weight:bold;text-align:center;">Características Elétricas - Modelos Fotovoltaicos</th></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Fabricante</td><td>${moduloProduto?.fabricante || "—"}</td><td></td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Modelo</td><td>${moduloProduto?.modelo || modDescricao}</td><td></td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Tensão de funcionamento Ótima (<u>Vmp</u>)</td><td>${moduloProduto?.vmp || "—"}</td><td>V</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Corrente de funcionamento Ótima (<u>Imp</u>)</td><td>${moduloProduto?.imp || "—"}</td><td>A</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Tensão em circuito aberto (<u>Voc</u>)</td><td>${moduloProduto?.voc || "—"}</td><td>V</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Corrente de curto-circuito (<u>Isc</u>)</td><td>${moduloProduto?.isc || "—"}</td><td>A</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Potência máxima (<u>Pmax</u>) em condições de teste padrão</td><td>${moduloProduto?.potencia_wp || "—"}</td><td>Wp</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Eficiência do módulo</td><td>${moduloProduto?.eficiencia_modulo || moduloProduto?.eficiencia || "—"}</td><td></td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Corrente máxima por fusível em série</td><td>${moduloProduto?.corrente_max_fusivel_a || "—"}</td><td>A</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Coeficiente de temperatura</td><td colspan="2"></td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;"><u>Ppeak</u></td><td>${moduloProduto?.coef_temperatura || "—"}</td><td>/C°</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;"><u>Voc</u></td><td></td><td>/C°</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;"><u>Isc</u></td><td></td><td>/C°</td></tr>
 </table>
 
 <h3>4.2 Inversor(es)</h3>
