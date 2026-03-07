@@ -2,7 +2,25 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Sun, ChevronRight, Search, CheckCircle, Clock, Zap, X, Lock, Package, Trash2 } from "lucide-react";
+import { Sun, ChevronRight, Search, CheckCircle, Clock, Zap, X, Lock, Package, Trash2, AlertTriangle } from "lucide-react";
+
+const CHECKLIST_OBRIGATORIOS = [
+  { key: "procuracao", label: "Procuração" },
+  { key: "art", label: "ART" },
+  { key: "memorial_tecnico", label: "Memorial Técnico" },
+  { key: "inmetro", label: "INMETRO" },
+  { key: "projeto_unifilar", label: "Unifilar" },
+];
+
+// Retorna lista de labels dos itens obrigatórios faltando
+const getItensFaltando = (documentos = []) => {
+  return CHECKLIST_OBRIGATORIOS.filter(item => {
+    const tipos = item.key === "art" ? ["art", "solicitacao_art"] : [item.key];
+    const doc = documentos.find(d => tipos.includes(d.tipo));
+    const ok = doc && (doc.status === "assinado" || doc.status === "nao_aplicavel");
+    return !ok;
+  }).map(item => item.label);
+};
 
 const STATUS_LABELS = {
   rascunho: "Rascunho",
