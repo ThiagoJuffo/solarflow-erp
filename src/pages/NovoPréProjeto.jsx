@@ -434,7 +434,6 @@ Retorne apenas o JSON.`;
               </div>
             </div>
           </div>
-          </div>
 
           {/* Infraestrutura */}
           <div className="space-y-3">
