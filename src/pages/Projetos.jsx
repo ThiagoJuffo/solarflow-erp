@@ -69,14 +69,16 @@ export default function Projetos() {
   const [user, setUser] = useState(null);
   const [avisoSemPermissao, setAvisoSemPermissao] = useState(false);
   const [documentosPorProjeto, setDocumentosPorProjeto] = useState({});
+  const [inmetroPorProjeto, setInmetroPorProjeto] = useState({});
 
   useEffect(() => {
     Promise.all([
       base44.entities.Projeto.list("-created_date", 200),
       base44.entities.PreProjeto.list("-created_date", 100),
       base44.entities.Documento.list("-created_date", 1000),
+      base44.entities.Produto.filter({ ativo: true }),
       base44.auth.me()
-    ]).then(([p, pp, docs, u]) => {
+    ]).then(([p, pp, docs, produtos, u]) => {
       setProjetos(p);
       setPreProjetos(pp);
       setUser(u);
@@ -87,6 +89,22 @@ export default function Projetos() {
         grouped[d.projeto_id].push(d);
       });
       setDocumentosPorProjeto(grouped);
+      // Calcular temInmetro por projeto
+      const ppMap = {};
+      pp.forEach(pre => { ppMap[pre.id] = pre; });
+      const inmetroMap = {};
+      p.forEach(proj => {
+        const docInmetro = (grouped[proj.id] || []).some(d => d.tipo === "inmetro" && (d.url_gerado || d.url_assinado));
+        if (docInmetro) { inmetroMap[proj.id] = true; return; }
+        const pre = ppMap[proj.pre_projeto_id];
+        if (pre?.inversor_marca_modelo) {
+          const inv = produtos.find(prod => `${prod.fabricante} ${prod.modelo}` === pre.inversor_marca_modelo);
+          inmetroMap[proj.id] = !!(inv?.inmetro_url);
+        } else {
+          inmetroMap[proj.id] = false;
+        }
+      });
+      setInmetroPorProjeto(inmetroMap);
       setLoading(false);
     });
   }, []);
