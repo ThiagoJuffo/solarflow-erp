@@ -683,7 +683,7 @@ Retorne apenas o JSON.`;
                       <ScoreIndicator score={extraido.score_confianca?.[f.key]} />
                     </p>
                     <input
-                      className="w-full bg-transparent text-white text-sm focus:outline-none"
+                      className="w-full bg-transparent text-white text-sm focus:outline-none border-b border-transparent focus:border-amber-500 transition-colors pb-0.5"
                       value={extraido[f.key] || ""}
                       onChange={e => setExtraido(prev => ({ ...prev, [f.key]: e.target.value }))}
                     />
