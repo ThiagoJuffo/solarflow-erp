@@ -523,18 +523,26 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
           {editandoEq ? (
             <div className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-slate-400 text-xs mb-1.5 block">Inversor</label>
-                  <select value={eqForm.inversor_marca_modelo} onChange={e => setEqForm(f => ({ ...f, inversor_marca_modelo: e.target.value }))}
-                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
-                    <option value="">Selecionar...</option>
-                    {inversores.map(p => <option key={p.id} value={`${p.fabricante} ${p.modelo}`}>{p.fabricante} {p.modelo}{p.potencia_kva ? ` — ${p.potencia_kva} kVA` : ""}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-slate-400 text-xs mb-1.5 block">Qtd. Inversores</label>
-                  <input type="number" value={eqForm.inversor_quantidade} onChange={e => setEqForm(f => ({ ...f, inversor_quantidade: e.target.value }))}
-                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                <div className="col-span-2 space-y-2">
+                  <label className="text-slate-400 text-xs mb-1.5 block">Inversores</label>
+                  {(eqForm.inversores || []).map((inv, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <select value={inv.marca_modelo || ""} onChange={e => { const arr = [...eqForm.inversores]; arr[i] = { ...arr[i], marca_modelo: e.target.value }; setEqForm(f => ({ ...f, inversores: arr })); }}
+                        className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
+                        <option value="">Selecionar...</option>
+                        {inversores.map(p => <option key={p.id} value={`${p.fabricante} ${p.modelo}`}>{p.fabricante} {p.modelo}{p.potencia_kva ? ` — ${p.potencia_kva} kVA` : ""}</option>)}
+                      </select>
+                      <input type="number" value={inv.quantidade || ""} onChange={e => { const arr = [...eqForm.inversores]; arr[i] = { ...arr[i], quantidade: e.target.value }; setEqForm(f => ({ ...f, inversores: arr })); }}
+                        placeholder="Qtd" className="w-20 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                      {eqForm.inversores.length > 1 && (
+                        <button onClick={() => setEqForm(f => ({ ...f, inversores: f.inversores.filter((_, idx) => idx !== i) }))} className="text-red-400 hover:text-red-300 p-1"><Trash2 size={13} /></button>
+                      )}
+                    </div>
+                  ))}
+                  <button onClick={() => setEqForm(f => ({ ...f, inversores: [...f.inversores, { marca_modelo: "", quantidade: 1 }] }))}
+                    className="flex items-center gap-1.5 text-amber-400 hover:text-amber-300 text-xs font-medium transition-colors">
+                    <Plus size={12} /> Adicionar modelo de inversor
+                  </button>
                 </div>
                 <div>
                   <label className="text-slate-400 text-xs mb-1.5 block">Módulos FV</label>
