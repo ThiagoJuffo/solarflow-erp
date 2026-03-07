@@ -12,7 +12,9 @@ const ITEMS_CHECKLIST = [
 export default function DossieChecklist({ documentos = [], envioCreditos = false, temInmetro = false }) {
   const getDocStatus = (tipo) => {
     if (tipo === "inmetro" && temInmetro) return "assinado";
-    const doc = documentos.find(d => d.tipo === tipo);
+    // ART pode estar salva como "art" ou "solicitacao_art"
+    const tipos = tipo === "art" ? ["art", "solicitacao_art"] : [tipo];
+    const doc = documentos.find(d => tipos.includes(d.tipo));
     if (!doc) return "pendente";
     return doc.status;
   };
