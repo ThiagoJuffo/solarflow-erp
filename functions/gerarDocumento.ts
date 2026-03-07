@@ -309,13 +309,13 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
 
 <h3>3.2 Responsabilidade Técnica</h3>
 <table>
-  <tr><th colspan="2">Responsável Técnico</th></tr>
-  <tr><td>Responsável Pelo Projeto Técnico</td><td>${RESP_TECNICO}</td></tr>
-  <tr><td>Número de Registro (CREA)</td><td>${CREA}</td></tr>
-  <tr><td>Endereço</td><td>${RESP_ENDERECO}</td></tr>
-  <tr><td>Telefone</td><td>${RESP_TELEFONE}</td></tr>
-  <tr><td>E-mail</td><td>${RESP_EMAIL}</td></tr>
-  <tr><td>Anotação de Responsabilidade Técnica (ART)</td><td>${artNumero}</td></tr>
+  <tr><th colspan="2" style="background-color:#00b050;color:#fff;font-weight:bold;text-align:center;">Responsável Técnico</th></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Responsável Pelo Projeto Técnico</td><td>${RESP_TECNICO}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Número de Registro (CREA)</td><td>${CREA}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Endereço</td><td>${RESP_ENDERECO}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Telefone</td><td>${RESP_TELEFONE}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">E-mail</td><td>${RESP_EMAIL}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Anotação de Responsabilidade Técnica (ART) Projeto</td><td>${artNumero}</td></tr>
 </table>
 
 <h2>4. Especificação Técnica dos Equipamentos</h2>
