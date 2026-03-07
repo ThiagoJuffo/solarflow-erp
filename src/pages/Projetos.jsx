@@ -77,6 +77,13 @@ export default function Projetos() {
       timeline_eventos: [{ tipo: "pagamento_confirmado", data: new Date().toISOString(), usuario: user?.email }]
     });
     await base44.entities.PreProjeto.update(pp.id, { status: "pago_projeto_iniciado", projeto_id: projeto.id });
+
+    // Vincular a UC do pré-projeto ao projeto recém criado
+    const ucs = await base44.entities.UC.filter({ pre_projeto_id: pp.id });
+    if (ucs.length > 0) {
+      await base44.entities.UC.update(ucs[0].id, { projeto_id: projeto.id });
+    }
+
     setPreProjetos(prev => prev.map(p => p.id === pp.id ? { ...p, status: "pago_projeto_iniciado" } : p));
     setProjetos(prev => [...prev, projeto]);
   };
