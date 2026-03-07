@@ -358,7 +358,7 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
 <table>
   <tr><th colspan="2" style="background-color:#00b050;color:#fff;font-weight:bold;text-align:center;">Aspecto Físico do Painel Fotovoltaico</th></tr>
   <tr><td style="background-color:#00b050;color:#fff;text-align:center;">Área dos Arranjos (m2)</td><td>${moduloProduto?.area_m2 ? (moduloProduto.area_m2 * qtdModulos).toFixed(2) : "—"}</td></tr>
-  <tr><td style="background-color:#00b050;color:#fff;text-align:center;">Peso adicional (kg)</td><td>${moduloProduto?.peso ? (moduloProduto.peso * qtdModulos).toFixed(1) : "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;text-align:center;">Peso adicional (kg)</td><td>${moduloProduto?.peso && qtdModulos ? (moduloProduto.peso * Number(qtdModulos)).toFixed(1) : "—"}</td></tr>
 </table>
 
 <h3>4.2 Inversor(es)</h3>
