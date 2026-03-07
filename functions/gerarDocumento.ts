@@ -287,13 +287,17 @@ function gerarSolicitacaoART({ projeto, uc, rt, preProjeto, moduloProduto, inver
   const potKwpCalculado = (qtdModulos && potWpModulo) ? ((potWpModulo * qtdModulos) / 1000).toFixed(2) : null;
   const potKwp = potKwpCalculado || rt.potencia_kwp || preProjeto?.potencia_pico_kwp || "—";
 
-  // Potência do inversor em kW = potência unitária × quantidade de inversores
-  const qtdInversores = preProjeto?.inversor_quantidade || 1;
-  const potUnitariaKw = inversorProduto?.potencia_ac_w
-    ? inversorProduto.potencia_ac_w / 1000
-    : inversorProduto?.potencia_kva || null;
-  const potInversor = potUnitariaKw
-    ? (potUnitariaKw * qtdInversores).toFixed(2)
+  // Potência total dos inversores = soma de (potência unitária × quantidade) para cada modelo
+  let potInversorTotal = 0;
+  const inversoresArr = inversorProdutos.length ? inversorProdutos : [];
+  for (const inv of inversoresArr) {
+    const potUnit = inv.produto?.potencia_ac_w
+      ? inv.produto.potencia_ac_w / 1000
+      : inv.produto?.potencia_kva || 0;
+    potInversorTotal += potUnit * inv.quantidade;
+  }
+  const potInversor = potInversorTotal > 0
+    ? potInversorTotal.toFixed(2)
     : rt.potencia_kva || "—";
 
   // Potência de geração = menor entre os dois
@@ -302,7 +306,13 @@ function gerarSolicitacaoART({ projeto, uc, rt, preProjeto, moduloProduto, inver
   const potGeracao = (numKwp && numInv) ? Math.min(numKwp, numInv).toFixed(2) : "—";
 
   const modDesc = preProjeto?.modulo_marca_modelo || rt.modulo_descricao || "";
-  const invDesc = preProjeto?.inversor_marca_modelo || rt.inversor_descricao || "";
+  // Descrição do kit com múltiplos inversores
+  let invDesc = "";
+  if (inversorProdutos.length > 0) {
+    invDesc = inversorProdutos.map(inv => `${inv.quantidade}x ${inv.marca_modelo}`).join(" + ");
+  } else {
+    invDesc = preProjeto?.inversor_marca_modelo || rt.inversor_descricao || "";
+  }
   const kit = rt.arranjo_descricao || `${qtdModulos || "?"} módulos ${modDesc} + ${invDesc}`;
 
   return `<!DOCTYPE html>
