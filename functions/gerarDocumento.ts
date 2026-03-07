@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
   if (tipo === "procuracao") {
     htmlContent = gerarProcuracao({ projeto, uc, rt, RESP_TECNICO, RESP_CPF, RESP_RG, RESP_ENDERECO, dataExtenso, cidade, estado });
   } else if (tipo === "memorial_tecnico") {
-    htmlContent = gerarMemorial({ projeto, uc, rt, RESP_TECNICO, CREA, RESP_ENDERECO, RESP_TELEFONE, RESP_EMAIL, dataExtenso, cidade, estado, EMPRESA });
+    htmlContent = gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorProdutos, RESP_TECNICO, CREA, RESP_ENDERECO, RESP_TELEFONE, RESP_EMAIL, dataExtenso, cidade, estado, EMPRESA });
   } else if (tipo === "solicitacao_art") {
     htmlContent = gerarSolicitacaoART({ projeto, uc, rt, preProjeto, moduloProduto, inversorProdutos, dataExtenso });
   } else {
