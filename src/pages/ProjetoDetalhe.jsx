@@ -349,7 +349,7 @@ export default function ProjetoDetalhe() {
 
               {/* Sidebar */}
               <div className="space-y-4">
-                <DossieChecklist documentos={documentos} envioCreditos={projeto.envio_creditos} temInmetro={!!documentos.find(d => d.tipo === "inmetro") || false} />
+                <DossieChecklist documentos={documentos} envioCreditos={projeto.envio_creditos} temInmetro={temInmetro} />
                 <ProtocoloCard projetoId={id} protocolos={protocolos} onUpdate={p => setProtocolos(prev => [...prev, p])} />
               </div>
             </div>
