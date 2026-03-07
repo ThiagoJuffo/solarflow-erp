@@ -346,9 +346,9 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
   <tr><td style="background-color:#00b050;color:#fff;">Eficiência do módulo</td><td>${moduloProduto?.eficiencia_modulo || moduloProduto?.eficiencia || "—"}</td><td></td></tr>
   <tr><td style="background-color:#00b050;color:#fff;">Corrente máxima por fusível em série</td><td>${moduloProduto?.corrente_max_fusivel_a || "—"}</td><td>A</td></tr>
   <tr><td style="background-color:#00b050;color:#fff;">Coeficiente de temperatura</td><td colspan="2"></td></tr>
-  <tr><td style="background-color:#00b050;color:#fff;"><u>Ppeak</u></td><td>${moduloProduto?.coef_temperatura || "—"}</td><td>/C°</td></tr>
-  <tr><td style="background-color:#00b050;color:#fff;"><u>Voc</u></td><td></td><td>/C°</td></tr>
-  <tr><td style="background-color:#00b050;color:#fff;"><u>Isc</u></td><td></td><td>/C°</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;"><u>Ppeak</u></td><td>${moduloProduto?.coef_temp_ppeak || "—"}</td><td>/C°</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;"><u>Voc</u></td><td>${moduloProduto?.coef_temp_voc || "—"}</td><td>/C°</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;"><u>Isc</u></td><td>${moduloProduto?.coef_temp_isc || "—"}</td><td>/C°</td></tr>
 </table>
 
 <table>
