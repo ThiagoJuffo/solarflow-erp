@@ -1,4 +1,4 @@
-import { CheckCircle, Circle, AlertTriangle, FileText } from "lucide-react";
+import { CheckCircle, Circle, AlertTriangle, FileText, XCircle } from "lucide-react";
 
 const ITEMS_CHECKLIST = [
   { key: "procuracao", label: "Procuração gerada e assinada", obrigatorio: true },
