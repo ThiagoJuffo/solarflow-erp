@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
   } else if (tipo === "memorial_tecnico") {
     htmlContent = gerarMemorial({ projeto, uc, rt, RESP_TECNICO, CREA, RESP_ENDERECO, RESP_TELEFONE, RESP_EMAIL, dataExtenso, cidade, estado, EMPRESA });
   } else if (tipo === "solicitacao_art") {
-    htmlContent = gerarSolicitacaoART({ projeto, uc, rt, dataExtenso });
+    htmlContent = gerarSolicitacaoART({ projeto, uc, rt, preProjeto, moduloProduto, inversorProduto, dataExtenso });
   } else {
     return Response.json({ error: 'Tipo de documento não suportado' }, { status: 400 });
   }
