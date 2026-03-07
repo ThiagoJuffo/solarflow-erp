@@ -222,23 +222,28 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
   const tabelasInversores = inversoresArr.map(inv => {
     const p = inv.produto;
     if (!p) return `<p><strong>${inv.quantidade}x ${inv.marca_modelo}</strong> — especificações não cadastradas na biblioteca de produtos.</p>`;
+    const potNominal = p.potencia_ac_w ? `${p.potencia_ac_w} W` : p.potencia_kva ? `${p.potencia_kva} kVA` : "—";
+    const potTotal = p.potencia_ac_w
+      ? `${(p.potencia_ac_w * inv.quantidade / 1000).toFixed(2)} kW`
+      : p.potencia_kva ? `${(p.potencia_kva * inv.quantidade).toFixed(2)} kVA` : "—";
     return `
-<h3>Inversor: ${inv.marca_modelo} (${inv.quantidade} unidade${inv.quantidade > 1 ? "s" : ""})</h3>
 <table>
-  <tr><th colspan="2">Dados Elétricos – ${inv.marca_modelo}</th></tr>
-  <tr><td>Potência CA Nominal</td><td>${p.potencia_ac_w ? `${p.potencia_ac_w} W` : p.potencia_kva ? `${p.potencia_kva} kVA` : "—"}</td></tr>
-  <tr><td>Tensão Nominal CA</td><td>${p.tensao_nominal_ac_v || "—"}</td></tr>
-  <tr><td>Corrente Máxima CA</td><td>${p.corrente_max_ac_a ? `${p.corrente_max_ac_a} A` : "—"}</td></tr>
-  <tr><td>Frequência de Operação</td><td>${p.frequencia_operacao_hz ? `${p.frequencia_operacao_hz} Hz` : "—"}</td></tr>
-  <tr><td>Fator de Potência</td><td>${p.fator_potencia || "—"}</td></tr>
-  <tr><td>Corrente Máxima CC</td><td>${p.corrente_max_dc_a ? `${p.corrente_max_dc_a} A` : "—"}</td></tr>
-  <tr><td>Tensão Mínima CC (Start)</td><td>${p.tensao_min_dc_v ? `${p.tensao_min_dc_v} V` : "—"}</td></tr>
-  <tr><td>Tensão Máxima CC</td><td>${p.tensao_max_dc_v ? `${p.tensao_max_dc_v} V` : "—"}</td></tr>
-  <tr><td>Número de MPPT</td><td>${p.num_mppt || "—"}</td></tr>
-  <tr><td>Entradas por MPPT</td><td>${p.entradas_por_mppt || "—"}</td></tr>
-  <tr><td>Eficiência</td><td>${p.eficiencia ? `${p.eficiencia}%` : "—"}</td></tr>
-  <tr><td>Range de Temperatura</td><td>${p.range_temperatura || "—"}</td></tr>
-  <tr><td>Garantia</td><td>${p.garantia_anos ? `${p.garantia_anos} anos` : "—"}</td></tr>
+  <tr><th colspan="2" style="background-color:#00b050;color:#fff;font-weight:bold;text-align:center;">Especificações Técnicas do Inversor</th></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Fabricante do(s) Inversor(es)</td><td>${p.fabricante || inv.marca_modelo.split(" ")[0] || "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Modelo do(s) Inversor(es)</td><td>${p.modelo || inv.marca_modelo || "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Potência Nominal dos(s) Inversor(es)</td><td>${potNominal}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Quantidade dos Inversor(es)</td><td>${inv.quantidade}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Potência de Saída AC</td><td>${potTotal}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Tensão nominal AC</td><td>${p.tensao_nominal_ac_v || "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Corrente de saída Max AC</td><td>${p.corrente_max_ac_a ? `${p.corrente_max_ac_a} A` : "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Frequência de operação</td><td>${p.frequencia_operacao_hz ? `${p.frequencia_operacao_hz} Hz` : "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Range de frequência</td><td>${p.range_frequencia_hz || "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Max Corrente DC</td><td>${p.corrente_max_dc_a ? `${p.corrente_max_dc_a} A` : "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Fator de potência</td><td>${p.fator_potencia || "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Range de temperatura</td><td>${p.range_temperatura || "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Tensão Máxima Entrada do Inversor</td><td>${p.tensao_max_dc_v ? `${p.tensao_max_dc_v} V` : "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Tensão Mínima Entrada do Inversor</td><td>${p.tensao_min_dc_v ? `${p.tensao_min_dc_v} V` : "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Rendimento do Inversor</td><td>${p.eficiencia ? `${p.eficiencia}%` : "—"}</td></tr>
 </table>`;
   }).join("\n");
 
