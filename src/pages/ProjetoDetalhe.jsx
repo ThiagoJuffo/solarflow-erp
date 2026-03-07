@@ -700,6 +700,20 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
           <h3 className="text-white font-semibold flex items-center gap-2"><Zap size={16} className="text-amber-400" /> Resumo Técnico</h3>
 
+          {/* Responsável Técnico e CREA - valores fixos */}
+          <div>
+            <label className="text-slate-400 text-xs mb-1.5 block">Responsável Técnico</label>
+            <div className="w-full bg-slate-800/50 border border-slate-700 text-slate-300 rounded-xl px-3 py-2 text-sm opacity-70 cursor-not-allowed">
+              Thiago Fernandes Juffo Fontes
+            </div>
+          </div>
+          <div>
+            <label className="text-slate-400 text-xs mb-1.5 block">CREA</label>
+            <div className="w-full bg-slate-800/50 border border-slate-700 text-slate-300 rounded-xl px-3 py-2 text-sm opacity-70 cursor-not-allowed">
+              ES-033278/D
+            </div>
+          </div>
+
           {/* Módulo FV - espelhado dos equipamentos confirmados */}
           <div>
             <label className="text-slate-400 text-xs mb-1.5 block">Módulo FV</label>
