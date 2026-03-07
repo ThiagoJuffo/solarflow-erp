@@ -235,7 +235,7 @@ export default function Projetos() {
                   <p className="text-slate-500 text-xs mt-0.5">CPF: {item.cpf}</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap justify-end">
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-lg border ${statusColor(item.status)}`}>
                       {STATUS_LABELS[item.status] || item.status}
                     </span>
@@ -244,6 +244,18 @@ export default function Projetos() {
                         <Package size={10} /> Kit Pendente
                       </span>
                     )}
+                    {item._tipo === "projeto" && (() => {
+                      const faltando = getItensFaltando(documentosPorProjeto[item.id] || []);
+                      if (faltando.length === 0) return null;
+                      return (
+                        <span
+                          title={`Faltando: ${faltando.join(", ")}`}
+                          className="text-xs font-medium px-2.5 py-1 rounded-lg border border-red-400/20 text-red-400 bg-red-400/10 flex items-center gap-1"
+                        >
+                          <AlertTriangle size={10} /> {faltando.join(", ")}
+                        </span>
+                      );
+                    })()}
                   </div>
 
                   {/* Ação: confirmar pagamento */}
