@@ -421,9 +421,11 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
 
   const handleSaveEq = async () => {
     setSavingEq(true);
+    const inversoresFiltrados = (eqForm.inversores || []).filter(i => i.marca_modelo).map(i => ({ marca_modelo: i.marca_modelo, quantidade: Number(i.quantidade) || 1 }));
     await base44.entities.PreProjeto.update(preProjeto.id, {
-      inversor_marca_modelo: eqForm.inversor_marca_modelo,
-      inversor_quantidade: eqForm.inversor_quantidade ? Number(eqForm.inversor_quantidade) : null,
+      inversores: inversoresFiltrados,
+      inversor_marca_modelo: inversoresFiltrados[0]?.marca_modelo || "",
+      inversor_quantidade: inversoresFiltrados[0]?.quantidade || null,
       modulo_marca_modelo: eqForm.modulo_marca_modelo,
       modulo_quantidade: eqForm.modulo_quantidade ? Number(eqForm.modulo_quantidade) : null,
       potencia_pico_kwp: eqForm.potencia_pico_kwp ? Number(eqForm.potencia_pico_kwp) : null,
@@ -431,8 +433,7 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
     });
     setSavingEq(false);
     setEditandoEq(false);
-    // Atualizar os dados localmente
-    Object.assign(preProjeto, eqForm);
+    Object.assign(preProjeto, { ...eqForm, inversores: inversoresFiltrados });
   };
 
   // Pré-preencher com dados extraídos do pré-projeto se UC ainda não tiver dados
