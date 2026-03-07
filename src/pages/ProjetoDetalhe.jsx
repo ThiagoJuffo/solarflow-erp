@@ -411,8 +411,7 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
 
   useEffect(() => {
     setEqForm({
-      inversor_marca_modelo: preProjeto?.inversor_marca_modelo || "",
-      inversor_quantidade: preProjeto?.inversor_quantidade || "",
+      inversores: getInversoresIniciais(preProjeto),
       modulo_marca_modelo: preProjeto?.modulo_marca_modelo || "",
       modulo_quantidade: preProjeto?.modulo_quantidade || "",
       potencia_pico_kwp: preProjeto?.potencia_pico_kwp || "",
