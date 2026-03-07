@@ -327,23 +327,47 @@ Preencha apenas os campos que encontrar com certeza. Deixe null para os demais.`
                 <div className="bg-slate-800 rounded-xl p-4 space-y-3">
                   <p className="text-amber-400 text-xs font-semibold">Dados Elétricos do Módulo (STC)</p>
                   <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { label: "Ppeak / Potência (Wp)", key: "potencia_wp", type: "number" },
-                      { label: "Tensão Vmp (V)", key: "vmp", type: "number" },
-                      { label: "Corrente Imp (A)", key: "imp", type: "number" },
-                      { label: "Tensão Voc (V)", key: "voc", type: "number" },
-                      { label: "Corrente Isc (A)", key: "isc", type: "number" },
-                      { label: "Eficiência do Módulo (%)", key: "eficiencia_modulo", type: "number" },
-                      { label: "Corrente Máx Fusível (A)", key: "corrente_max_fusivel_a", type: "number" },
-                      { label: "Coef. Temperatura", key: "coef_temperatura" },
-                      { label: "Dimensões (mm)", key: "dimensoes" },
-                    ].map(f => (
-                      <div key={f.key} className={f.key === "coef_temperatura" ? "col-span-2" : ""}>
-                        <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
-                        <input type={f.type || "text"} value={form[f.key] || ""} onChange={e => set(f.key, f.type === "number" ? Number(e.target.value) : e.target.value)}
-                          className="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
-                      </div>
-                    ))}
+                   {[
+                     { label: "Ppeak / Potência (Wp)", key: "potencia_wp", type: "number" },
+                     { label: "Tensão Vmp (V)", key: "vmp", type: "number" },
+                     { label: "Corrente Imp (A)", key: "imp", type: "number" },
+                     { label: "Tensão Voc (V)", key: "voc", type: "number" },
+                     { label: "Corrente Isc (A)", key: "isc", type: "number" },
+                     { label: "Eficiência do Módulo (%)", key: "eficiencia_modulo", type: "number" },
+                     { label: "Corrente Máx Fusível (A)", key: "corrente_max_fusivel_a", type: "number" },
+                     { label: "Dimensões (mm)", key: "dimensoes" },
+                   ].map(f => (
+                     <div key={f.key}>
+                       <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
+                       <input type={f.type || "text"} value={form[f.key] || ""} onChange={e => set(f.key, f.type === "number" ? Number(e.target.value) : e.target.value)}
+                         className="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                     </div>
+                   ))}
+                  </div>
+                  {/* Coeficientes de Temperatura */}
+                  <div>
+                   <p className="text-slate-400 text-xs font-semibold mb-2">Coeficientes de Temperatura (/°C)</p>
+                   <div className="grid grid-cols-3 gap-2">
+                     {[
+                       { label: "Ppeak", key: "coef_temp_ppeak", placeholder: "ex: -0,30%" },
+                       { label: "Voc", key: "coef_temp_voc", placeholder: "ex: -0,25%" },
+                       { label: "Isc", key: "coef_temp_isc", placeholder: "ex: +0,05%" },
+                     ].map(f => (
+                       <div key={f.key}>
+                         <label className="text-slate-500 text-xs mb-1 block">{f.label}</label>
+                         <div className="relative">
+                           <input
+                             type="text"
+                             value={form[f.key] || ""}
+                             onChange={e => set(f.key, e.target.value)}
+                             placeholder={f.placeholder}
+                             className="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500 pr-8"
+                           />
+                           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-xs">/°C</span>
+                         </div>
+                       </div>
+                     ))}
+                   </div>
                   </div>
                 </div>
               )}
