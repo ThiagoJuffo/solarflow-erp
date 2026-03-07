@@ -352,6 +352,14 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
 <h3>4.2 Inversor(es)</h3>
 ${tabelasInversores}
 
+<table>
+  <tr><th colspan="2" style="background-color:#00b050;color:#fff;font-weight:bold;text-align:center;">Estimativa de geração e Considerações Gerais</th></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Potência instalada do circuito DC (<u>kWp</u>)</td><td>${potKwp}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Potência instalada do circuito AC (kW)</td><td>${potInversorKw}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Hora de Sol Pico</td><td></td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Estimativa de geração média mensal (kWh/Mês)</td><td>${preProjeto?.kwh_prometidos || "—"}</td></tr>
+</table>
+
 <h2>5. Descritivo Técnico do Sistema</h2>
 <p>O presente sistema de microgeração distribuída utiliza a tecnologia dos sistemas fotovoltaicos para a geração de energia em montante necessário para a compensação do consumo médio mensal da unidade consumidora onde está instalado.</p>
 <p>O sistema fotovoltaico conectado à rede possui sistema de proteção contra <strong><em>ilhamento</em></strong>, relês e temporizadores para sincronismo, e controle de frequência, tensão e fator de potência.</p>
