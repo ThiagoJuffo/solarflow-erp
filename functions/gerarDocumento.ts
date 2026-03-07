@@ -274,11 +274,14 @@ function gerarSolicitacaoART({ projeto, uc, rt, preProjeto, moduloProduto, inver
   const potKwpCalculado = (qtdModulos && potWpModulo) ? ((potWpModulo * qtdModulos) / 1000).toFixed(2) : null;
   const potKwp = potKwpCalculado || rt.potencia_kwp || preProjeto?.potencia_pico_kwp || "—";
 
-  // Potência do inversor em kW (potencia_ac_w em W → kW, ou potencia_kva)
-  const potInversorKw = inversorProduto?.potencia_ac_w
-    ? (inversorProduto.potencia_ac_w / 1000).toFixed(2)
-    : inversorProduto?.potencia_kva || rt.potencia_kva || "—";
-  const potInversor = potInversorKw;
+  // Potência do inversor em kW = potência unitária × quantidade de inversores
+  const qtdInversores = preProjeto?.inversor_quantidade || 1;
+  const potUnitariaKw = inversorProduto?.potencia_ac_w
+    ? inversorProduto.potencia_ac_w / 1000
+    : inversorProduto?.potencia_kva || null;
+  const potInversor = potUnitariaKw
+    ? (potUnitariaKw * qtdInversores).toFixed(2)
+    : rt.potencia_kva || "—";
 
   // Potência de geração = menor entre os dois
   const numKwp = parseFloat(potKwp) || 0;
