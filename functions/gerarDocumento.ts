@@ -218,6 +218,30 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
   const telefone = projeto.telefone || "—";
   const email = projeto.email || "—";
 
+  // Tabelas de specs por inversor
+  const tabelasInversores = inversoresArr.map(inv => {
+    const p = inv.produto;
+    if (!p) return `<p><strong>${inv.quantidade}x ${inv.marca_modelo}</strong> — especificações não cadastradas na biblioteca de produtos.</p>`;
+    return `
+<h3>Inversor: ${inv.marca_modelo} (${inv.quantidade} unidade${inv.quantidade > 1 ? "s" : ""})</h3>
+<table>
+  <tr><th colspan="2">Dados Elétricos – ${inv.marca_modelo}</th></tr>
+  <tr><td>Potência CA Nominal</td><td>${p.potencia_ac_w ? `${p.potencia_ac_w} W` : p.potencia_kva ? `${p.potencia_kva} kVA` : "—"}</td></tr>
+  <tr><td>Tensão Nominal CA</td><td>${p.tensao_nominal_ac_v || "—"}</td></tr>
+  <tr><td>Corrente Máxima CA</td><td>${p.corrente_max_ac_a ? `${p.corrente_max_ac_a} A` : "—"}</td></tr>
+  <tr><td>Frequência de Operação</td><td>${p.frequencia_operacao_hz ? `${p.frequencia_operacao_hz} Hz` : "—"}</td></tr>
+  <tr><td>Fator de Potência</td><td>${p.fator_potencia || "—"}</td></tr>
+  <tr><td>Corrente Máxima CC</td><td>${p.corrente_max_dc_a ? `${p.corrente_max_dc_a} A` : "—"}</td></tr>
+  <tr><td>Tensão Mínima CC (Start)</td><td>${p.tensao_min_dc_v ? `${p.tensao_min_dc_v} V` : "—"}</td></tr>
+  <tr><td>Tensão Máxima CC</td><td>${p.tensao_max_dc_v ? `${p.tensao_max_dc_v} V` : "—"}</td></tr>
+  <tr><td>Número de MPPT</td><td>${p.num_mppt || "—"}</td></tr>
+  <tr><td>Entradas por MPPT</td><td>${p.entradas_por_mppt || "—"}</td></tr>
+  <tr><td>Eficiência</td><td>${p.eficiencia ? `${p.eficiencia}%` : "—"}</td></tr>
+  <tr><td>Range de Temperatura</td><td>${p.range_temperatura || "—"}</td></tr>
+  <tr><td>Garantia</td><td>${p.garantia_anos ? `${p.garantia_anos} anos` : "—"}</td></tr>
+</table>`;
+  }).join("\n");
+
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -225,7 +249,7 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
 <style>
   body { font-family: Arial, sans-serif; font-size: 11pt; margin: 2.5cm 2.5cm 2cm 3cm; color: #000; line-height: 1.5; }
   h1 { text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 0.3em; }
-  h2 { font-size: 12pt; font-weight: bold; margin-top: 1.4em; margin-bottom: 0.5em; }
+  h2 { font-size: 12pt; font-weight: bold; margin-top: 1.4em; margin-bottom: 0.5em; border-bottom: 1px solid #999; padding-bottom: 2px; }
   h3 { font-size: 11pt; font-weight: bold; margin-top: 1em; }
   p { text-align: justify; margin-bottom: 0.6em; }
   table { width: 100%; border-collapse: collapse; margin-bottom: 1em; font-size: 10pt; }
@@ -233,7 +257,6 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
   table th { background-color: #ddd; font-weight: bold; text-align: left; }
   .header-subtitle { text-align: center; font-size: 11pt; margin-bottom: 0.2em; }
   .center { text-align: center; }
-  .bold { font-weight: bold; }
 </style>
 </head>
 <body>
@@ -253,11 +276,12 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
 
 <h2>3. Dados Preliminares</h2>
 <table>
-  <tr><th colspan="2">Nome para Registro: <strong>${nomeCliente}</strong></th></tr>
-  <tr><td>Potência-pico do Sistema Fotovoltaico (kWp)</td><td>${potKwp}</td></tr>
+  <tr><th colspan="2">Resumo do Sistema – <strong>${nomeCliente}</strong></th></tr>
+  <tr><td>Potência-pico do Sistema Fotovoltaico (kWp)</td><td>${potKwp} kWp</td></tr>
   <tr><td>Módulos Fotovoltaicos</td><td>${modDescricao}</td></tr>
   <tr><td>Quantidade Total de Módulos</td><td>${qtdModulos}</td></tr>
   <tr><td>Inversor(es)</td><td>${invDescricao}</td></tr>
+  <tr><td>Potência Total dos Inversores</td><td>${potInversorKw}</td></tr>
   <tr><td>Data de Instalação (Previsão)</td><td>${dataInstalacao}</td></tr>
   <tr><td>Data de Comissionamento (Previsão)</td><td>${dataComissionamento}</td></tr>
 </table>
@@ -288,29 +312,51 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
   <tr><td>Anotação de Responsabilidade Técnica (ART)</td><td>${artNumero}</td></tr>
 </table>
 
-<h2>4. Descritivo Técnico do Sistema</h2>
+<h2>4. Especificação Técnica dos Equipamentos</h2>
+
+<h3>4.1 Módulo Fotovoltaico – ${modDescricao}</h3>
+<table>
+  <tr><th colspan="2">Dados Elétricos – ${modDescricao}</th></tr>
+  <tr><td>Potência de Pico (Ppeak)</td><td>${modPotencia}</td></tr>
+  <tr><td>Tensão de Funcionamento Ótimo (Vmp)</td><td>${modVmp}</td></tr>
+  <tr><td>Corrente de Funcionamento Ótimo (Imp)</td><td>${modImp}</td></tr>
+  <tr><td>Tensão em Circuito Aberto (Voc)</td><td>${modVoc}</td></tr>
+  <tr><td>Corrente de Curto-Circuito (Isc)</td><td>${modIsc}</td></tr>
+  <tr><td>Eficiência do Módulo</td><td>${modEficiencia}</td></tr>
+  <tr><td>Área do Módulo</td><td>${modArea}</td></tr>
+  <tr><td>Corrente Máxima por Fusível em Série</td><td>${modFusivel}</td></tr>
+  <tr><td>Coeficiente de Temperatura</td><td>${modCoefTemp}</td></tr>
+  <tr><td>Certificado INMETRO Nº</td><td>${modInmetro}</td></tr>
+  <tr><td>Garantia</td><td>${modGarantia}</td></tr>
+</table>
+
+<h3>4.2 Inversor(es)</h3>
+${tabelasInversores}
+
+<h2>5. Descritivo Técnico do Sistema</h2>
 <p>O presente sistema de microgeração distribuída utiliza a tecnologia dos sistemas fotovoltaicos para a geração de energia em montante necessário para a compensação do consumo médio mensal da unidade consumidora onde está instalado.</p>
 <p>O sistema fotovoltaico conectado à rede possui sistema de proteção contra <strong><em>ilhamento</em></strong>, relês e temporizadores para sincronismo, e controle de frequência, tensão e fator de potência.</p>
 
-<h3>4.1 Arranjo dos Painéis</h3>
+<h3>5.1 Arranjo dos Painéis</h3>
 <table>
   <tr><th colspan="2">Arranjo do Gerador Fotovoltaico</th></tr>
+  <tr><td>Módulo Utilizado</td><td>${modDescricao}</td></tr>
   <tr><td>Módulos por String</td><td>${modPorString}</td></tr>
   <tr><td>Número de Strings</td><td>${numStrings}</td></tr>
   <tr><td>Total de Módulos</td><td>${qtdModulos}</td></tr>
-  <tr><td>Potência Total (kWp)</td><td>${potKwp}</td></tr>
+  <tr><td>Potência Total (kWp)</td><td>${potKwp} kWp</td></tr>
 </table>
 
-<h3>4.2 Cabos e Conexões</h3>
+<h3>5.2 Cabos e Conexões</h3>
 <p>Serão utilizados cabos solares com proteção UV de 4,0mm². As conexões serão feitas por conectores MC4 com proteção UV e resistência a amoníaco.</p>
 
-<h3>4.3 String Box</h3>
+<h3>5.3 String Box</h3>
 <p>A proteção do circuito de corrente contínua será através de String Box. A proteção de cada String é feita através de fusível de 15A montado em porta-fusível, um Disjuntor de 20A e um DPS de 1000V.</p>
 
-<h2>5. Sinalização de Segurança</h2>
+<h2>6. Sinalização de Segurança</h2>
 <p>Será afixada, no poste-padrão do ramal de entrada, uma placa indicativa de que a unidade consumidora possui sistema de geração própria, conforme definição da norma GED-15303.</p>
 
-<h2>6. Observações Técnicas</h2>
+<h2>7. Observações Técnicas</h2>
 <p>${rt.observacoes_tecnicas || "Nenhuma observação adicional."}</p>
 
 <br/><br/>
