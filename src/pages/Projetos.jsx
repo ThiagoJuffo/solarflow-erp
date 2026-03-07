@@ -13,8 +13,9 @@ const CHECKLIST_OBRIGATORIOS = [
 ];
 
 // Retorna lista de labels dos itens obrigatórios faltando
-const getItensFaltando = (documentos = []) => {
+const getItensFaltando = (documentos = [], temInmetro = false) => {
   return CHECKLIST_OBRIGATORIOS.filter(item => {
+    if (item.key === "inmetro" && temInmetro) return false;
     const tipos = item.key === "art" ? ["art", "solicitacao_art"] : [item.key];
     const doc = documentos.find(d => tipos.includes(d.tipo));
     const ok = doc && (doc.status === "assinado" || doc.status === "nao_aplicavel");
