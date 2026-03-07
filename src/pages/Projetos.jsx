@@ -67,16 +67,25 @@ export default function Projetos() {
   const [filtroGrupo, setFiltroGrupo] = useState("Todos");
   const [user, setUser] = useState(null);
   const [avisoSemPermissao, setAvisoSemPermissao] = useState(false);
+  const [documentosPorProjeto, setDocumentosPorProjeto] = useState({});
 
   useEffect(() => {
     Promise.all([
       base44.entities.Projeto.list("-created_date", 200),
       base44.entities.PreProjeto.list("-created_date", 100),
+      base44.entities.Documento.list("-created_date", 1000),
       base44.auth.me()
-    ]).then(([p, pp, u]) => {
+    ]).then(([p, pp, docs, u]) => {
       setProjetos(p);
       setPreProjetos(pp);
       setUser(u);
+      // Agrupar documentos por projeto_id
+      const grouped = {};
+      docs.forEach(d => {
+        if (!grouped[d.projeto_id]) grouped[d.projeto_id] = [];
+        grouped[d.projeto_id].push(d);
+      });
+      setDocumentosPorProjeto(grouped);
       setLoading(false);
     });
   }, []);
