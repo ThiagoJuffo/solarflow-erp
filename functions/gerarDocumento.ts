@@ -280,7 +280,7 @@ function gerarMemorial({ projeto, uc, rt, RESP_TECNICO, CREA, RESP_ENDERECO, RES
 </html>`;
 }
 
-function gerarSolicitacaoART({ projeto, uc, rt, preProjeto, moduloProduto, inversorProduto, dataExtenso }) {
+function gerarSolicitacaoART({ projeto, uc, rt, preProjeto, moduloProduto, inversorProdutos, dataExtenso }) {
   // Potência das placas em kWp: calculada a partir dos módulos
   const qtdModulos = preProjeto?.modulo_quantidade || rt.quantidade_modulos || 0;
   const potWpModulo = moduloProduto?.potencia_wp || 0;
