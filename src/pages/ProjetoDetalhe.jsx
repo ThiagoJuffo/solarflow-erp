@@ -71,7 +71,17 @@ export default function ProjetoDetalhe() {
       // Buscar pré-projeto para pré-preencher dados da UC
       if (proj?.pre_projeto_id) {
         const pps = await base44.entities.PreProjeto.filter({ id: proj.pre_projeto_id });
-        setPreProjeto(pps[0] || null);
+        const pp = pps[0] || null;
+        setPreProjeto(pp);
+        // Verificar se há INMETRO no documento ou no produto do inversor
+        const temDocInmetro = docs.some(d => d.tipo === "inmetro" && (d.url_gerado || d.url_assinado));
+        if (!temDocInmetro && pp?.inversor_marca_modelo) {
+          const produtos = await base44.entities.Produto.filter({ ativo: true });
+          const inv = produtos.find(p => `${p.fabricante} ${p.modelo}` === pp.inversor_marca_modelo);
+          setTemInmetro(!!(inv?.inmetro_url));
+        } else {
+          setTemInmetro(temDocInmetro);
+        }
       }
       setLoading(false);
     });
