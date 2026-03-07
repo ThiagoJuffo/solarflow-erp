@@ -28,6 +28,32 @@ Deno.serve(async (req) => {
   const uc = ucs[0] || {};
   const rt = resumos[0] || {};
 
+  // Buscar pré-projeto para dados do kit (módulos, inversor, potência)
+  let preProjeto = null;
+  if (projetoData?.pre_projeto_id) {
+    try {
+      preProjeto = await base44.asServiceRole.entities.PreProjeto.get(projetoData.pre_projeto_id);
+    } catch (_e) {}
+  }
+
+  // Buscar produto do módulo para obter potência em Wp
+  let moduloProduto = null;
+  if (preProjeto?.modulo_marca_modelo) {
+    try {
+      const produtos = await base44.asServiceRole.entities.Produto.filter({ ativo: true });
+      moduloProduto = produtos.find(p => `${p.fabricante} ${p.modelo}` === preProjeto.modulo_marca_modelo) || null;
+    } catch (_e) {}
+  }
+
+  // Buscar produto do inversor para obter potência AC
+  let inversorProduto = null;
+  if (preProjeto?.inversor_marca_modelo) {
+    try {
+      const produtos = await base44.asServiceRole.entities.Produto.filter({ ativo: true });
+      inversorProduto = produtos.find(p => `${p.fabricante} ${p.modelo}` === preProjeto.inversor_marca_modelo) || null;
+    } catch (_e) {}
+  }
+
   if (!projetoData) return Response.json({ error: 'Projeto não encontrado' }, { status: 404 });
   const projeto = projetoData;
 
