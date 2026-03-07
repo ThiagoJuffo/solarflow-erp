@@ -577,11 +577,16 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="bg-slate-800/60 rounded-xl p-3">
-                <p className="text-slate-400 text-xs mb-1">Inversor</p>
-                <p className="text-white text-sm font-medium">{preProjeto.inversor_marca_modelo || "—"}</p>
-                <p className="text-slate-500 text-xs mt-0.5">Qtd: {preProjeto.inversor_quantidade || "—"}</p>
-              </div>
+            <div className="bg-slate-800/60 rounded-xl p-3 col-span-2">
+              <p className="text-slate-400 text-xs mb-2">Inversores</p>
+              {(preProjeto.inversores?.length ? preProjeto.inversores : preProjeto.inversor_marca_modelo ? [{ marca_modelo: preProjeto.inversor_marca_modelo, quantidade: preProjeto.inversor_quantidade }] : []).map((inv, i) => (
+                <div key={i} className="flex items-center justify-between py-1 border-b border-slate-700/50 last:border-0">
+                  <p className="text-white text-sm font-medium">{inv.marca_modelo || "—"}</p>
+                  <span className="text-slate-400 text-xs">Qtd: {inv.quantidade || "—"}</span>
+                </div>
+              ))}
+              {!preProjeto.inversores?.length && !preProjeto.inversor_marca_modelo && <p className="text-slate-500 text-sm">—</p>}
+            </div>
               <div className="bg-slate-800/60 rounded-xl p-3">
                 <p className="text-slate-400 text-xs mb-1">Módulos FV</p>
                 <p className="text-white text-sm font-medium">{preProjeto.modulo_marca_modelo || "—"}</p>
