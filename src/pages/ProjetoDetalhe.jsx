@@ -629,6 +629,8 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
             { label: "Cidade", key: "cidade" },
             { label: "Estado (UF)", key: "estado" },
             { label: "CEP", key: "cep" },
+          { label: "Latitude", key: "latitude", type: "number" },
+          { label: "Longitude", key: "longitude", type: "number" },
           ].map(f => (
             <div key={f.key}>
               <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>

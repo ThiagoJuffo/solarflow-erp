@@ -301,6 +301,8 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
   <tr><td>CPF Proprietário</td><td>${cpfCliente}</td></tr>
   <tr><td>Telefone Proprietário</td><td>${telefone}</td></tr>
   <tr><td>E-mail</td><td>${email}</td></tr>
+  <tr><td>Latitude</td><td>${uc.latitude || "—"}</td></tr>
+  <tr><td>Longitude</td><td>${uc.longitude || "—"}</td></tr>
   <tr><td>Classificação da Unidade Consumidora</td><td>Residencial</td></tr>
   <tr><td>Tipo de Ligação da Unidade Consumidora</td><td>${tipoLigacao}</td></tr>
 </table>
