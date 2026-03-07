@@ -180,7 +180,7 @@ export default function Dashboard() {
                       </span>
                     )}
                   </div>
-                  <p className="text-slate-400 text-xs">UC: {p.uc_geradora || "—"}</p>
+                  <p className="text-slate-400 text-xs">UC: {ucsPorProjeto[p.id]?.numero_uc || p.uc_geradora || "—"}</p>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${statusColor(p.status)}`}>
