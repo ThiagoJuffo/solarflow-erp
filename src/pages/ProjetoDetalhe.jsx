@@ -47,6 +47,7 @@ export default function ProjetoDetalhe() {
   const [user, setUser] = useState(null);
   const [senhaVisivel, setSenhaVisivel] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [temInmetro, setTemInmetro] = useState(false);
 
   useEffect(() => {
     if (!id) return;
