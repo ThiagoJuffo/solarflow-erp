@@ -891,11 +891,15 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-white font-medium text-sm">{tipo.label}</p>
-                  {doc && (
+                  {tipo.fromProduto && inversorProduto?.inmetro_url && !doc ? (
+                    <span className="text-xs px-2.5 py-1 rounded-lg border bg-emerald-400/10 text-emerald-400 border-emerald-400/20">
+                      Assinado
+                    </span>
+                  ) : doc ? (
                     <span className={`text-xs px-2.5 py-1 rounded-lg border ${doc.status === "assinado" ? "bg-emerald-400/10 text-emerald-400 border-emerald-400/20" : doc.status === "gerado" ? "bg-blue-400/10 text-blue-400 border-blue-400/20" : "bg-slate-700 text-slate-400 border-slate-600"}`}>
                       {doc.status === "assinado" ? "Assinado" : doc.status === "gerado" ? "Gerado" : doc.status}
                     </span>
-                  )}
+                  ) : null}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {tipo.gerarivel && canEdit && (
