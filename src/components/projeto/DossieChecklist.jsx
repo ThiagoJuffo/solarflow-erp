@@ -50,14 +50,41 @@ export default function DossieChecklist({ documentos = [], envioCreditos = false
           const status = getDocStatus(item.key);
           const ok = status === "assinado" || status === "nao_aplicavel";
           const gerado = status === "gerado" || status === "enviado_para_assinatura";
+          const pendente = !ok && !gerado;
           return (
-            <div key={item.key} className={`flex items-center gap-3 p-3 rounded-xl ${ok ? "bg-emerald-400/5" : gerado ? "bg-amber-400/5" : "bg-slate-800/50"}`}>
-              {ok ? <CheckCircle size={15} className="text-emerald-400 shrink-0" /> : gerado ? <AlertTriangle size={15} className="text-amber-400 shrink-0" /> : <Circle size={15} className="text-slate-600 shrink-0" />}
+            <div key={item.key} className={`flex items-center gap-3 p-3 rounded-xl border transition-all
+              ${ok
+                ? "bg-emerald-400/5 border-transparent"
+                : gerado
+                  ? "bg-amber-400/5 border-amber-500/20"
+                  : !dossieOk && item.obrigatorio
+                    ? "bg-red-500/5 border-red-500/30"
+                    : "bg-slate-800/50 border-transparent"
+              }`}>
+              {ok
+                ? <CheckCircle size={15} className="text-emerald-400 shrink-0" />
+                : gerado
+                  ? <AlertTriangle size={15} className="text-amber-400 shrink-0" />
+                  : !dossieOk && item.obrigatorio
+                    ? <XCircle size={15} className="text-red-400 shrink-0" />
+                    : <Circle size={15} className="text-slate-600 shrink-0" />
+              }
               <div className="flex-1">
-                <p className={`text-sm ${ok ? "text-emerald-300" : gerado ? "text-amber-300" : "text-slate-400"}`}>{item.label}</p>
+                <p className={`text-sm font-medium
+                  ${ok ? "text-emerald-300" : gerado ? "text-amber-300" : !dossieOk && item.obrigatorio ? "text-red-300" : "text-slate-400"}`}>
+                  {item.label}
+                </p>
                 {!item.obrigatorio && <p className="text-slate-500 text-xs">Opcional</p>}
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded-md ${ok ? "bg-emerald-400/10 text-emerald-400" : gerado ? "bg-amber-400/10 text-amber-400" : "bg-slate-700 text-slate-500"}`}>
+              <span className={`text-xs px-2 py-0.5 rounded-md font-medium
+                ${ok
+                  ? "bg-emerald-400/10 text-emerald-400"
+                  : gerado
+                    ? "bg-amber-400/10 text-amber-400"
+                    : !dossieOk && item.obrigatorio
+                      ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                      : "bg-slate-700 text-slate-500"
+                }`}>
                 {status === "assinado" ? "Assinado" : status === "gerado" ? "Gerado" : status === "enviado_para_assinatura" ? "Enviado" : "Pendente"}
               </span>
             </div>
