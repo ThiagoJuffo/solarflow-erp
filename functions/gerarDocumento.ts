@@ -360,13 +360,63 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
 <h3>4.2 Inversor(es)</h3>
 ${tabelasInversores}
 
+${(() => {
+  const kwhMedio = parseFloat(preProjeto?.kwh_prometidos) || 0;
+  const meses = Object.keys(FATORES_MENSAIS);
+  const geracoes = meses.map(m => kwhMedio ? (kwhMedio * FATORES_MENSAIS[m]).toFixed(0) : null);
+  const maxVal = kwhMedio ? Math.max(...geracoes.map(Number)) : 0;
+  const barMaxHeight = 120; // px
+
+  const linhaFatores = meses.map(m => `<td>${(FATORES_MENSAIS[m]*100).toFixed(2)}%</td>`).join("");
+  const linhaGeracoes = geracoes.map(v => `<td>${v || "—"}</td>`).join("");
+
+  const barras = meses.map((m, i) => {
+    const val = geracoes[i] ? Number(geracoes[i]) : 0;
+    const h = maxVal ? Math.round((val / maxVal) * barMaxHeight) : 0;
+    return `
+      <div style="display:flex;flex-direction:column;align-items:center;width:30px;">
+        <span style="font-size:7pt;margin-bottom:2px;">${val}</span>
+        <div style="width:22px;height:${h}px;background:#00b050;border-radius:2px 2px 0 0;"></div>
+        <span style="font-size:7pt;margin-top:3px;">${m}</span>
+      </div>`;
+  }).join("");
+
+  return `
 <table>
   <tr><th colspan="2" style="background-color:#00b050;color:#fff;font-weight:bold;text-align:center;">Estimativa de geração e Considerações Gerais</th></tr>
   <tr><td style="background-color:#00b050;color:#fff;">Potência instalada do circuito DC (<u>kWp</u>)</td><td>${potKwp}</td></tr>
   <tr><td style="background-color:#00b050;color:#fff;">Potência instalada do circuito AC (kW)</td><td>${potInversorKw}</td></tr>
   <tr><td style="background-color:#00b050;color:#fff;">Hora de Sol Pico</td><td></td></tr>
-  <tr><td style="background-color:#00b050;color:#fff;">Estimativa de geração média mensal (kWh/Mês)</td><td>${preProjeto?.kwh_prometidos || "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;">Estimativa de geração média mensal (kWh/Mês)</td><td>${kwhMedio || "—"}</td></tr>
 </table>
+
+${kwhMedio ? `
+<table style="margin-top:0.5em;">
+  <tr>
+    <th style="background-color:#00b050;color:#fff;text-align:center;">Mês</th>
+    ${meses.map(m => `<th style="background-color:#00b050;color:#fff;text-align:center;font-size:9pt;">${m}</th>`).join("")}
+    <th style="background-color:#00b050;color:#fff;text-align:center;">Média</th>
+  </tr>
+  <tr>
+    <td style="background-color:#00b050;color:#fff;">Fator</td>
+    ${linhaFatores}
+    <td>100%</td>
+  </tr>
+  <tr>
+    <td style="background-color:#00b050;color:#fff;">Geração Mensal (kWh)</td>
+    ${linhaGeracoes}
+    <td>${kwhMedio}</td>
+  </tr>
+</table>
+
+<div style="margin-top:1em;padding:10px;border:1px solid #ccc;border-radius:4px;">
+  <p style="text-align:center;font-size:9pt;font-weight:bold;margin-bottom:8px;">Geração Estimada Anual (kWh)</p>
+  <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;height:${barMaxHeight + 40}px;padding:0 10px;">
+    ${barras}
+  </div>
+</div>
+` : ""}`;
+})()}
 
 <h2>5. Descritivo Técnico do Sistema</h2>
 <p>O presente sistema de microgeração distribuída utiliza a tecnologia dos sistemas fotovoltaicos para a geração de energia em montante necessário para a compensação do consumo médio mensal da unidade consumidora onde está instalado.</p>
