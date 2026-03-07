@@ -851,21 +851,26 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
     setGerando(null);
   };
 
+  // Tipos que pulam diretamente para "assinado" no upload (não passam por "gerado")
+  const UPLOAD_DIRETO_ASSINADO = ["projeto_unifilar"];
+
   const handleUpload = async (tipo, file, signed = false) => {
     setUploading(tipo);
+    const forcarAssinado = UPLOAD_DIRETO_ASSINADO.includes(tipo);
+    const isAssinado = signed || forcarAssinado;
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     const existing = getDoc(tipo);
     if (existing) {
       const updated = await base44.entities.Documento.update(existing.id, {
-        ...(signed ? { url_assinado: file_url, status: "assinado", data_assinatura: new Date().toISOString() } : { url_gerado: file_url, status: "gerado" })
+        ...(isAssinado ? { url_assinado: file_url, status: "assinado", data_assinatura: new Date().toISOString() } : { url_gerado: file_url, status: "gerado" })
       });
       setDocumentos(prev => prev.map(d => d.id === existing.id ? updated : d));
     } else {
       const novo = await base44.entities.Documento.create({
         projeto_id: projetoId, tipo,
-        url_gerado: signed ? undefined : file_url,
-        url_assinado: signed ? file_url : undefined,
-        status: signed ? "assinado" : "gerado",
+        url_gerado: isAssinado ? undefined : file_url,
+        url_assinado: isAssinado ? file_url : undefined,
+        status: isAssinado ? "assinado" : "gerado",
         titulo: TIPOS.find(t => t.key === tipo)?.label
       });
       setDocumentos(prev => [...prev, novo]);
