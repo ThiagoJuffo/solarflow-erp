@@ -343,6 +343,56 @@ Retorne apenas o JSON.`;
                 <input type="number" value={form.kwh_prometidos || ""} onChange={e => set("kwh_prometidos", e.target.value)} placeholder="ex: 600"
                   className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors" />
               </div>
+            </div>
+
+            {/* Inversores — múltiplos modelos */}
+            <div className="col-span-2 space-y-2">
+              <label className="text-slate-400 text-xs font-medium block">Inversores *</label>
+              {(form.inversores || []).map((inv, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <select
+                    value={inv.marca_modelo || ""}
+                    onChange={e => {
+                      const arr = [...form.inversores];
+                      arr[i] = { ...arr[i], marca_modelo: e.target.value };
+                      set("inversores", arr);
+                    }}
+                    className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors"
+                  >
+                    <option value="">Selecionar inversor...</option>
+                    {inversores.map(p => (
+                      <option key={p.id} value={`${p.fabricante} ${p.modelo}`}>
+                        {p.fabricante} {p.modelo}{p.potencia_kva ? ` — ${p.potencia_kva} kVA` : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    value={inv.quantidade || ""}
+                    onChange={e => {
+                      const arr = [...form.inversores];
+                      arr[i] = { ...arr[i], quantidade: e.target.value };
+                      set("inversores", arr);
+                    }}
+                    placeholder="Qtd"
+                    className="w-20 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500"
+                  />
+                  {form.inversores.length > 1 && (
+                    <button onClick={() => set("inversores", form.inversores.filter((_, idx) => idx !== i))} className="text-red-400 hover:text-red-300 p-1.5">
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                onClick={() => set("inversores", [...(form.inversores || []), { marca_modelo: "", quantidade: "" }])}
+                className="flex items-center gap-1.5 text-amber-400 hover:text-amber-300 text-xs font-medium transition-colors"
+              >
+                <Plus size={13} /> Adicionar outro modelo de inversor
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 col-span-2">
               <div>
                 <label className="text-slate-400 text-xs font-medium block mb-1.5">Marca e Modelo dos Módulos *</label>
                 <select value={form.modulo_marca_modelo || ""} onChange={e => set("modulo_marca_modelo", e.target.value)}
