@@ -9,8 +9,9 @@ const ITEMS_CHECKLIST = [
   { key: "formulario_creditos", label: "Formulário de créditos (se aplicável)", obrigatorio: false },
 ];
 
-export default function DossieChecklist({ documentos = [], envioCreditos = false }) {
+export default function DossieChecklist({ documentos = [], envioCreditos = false, temInmetro = false }) {
   const getDocStatus = (tipo) => {
+    if (tipo === "inmetro" && temInmetro) return "assinado";
     const doc = documentos.find(d => d.tipo === tipo);
     if (!doc) return "pendente";
     return doc.status;
