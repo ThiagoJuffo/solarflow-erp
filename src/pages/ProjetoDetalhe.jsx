@@ -827,6 +827,19 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
   const [uploading, setUploading] = useState(null);
   const [gerando, setGerando] = useState(null);
   const [inversorProduto, setInversorProduto] = useState(null);
+  const [limpando, setLimpando] = useState(null);
+
+  const handleLimpar = async (tipo, campo) => {
+    const doc = getDoc(tipo);
+    if (!doc) return;
+    setLimpando(`${tipo}_${campo}`);
+    const updates = { [campo]: null };
+    if (campo === "url_assinado") updates.status = doc.url_gerado ? "gerado" : "pendente";
+    if (campo === "url_gerado" && !doc.url_assinado) updates.status = "pendente";
+    const updated = await base44.entities.Documento.update(doc.id, updates);
+    setDocumentos(prev => prev.map(d => d.id === doc.id ? { ...d, ...updates } : d));
+    setLimpando(null);
+  };
 
   useEffect(() => {
     if (!preProjeto?.inversor_marca_modelo) return;
