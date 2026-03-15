@@ -701,6 +701,24 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
               {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />} Salvar UC
             </button>
           )}
+
+          {/* Email do cliente */}
+          <div className="pt-3 border-t border-slate-800">
+            <label className="text-slate-400 text-xs mb-1.5 block">E-mail do Cliente</label>
+            <input
+              type="email"
+              value={emailForm}
+              onChange={e => setEmailForm(e.target.value)}
+              disabled={!canEdit}
+              placeholder="email@exemplo.com"
+              className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500 placeholder-slate-600"
+            />
+            {canEdit && (
+              <button onClick={handleSaveEmail} disabled={savingEmail} className="w-full mt-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-60 text-slate-300 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2">
+                {savingEmail ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />} Salvar E-mail
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Resumo Técnico */}
