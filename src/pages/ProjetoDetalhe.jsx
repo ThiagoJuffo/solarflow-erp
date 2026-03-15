@@ -468,6 +468,8 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
   const [ucForm, setUcForm] = useState(dadosIniciais);
   const [rtForm, setRtForm] = useState(resumoTec || {});
   const [saving, setSaving] = useState(false);
+  const [emailForm, setEmailForm] = useState(preProjeto?.email || "");
+  const [savingEmail, setSavingEmail] = useState(false);
 
   const handleSaveUC = async () => {
     setSaving(true);
@@ -478,6 +480,11 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
     setSaving(true);
     await saveResumo(rtForm);
     setSaving(false);
+  };
+  const handleSaveEmail = async () => {
+    setSavingEmail(true);
+    await base44.entities.PreProjeto.update(preProjeto.id, { email: emailForm });
+    setSavingEmail(false);
   };
 
   const [confirmandoEq, setConfirmandoEq] = useState(false);
