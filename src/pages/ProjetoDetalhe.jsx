@@ -959,14 +959,38 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
                     <span className="text-xs text-slate-500 italic">Certificado não cadastrado para este inversor</span>
                   )}
                   {doc?.url_gerado && (
-                    <a href={doc.url_gerado} target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:underline flex items-center gap-1">
-                      <FileText size={12} /> Ver original
-                    </a>
+                    <div className="flex items-center gap-1">
+                      <a href={doc.url_gerado} target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:underline flex items-center gap-1">
+                        <FileText size={12} /> Ver original
+                      </a>
+                      {canEdit && (
+                        <button
+                          onClick={() => handleLimpar(tipo.key, "url_gerado")}
+                          disabled={limpando === `${tipo.key}_url_gerado`}
+                          title="Remover arquivo"
+                          className="ml-1 text-slate-500 hover:text-red-400 transition-colors"
+                        >
+                          {limpando === `${tipo.key}_url_gerado` ? <Loader2 size={11} className="animate-spin" /> : <X size={11} />}
+                        </button>
+                      )}
+                    </div>
                   )}
                   {doc?.url_assinado && (
-                    <a href={doc.url_assinado} target="_blank" rel="noreferrer" className="text-xs text-emerald-400 hover:underline flex items-center gap-1">
-                      <CheckCircle size={12} /> Ver assinado
-                    </a>
+                    <div className="flex items-center gap-1">
+                      <a href={doc.url_assinado} target="_blank" rel="noreferrer" className="text-xs text-emerald-400 hover:underline flex items-center gap-1">
+                        <CheckCircle size={12} /> Ver assinado
+                      </a>
+                      {canEdit && (
+                        <button
+                          onClick={() => handleLimpar(tipo.key, "url_assinado")}
+                          disabled={limpando === `${tipo.key}_url_assinado`}
+                          title="Remover arquivo assinado"
+                          className="ml-1 text-slate-500 hover:text-red-400 transition-colors"
+                        >
+                          {limpando === `${tipo.key}_url_assinado` ? <Loader2 size={11} className="animate-spin" /> : <X size={11} />}
+                        </button>
+                      )}
+                    </div>
                   )}
                   {canEdit && (
                     <>
