@@ -372,7 +372,7 @@ export default function ProjetoDetalhe() {
 
           {/* TAB: VISITA */}
           {tab === "Visita" && (
-            <VisitaTab projetoId={id} visita={visita} setVisita={setVisita} canEdit={canEdit} />
+            <VisitaTab projetoId={id} visita={visita} setVisita={setVisita} canEdit={canEdit} preProjeto={preProjeto} />
           )}
 
           {/* TAB: INSTALAÇÃO */}
