@@ -29,7 +29,16 @@ export default function Usuarios() {
   const handleInvite = async () => {
     if (!inviteEmail) return;
     setInviting(true);
-    await base44.users.inviteUser(inviteEmail, inviteRole);
+    // inviteUser only accepts "user" or "admin"; set custom role after
+    const platformRole = inviteRole === "admin" ? "admin" : "user";
+    await base44.users.inviteUser(inviteEmail, platformRole);
+    // Find newly created user and update their role
+    const updatedUsers = await base44.entities.User.list("-created_date", 100);
+    const newUser = updatedUsers.find(u => u.email === inviteEmail);
+    if (newUser && inviteRole !== platformRole) {
+      await base44.entities.User.update(newUser.id, { role: inviteRole });
+    }
+    setUsers(updatedUsers);
     setInviting(false);
     setSuccess(true);
     setInviteEmail("");
