@@ -1182,6 +1182,7 @@ function VisitaTab({ projetoId, visita, setVisita, canEdit, preProjeto }) {
         </button>
       )}
     </div>
+    </div>
   );
 }
 
