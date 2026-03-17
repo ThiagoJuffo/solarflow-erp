@@ -1034,7 +1034,7 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
   );
 }
 
-function VisitaTab({ projetoId, visita, setVisita, canEdit }) {
+function VisitaTab({ projetoId, visita, setVisita, canEdit, preProjeto }) {
   const [form, setForm] = useState(visita || { status: "agendada" });
   const [saving, setSaving] = useState(false);
   const [uploadingFoto, setUploadingFoto] = useState(null);
