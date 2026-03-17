@@ -823,7 +823,7 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
   );
 }
 
-function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProjeto }) {
+function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProjeto, projeto }) {
   const [uploading, setUploading] = useState(null);
   const [gerando, setGerando] = useState(null);
   const [inversorProduto, setInversorProduto] = useState(null);
