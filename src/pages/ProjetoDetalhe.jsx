@@ -918,37 +918,6 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
 
   return (
     <div className="space-y-4 max-w-3xl">
-      {/* Arquivos enviados pelo vendedor (somente visualização) */}
-      {(preProjeto?.conta_energia_url || preProjeto?.documento_foto_url) && (
-        <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5">
-          <h4 className="text-slate-300 font-semibold text-sm mb-3 flex items-center gap-2">
-            <FileText size={14} className="text-slate-400" /> Arquivos enviados pelo vendedor
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            {preProjeto?.conta_energia_url && (
-              <a
-                href={preProjeto.conta_energia_url}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
-              >
-                <FileText size={12} /> Ver Conta de Energia
-              </a>
-            )}
-            {preProjeto?.documento_foto_url && (
-              <a
-                href={preProjeto.documento_foto_url}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
-              >
-                <FileText size={12} /> Ver CNH / Documento
-              </a>
-            )}
-          </div>
-        </div>
-      )}
-
       {TIPOS.map(tipo => {
         const doc = getDoc(tipo.key);
         return (
