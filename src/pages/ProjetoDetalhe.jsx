@@ -367,7 +367,7 @@ export default function ProjetoDetalhe() {
 
           {/* TAB: DOCUMENTOS */}
           {tab === "Documentos" && (
-            <DocumentosTab projetoId={id} documentos={documentos} setDocumentos={setDocumentos} canEdit={canEdit} preProjeto={preProjeto} />
+            <DocumentosTab projetoId={id} documentos={documentos} setDocumentos={setDocumentos} canEdit={canEdit} preProjeto={preProjeto} projeto={projeto} />
           )}
 
           {/* TAB: VISITA */}
