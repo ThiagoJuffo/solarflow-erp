@@ -1088,27 +1088,29 @@ function VisitaTab({ projetoId, visita, setVisita, canEdit, preProjeto }) {
 
   return (
     <div className="max-w-2xl space-y-4">
-      {(preProjeto?.conta_energia_url || preProjeto?.documento_foto_url) && (
-        <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5">
-          <h4 className="text-slate-300 font-semibold text-sm mb-3 flex items-center gap-2">
-            <FileText size={14} className="text-slate-400" /> Arquivos enviados pelo vendedor
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            {preProjeto?.conta_energia_url && (
-              <a href={preProjeto.conta_energia_url} target="_blank" rel="noreferrer"
-                className="text-xs bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
-                <FileText size={12} /> Ver Conta de Energia
-              </a>
-            )}
-            {preProjeto?.documento_foto_url && (
-              <a href={preProjeto.documento_foto_url} target="_blank" rel="noreferrer"
-                className="text-xs bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
-                <FileText size={12} /> Ver CNH / Documento
-              </a>
-            )}
-          </div>
+      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5">
+        <h4 className="text-slate-300 font-semibold text-sm mb-3 flex items-center gap-2">
+          <FileText size={14} className="text-slate-400" /> Arquivos enviados pelo vendedor
+        </h4>
+        <div className="flex flex-wrap gap-2">
+          {preProjeto?.conta_energia_url ? (
+            <a href={preProjeto.conta_energia_url} target="_blank" rel="noreferrer"
+              className="text-xs bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
+              <FileText size={12} /> Ver Conta de Energia
+            </a>
+          ) : (
+            <span className="text-xs text-slate-500 italic">Conta de energia não enviada</span>
+          )}
+          {preProjeto?.documento_foto_url ? (
+            <a href={preProjeto.documento_foto_url} target="_blank" rel="noreferrer"
+              className="text-xs bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
+              <FileText size={12} /> Ver CNH / Documento
+            </a>
+          ) : (
+            <span className="text-xs text-slate-500 italic">CNH/Documento não enviado</span>
+          )}
         </div>
-      )}
+      </div>
 
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
       <h3 className="text-white font-semibold flex items-center gap-2"><Camera size={16} className="text-amber-400" /> Visita Técnica</h3>
