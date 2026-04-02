@@ -251,7 +251,17 @@ export default function Projetos() {
                     <p className="text-white font-semibold text-sm">{item.nome_cliente}</p>
                     {item._tipo === "pre_projeto" && <span className="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded-md">Pré-Projeto</span>}
                   </div>
-                  <p className="text-slate-500 text-xs mt-0.5">CPF: {item.cpf}</p>
+                  <div className="flex items-center gap-3 mt-0.5">
+                    <p className="text-slate-500 text-xs">CPF: {item.cpf}</p>
+                    {(() => {
+                      const pp = item._tipo === "projeto"
+                        ? preProjetos.find(p => p.id === item.pre_projeto_id)
+                        : item;
+                      return pp?.vendedor_nome
+                        ? <p className="text-amber-400/70 text-xs">Vendedor: {pp.vendedor_nome}</p>
+                        : null;
+                    })()}
+                  </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="flex items-center gap-1.5 flex-wrap justify-end">
