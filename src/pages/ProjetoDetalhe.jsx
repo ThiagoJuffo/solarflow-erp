@@ -857,6 +857,7 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
     { key: "art", label: "ART", gerarivel: false },
     { key: "projeto_unifilar", label: "Projeto Unifilar", gerarivel: false },
     { key: "inmetro", label: "Certificado INMETRO", gerarivel: false, fromProduto: true },
+    { key: "conta_energia", label: "Conta de Energia", gerarivel: false, fromPreProjeto: "conta_energia_url" },
     { key: "outros_anexos", label: "Outros Anexos", gerarivel: false },
   ];
 
@@ -929,7 +930,11 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-white font-medium text-sm">{tipo.label}</p>
-                  {tipo.fromProduto && inversorProduto?.inmetro_url && !doc ? (
+                  {tipo.fromPreProjeto && preProjeto?.[tipo.fromPreProjeto] ? (
+                    <span className="text-xs px-2.5 py-1 rounded-lg border bg-blue-400/10 text-blue-400 border-blue-400/20">
+                      Disponível
+                    </span>
+                  ) : tipo.fromProduto && inversorProduto?.inmetro_url && !doc ? (
                     <span className="text-xs px-2.5 py-1 rounded-lg border bg-emerald-400/10 text-emerald-400 border-emerald-400/20">
                       Assinado
                     </span>
@@ -957,6 +962,14 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
                   )}
                   {tipo.fromProduto && inversorProduto && !inversorProduto.inmetro_url && (
                     <span className="text-xs text-slate-500 italic">Certificado não cadastrado para este inversor</span>
+                  )}
+                  {tipo.fromPreProjeto && preProjeto?.[tipo.fromPreProjeto] && (
+                    <a href={preProjeto[tipo.fromPreProjeto]} target="_blank" rel="noreferrer" className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1.5 rounded-lg hover:bg-blue-500/20 transition-all flex items-center gap-1">
+                      <FileText size={12} /> Download Conta de Energia
+                    </a>
+                  )}
+                  {tipo.fromPreProjeto && !preProjeto?.[tipo.fromPreProjeto] && (
+                    <span className="text-xs text-slate-500 italic">Não enviada pelo vendedor</span>
                   )}
                   {doc?.url_gerado && (
                     <div className="flex items-center gap-1">
