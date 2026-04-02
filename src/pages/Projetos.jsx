@@ -257,9 +257,10 @@ export default function Projetos() {
                       const pp = item._tipo === "projeto"
                         ? preProjetos.find(p => p.id === item.pre_projeto_id)
                         : item;
-                      return pp?.vendedor_nome
-                        ? <p className="text-amber-400/70 text-xs">Vendedor: {pp.vendedor_nome}</p>
-                        : null;
+                      return <>
+                        {pp?.vendedor_nome && <p className="text-amber-400/70 text-xs">Vendedor: {pp.vendedor_nome}</p>}
+                        {pp?.valor_projeto && <p className="text-emerald-400/70 text-xs">R$ {pp.valor_projeto}</p>}
+                      </>;
                     })()}
                   </div>
                 </div>
