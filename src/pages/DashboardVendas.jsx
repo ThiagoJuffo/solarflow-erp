@@ -42,10 +42,17 @@ export default function DashboardVendas() {
     Promise.all([
       base44.auth.me(),
       base44.entities.PreProjeto.list("-created_date", 500),
-      base44.entities.Vendedor.list()
-    ]).then(([u, pp, v]) => {
+      base44.entities.Vendedor.list(),
+      base44.entities.Projeto.list("-created_date", 500)
+    ]).then(([u, pp, v, projetos]) => {
       setUser(u);
-      setPreProjetos(pp);
+      // Só contar pré-projetos que têm um projeto ativo (não foram apagados)
+      // e que estão com status pago/iniciado
+      const projetosIds = new Set(projetos.map(p => p.pre_projeto_id).filter(Boolean));
+      const ppFechados = pp.filter(p =>
+        p.status === "pago_projeto_iniciado" && projetosIds.has(p.id)
+      );
+      setPreProjetos(ppFechados);
       setVendedores(v);
       setLoading(false);
     });
