@@ -4,6 +4,23 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Sun, Zap, Clock, CheckCircle, AlertTriangle, TrendingUp, FolderKanban, ArrowRight, Package, ShieldCheck } from "lucide-react";
 
+const CHECKLIST_OBRIGATORIOS = [
+  { key: "procuracao", label: "Procuração" },
+  { key: "art", label: "ART" },
+  { key: "memorial_tecnico", label: "Memorial Técnico" },
+  { key: "inmetro", label: "INMETRO" },
+  { key: "projeto_unifilar", label: "Unifilar" },
+];
+
+const getItensFaltando = (documentos = [], temInmetro = false) => {
+  return CHECKLIST_OBRIGATORIOS.filter(item => {
+    if (item.key === "inmetro" && temInmetro) return false;
+    const tipos = item.key === "art" ? ["art", "solicitacao_art"] : [item.key];
+    const doc = documentos.find(d => tipos.includes(d.tipo));
+    return !(doc && (doc.status === "assinado" || doc.status === "nao_aplicavel"));
+  }).map(item => item.label);
+};
+
 const STATUS_LABELS = {
   pago_projeto_iniciado: "Projeto Iniciado",
   kit_confirmado: "Kit Confirmado",
@@ -27,6 +44,8 @@ export default function Dashboard() {
   const [projetos, setProjetos] = useState([]);
   const [preProjetos, setPreProjetos] = useState([]);
   const [ucsPorProjeto, setUcsPorProjeto] = useState({});
+  const [documentosPorProjeto, setDocumentosPorProjeto] = useState({});
+  const [inmetroPorProjeto, setInmetroPorProjeto] = useState({});
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
 
@@ -35,14 +54,40 @@ export default function Dashboard() {
       base44.entities.Projeto.list("-created_date", 100),
       base44.entities.PreProjeto.list("-created_date", 50),
       base44.entities.UC.list("-created_date", 200),
+      base44.entities.Documento.list("-created_date", 1000),
+      base44.entities.Produto.filter({ ativo: true }),
       base44.auth.me()
-    ]).then(([p, pp, ucs, u]) => {
+    ]).then(([p, pp, ucs, docs, produtos, u]) => {
       setProjetos(p);
       setPreProjetos(pp);
       setUser(u);
       const grouped = {};
       ucs.forEach(uc => { if (uc.projeto_id) grouped[uc.projeto_id] = uc; });
       setUcsPorProjeto(grouped);
+
+      const docGrouped = {};
+      docs.forEach(d => {
+        if (!docGrouped[d.projeto_id]) docGrouped[d.projeto_id] = [];
+        docGrouped[d.projeto_id].push(d);
+      });
+      setDocumentosPorProjeto(docGrouped);
+
+      const ppMap = {};
+      pp.forEach(pre => { ppMap[pre.id] = pre; });
+      const inmetroMap = {};
+      p.forEach(proj => {
+        const docInmetro = (docGrouped[proj.id] || []).some(d => d.tipo === "inmetro" && (d.url_gerado || d.url_assinado));
+        if (docInmetro) { inmetroMap[proj.id] = true; return; }
+        const pre = ppMap[proj.pre_projeto_id];
+        if (pre?.inversor_marca_modelo) {
+          const inv = produtos.find(prod => `${prod.fabricante} ${prod.modelo}` === pre.inversor_marca_modelo);
+          inmetroMap[proj.id] = !!(inv?.inmetro_url);
+        } else {
+          inmetroMap[proj.id] = false;
+        }
+      });
+      setInmetroPorProjeto(inmetroMap);
+
       setLoading(false);
     });
   }, []);
@@ -182,15 +227,27 @@ export default function Dashboard() {
                   </div>
                   <p className="text-slate-400 text-xs">UC: {ucsPorProjeto[p.id]?.numero_uc || p.uc_geradora || "—"}</p>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 flex-wrap justify-end">
                   <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${statusColor(p.status)}`}>
                     {STATUS_LABELS[p.status] || p.status}
                   </span>
                   {p.status === "pago_projeto_iniciado" && !p.equipamentos_confirmados && (
-                    <span className="text-xs font-medium px-2.5 py-1 rounded-lg text-orange-400 bg-orange-400/10 flex items-center gap-1">
+                    <span className="text-xs font-medium px-2.5 py-1 rounded-lg text-orange-400 bg-orange-400/10 border border-orange-400/20 flex items-center gap-1">
                       <Package size={10} /> Kit Pendente
                     </span>
                   )}
+                  {(() => {
+                    const faltando = getItensFaltando(documentosPorProjeto[p.id] || [], inmetroPorProjeto[p.id] || false);
+                    if (faltando.length === 0) return null;
+                    return (
+                      <span
+                        title={`Faltando: ${faltando.join(", ")}`}
+                        className="text-xs font-medium px-2.5 py-1 rounded-lg border border-red-400/20 text-red-400 bg-red-400/10 flex items-center gap-1"
+                      >
+                        <AlertTriangle size={10} /> {faltando.join(", ")}
+                      </span>
+                    );
+                  })()}
                 </div>
                 <ArrowRight size={14} className="text-slate-600 group-hover:text-amber-400 transition-colors shrink-0" />
               </Link>
