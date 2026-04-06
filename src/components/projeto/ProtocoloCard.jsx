@@ -25,6 +25,7 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
   const [data, setData] = useState("");
   const [modalidade, setModalidade] = useState("convencional");
   const [saving, setSaving] = useState(false);
+  const [listaProtocolos, setListaProtocolos] = useState(protocolos);
   const [expandido, setExpandido] = useState(null);
   const [editandoStatus, setEditandoStatus] = useState({});
   const [salvanidoStatus, setSalvandoStatus] = useState({});
@@ -43,20 +44,20 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
     setCriando(false);
     setNumero("");
     setModalidade("convencional");
+    setListaProtocolos(prev => [...prev, novo]);
     onUpdate && onUpdate(novo);
   };
 
   const handleAtualizarStatus = async (protocoloId, novoStatus, motivoRejeicao = "") => {
     setSalvandoStatus(prev => ({ ...prev, [protocoloId]: true }));
     const updates = { status: novoStatus };
-    if (novoStatus === "indeferido") {
-      updates.resultado = motivoRejeicao;
-    }
-    await base44.entities.Protocolo.update(protocoloId, updates);
+    if (novoStatus === "indeferido") updates.resultado = motivoRejeicao;
+    const atualizado = await base44.entities.Protocolo.update(protocoloId, updates);
     setSalvandoStatus(prev => ({ ...prev, [protocoloId]: false }));
     setEditandoStatus(prev => ({ ...prev, [protocoloId]: false }));
     setExpandido(null);
-    onUpdate && onUpdate({ id: protocoloId, status: novoStatus });
+    setListaProtocolos(prev => prev.map(p => p.id === protocoloId ? { ...p, ...updates } : p));
+    onUpdate && onUpdate({ id: protocoloId, ...updates });
   };
 
   return (
@@ -123,11 +124,11 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
         </div>
       )}
 
-      {protocolos.length === 0 && !criando ? (
+      {listaProtocolos.length === 0 && !criando ? (
        <p className="text-slate-500 text-sm text-center py-4">Nenhum protocolo registrado</p>
       ) : (
        <div className="space-y-2">
-         {protocolos.map(p => (
+         {listaProtocolos.map(p => (
            <div key={p.id} className="space-y-2">
              <button
                onClick={() => setExpandido(expandido === p.id ? null : p.id)}
@@ -157,19 +158,25 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
                  <p className="text-slate-400 text-xs font-semibold">Alterar Status</p>
                  {!editandoStatus[p.id] ? (
                    <div className="flex flex-wrap gap-2">
-                     {["em_analise", "concluido", "indeferido"].map(s => (
+                     {[
+                       { key: "aberto", label: "Aberto", cls: "bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20" },
+                       { key: "pendente", label: "Com Pendências", cls: "bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20" },
+                       { key: "em_analise", label: "Em Análise", cls: "bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20" },
+                       { key: "concluido", label: "Aprovado", cls: "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" },
+                       { key: "indeferido", label: "Indeferido", cls: "bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20" },
+                     ].filter(s => s.key !== p.status).map(s => (
                        <button
-                         key={s}
+                         key={s.key}
                          onClick={() => {
-                           if (s === "indeferido") {
+                           if (s.key === "indeferido") {
                              setEditandoStatus(prev => ({ ...prev, [p.id]: "motivo" }));
                            } else {
-                             handleAtualizarStatus(p.id, s);
+                             handleAtualizarStatus(p.id, s.key);
                            }
                          }}
-                         className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${s === "em_analise" ? "bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20" : s === "concluido" ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20"}`}
+                         className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${s.cls}`}
                        >
-                         {s === "em_analise" ? "Em Análise" : s === "concluido" ? "Aprovado" : "Rejeitado"}
+                         {s.label}
                        </button>
                      ))}
                    </div>
