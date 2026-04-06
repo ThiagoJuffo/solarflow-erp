@@ -686,7 +686,13 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
                 </div>
                 <div>
                   <label className="text-slate-400 text-xs mb-1.5 block">Módulos FV</label>
-                  <select value={eqForm.modulo_marca_modelo} onChange={e => setEqForm(f => ({ ...f, modulo_marca_modelo: e.target.value }))}
+                  <select value={eqForm.modulo_marca_modelo} onChange={e => {
+                    const novoModelo = e.target.value;
+                    const moduloProd = modulos.find(p => `${p.fabricante} ${p.modelo}` === novoModelo);
+                    const qtd = eqForm.modulo_quantidade ? Number(eqForm.modulo_quantidade) : 0;
+                    const kwp = moduloProd?.potencia_wp && qtd ? ((moduloProd.potencia_wp * qtd) / 1000).toFixed(2) : eqForm.potencia_pico_kwp;
+                    setEqForm(f => ({ ...f, modulo_marca_modelo: novoModelo, potencia_pico_kwp: kwp }));
+                  }}
                     className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
                     <option value="">Selecionar...</option>
                     {modulos.map(p => <option key={p.id} value={`${p.fabricante} ${p.modelo}`}>{p.fabricante} {p.modelo}{p.potencia_wp ? ` — ${p.potencia_wp} Wp` : ""}</option>)}
@@ -694,13 +700,19 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
                 </div>
                 <div>
                   <label className="text-slate-400 text-xs mb-1.5 block">Qtd. Módulos</label>
-                  <input type="number" value={eqForm.modulo_quantidade} onChange={e => setEqForm(f => ({ ...f, modulo_quantidade: e.target.value }))}
+                  <input type="number" value={eqForm.modulo_quantidade} onChange={e => {
+                    const qtd = Number(e.target.value) || 0;
+                    const moduloProd = modulos.find(p => `${p.fabricante} ${p.modelo}` === eqForm.modulo_marca_modelo);
+                    const kwp = moduloProd?.potencia_wp && qtd ? ((moduloProd.potencia_wp * qtd) / 1000).toFixed(2) : eqForm.potencia_pico_kwp;
+                    setEqForm(f => ({ ...f, modulo_quantidade: e.target.value, potencia_pico_kwp: kwp }));
+                  }}
                     className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
                 </div>
                 <div>
-                  <label className="text-slate-400 text-xs mb-1.5 block">Potência pico (kWp)</label>
-                  <input type="number" value={eqForm.potencia_pico_kwp} onChange={e => setEqForm(f => ({ ...f, potencia_pico_kwp: e.target.value }))}
-                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+                  <label className="text-slate-400 text-xs mb-1.5 block">Potência pico (kWp) <span className="text-slate-500 font-normal">— calculado automaticamente</span></label>
+                  <div className="w-full bg-slate-800/50 border border-slate-700 text-slate-300 rounded-xl px-3 py-2 text-sm opacity-70 cursor-not-allowed">
+                    {eqForm.potencia_pico_kwp ? `${eqForm.potencia_pico_kwp} kWp` : "Aguardando módulo e quantidade"}
+                  </div>
                 </div>
                 <div>
                   <label className="text-slate-400 text-xs mb-1.5 block">kWh prometidos</label>
