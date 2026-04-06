@@ -25,7 +25,8 @@ const STATUS_LABELS = {
   documentos_gerados: "Docs Gerados", assinaturas_pendentes: "Assinaturas Pend.",
   assinaturas_concluidas: "Assinaturas OK", dossie_ok: "Dossiê OK",
   protocolado_edp: "Protocolado EDP", aguardando_aprovacao: "Aguard. Aprovação",
-  aprovado: "Aprovado", instalacao_agendada: "Instal. Agendada",
+  aprovado: "Aprovado", indeferido: "Indeferido", em_revisao: "Em Revisão",
+  instalacao_agendada: "Instal. Agendada",
   sistema_instalado: "Instalado", protocolo_vistoria: "Protocolo Vistoria",
   vistoria_aprovada: "Vistoria Aprovada",
   monitoramento_cadastrado: "Monitoramento OK", concluido: "Concluído"
@@ -48,6 +49,8 @@ export default function ProjetoDetalhe() {
   const [senhaVisivel, setSenhaVisivel] = useState(false);
   const [saving, setSaving] = useState(false);
   const [temInmetro, setTemInmetro] = useState(false);
+  const [showIndeferirModal, setShowIndeferirModal] = useState(false);
+  const [motivoIndeferimento, setMotivoIndeferimento] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -145,6 +148,41 @@ export default function ProjetoDetalhe() {
   const canSeePassword = user?.role === "admin";
   const canConfirmarEquipamentos = user?.role === "admin" || user?.role === "financeiro" || user?.role === "suprimentos";
 
+  const handleIndeferir = async () => {
+    if (!motivoIndeferimento.trim()) return;
+    const timeline = [...(projeto.timeline_eventos || []), {
+      tipo: "indeferido",
+      motivo: motivoIndeferimento,
+      data: new Date().toISOString(),
+      usuario: user?.email
+    }];
+    await updateProjeto({ status: "indeferido", motivo_indeferimento: motivoIndeferimento, timeline_eventos: timeline });
+    setShowIndeferirModal(false);
+    setMotivoIndeferimento("");
+  };
+
+  const handleEnviarRevisao = async () => {
+    const timeline = [...(projeto.timeline_eventos || []), {
+      tipo: "status_alterado",
+      de: projeto.status,
+      para: "em_revisao",
+      data: new Date().toISOString(),
+      usuario: user?.email
+    }];
+    await updateProjeto({ status: "em_revisao", equipamentos_confirmados: false, timeline_eventos: timeline });
+  };
+
+  const handleEnviarNovaAprovacao = async () => {
+    const timeline = [...(projeto.timeline_eventos || []), {
+      tipo: "status_alterado",
+      de: projeto.status,
+      para: "protocolado_edp",
+      data: new Date().toISOString(),
+      usuario: user?.email
+    }];
+    await updateProjeto({ status: "protocolado_edp", timeline_eventos: timeline });
+  };
+
   const confirmarTransformador = async () => {
     await updateProjeto({
       transformador_confirmado: true,
@@ -189,11 +227,33 @@ export default function ProjetoDetalhe() {
             </div>
             <p className="text-slate-400 text-xs">CPF: {projeto.cpf}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-lg">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <span className={`text-xs border px-2.5 py-1 rounded-lg font-medium ${projeto.status === "indeferido" ? "bg-red-500/10 text-red-400 border-red-500/20" : projeto.status === "em_revisao" ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>
               {STATUS_LABELS[projeto.status] || projeto.status}
             </span>
-            {(user?.role === "admin" || user?.role === "engenharia") && (
+
+            {/* Botões para projeto INDEFERIDO */}
+            {projeto.status === "indeferido" && (user?.role === "admin" || user?.role === "engenharia") && (
+              <button
+                onClick={handleEnviarRevisao}
+                className="text-xs bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-400 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
+              >
+                <Pencil size={12} /> Revisar projeto
+              </button>
+            )}
+
+            {/* Botões para projeto EM REVISÃO */}
+            {projeto.status === "em_revisao" && (user?.role === "admin" || user?.role === "engenharia") && (
+              <button
+                onClick={handleEnviarNovaAprovacao}
+                className="text-xs bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
+              >
+                <Zap size={12} /> Enviar nova aprovação
+              </button>
+            )}
+
+            {/* Botões do fluxo normal */}
+            {!["indeferido", "em_revisao"].includes(projeto.status) && (user?.role === "admin" || user?.role === "engenharia") && (
               <>
                 {STATUS_FLOW.indexOf(projeto.status) > 0 && (
                   <button
@@ -222,6 +282,15 @@ export default function ProjetoDetalhe() {
                 >
                   <Zap size={12} /> Próxima etapa
                 </button>
+                {/* Botão indeferir — disponível a partir de "protocolado_edp" */}
+                {["protocolado_edp","aguardando_aprovacao"].includes(projeto.status) && (
+                  <button
+                    onClick={() => setShowIndeferirModal(true)}
+                    className="text-xs bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
+                  >
+                    <X size={12} /> Indeferido
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -244,6 +313,27 @@ export default function ProjetoDetalhe() {
         </div>
       </div>
 
+      {/* Modal Indeferimento */}
+      {showIndeferirModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            <h3 className="text-white font-bold text-base mb-1">Marcar como Indeferido</h3>
+            <p className="text-slate-400 text-sm mb-4">Informe o motivo do indeferimento pela EDP. O projeto entrará em modo de revisão.</p>
+            <textarea
+              value={motivoIndeferimento}
+              onChange={e => setMotivoIndeferimento(e.target.value)}
+              rows={4}
+              placeholder="Descreva o motivo do indeferimento (ex: potência acima do limite do transformador, documentação incompleta...)"
+              className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-red-500 resize-none placeholder-slate-600 mb-4"
+            />
+            <div className="flex gap-2">
+              <button onClick={() => { setShowIndeferirModal(false); setMotivoIndeferimento(""); }} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm font-medium transition-all">Cancelar</button>
+              <button onClick={handleIndeferir} disabled={!motivoIndeferimento.trim()} className="flex-1 bg-red-500/20 hover:bg-red-500/30 disabled:opacity-40 border border-red-500/30 text-red-400 py-2.5 rounded-xl text-sm font-semibold transition-all">Confirmar Indeferimento</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-5xl mx-auto">
@@ -252,6 +342,38 @@ export default function ProjetoDetalhe() {
           {tab === "Resumo" && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
               <div className="lg:col-span-2 space-y-5">
+                {/* Alerta Indeferimento */}
+                {projeto.status === "indeferido" && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 bg-red-500/20 rounded-xl flex items-center justify-center shrink-0">
+                        <X size={16} className="text-red-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-red-300 font-semibold text-sm">Projeto Indeferido pela EDP</p>
+                        {projeto.motivo_indeferimento && <p className="text-red-400/80 text-xs mt-1">{projeto.motivo_indeferimento}</p>}
+                      </div>
+                    </div>
+                    {(user?.role === "admin" || user?.role === "engenharia") && (
+                      <button onClick={handleEnviarRevisao} className="text-xs bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-400 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
+                        <Pencil size={12} /> Iniciar revisão para projeto menor
+                      </button>
+                    )}
+                  </div>
+                )}
+                {/* Alerta Em Revisão */}
+                {projeto.status === "em_revisao" && (
+                  <div className="bg-orange-500/10 border border-orange-500/30 rounded-2xl p-4 flex items-start gap-3">
+                    <div className="w-9 h-9 bg-orange-500/20 rounded-xl flex items-center justify-center shrink-0">
+                      <Pencil size={16} className="text-orange-400" />
+                    </div>
+                    <div>
+                      <p className="text-orange-300 font-semibold text-sm">Projeto em Revisão</p>
+                      <p className="text-orange-400/80 text-xs mt-1">Edite os equipamentos na aba <strong>UC &amp; Técnico</strong> e, quando pronto, clique em "Enviar nova aprovação" no topo.</p>
+                      {projeto.motivo_indeferimento && <p className="text-orange-400/60 text-xs mt-1">Motivo anterior: {projeto.motivo_indeferimento}</p>}
+                    </div>
+                  </div>
+                )}
                 {/* Alerta Aprovação Xpress */}
                 {preProjeto?.aprovacao_xpress && (
                   <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 flex items-start gap-3">
@@ -510,7 +632,7 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
               )}
             </h3>
             <div className="flex items-center gap-2">
-              {!projeto?.equipamentos_confirmados && canConfirmarEquipamentos && !editandoEq && (
+              {(!projeto?.equipamentos_confirmados || projeto?.status === "em_revisao") && canConfirmarEquipamentos && !editandoEq && (
                 <button
                   onClick={() => setEditandoEq(true)}
                   className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
@@ -518,7 +640,7 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
                   <Pencil size={12} /> Editar
                 </button>
               )}
-              {!projeto?.equipamentos_confirmados && canConfirmarEquipamentos && !editandoEq && (
+              {(!projeto?.equipamentos_confirmados || projeto?.status === "em_revisao") && canConfirmarEquipamentos && !editandoEq && (
                 <button
                   onClick={handleConfirmarEquipamentos}
                   disabled={confirmandoEq}

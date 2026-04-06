@@ -1,0 +1,154 @@
+{
+  "name": "Projeto",
+  "type": "object",
+  "properties": {
+    "pre_projeto_id": {
+      "type": "string"
+    },
+    "nome_cliente": {
+      "type": "string"
+    },
+    "cpf": {
+      "type": "string"
+    },
+    "telefone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pago_projeto_iniciado",
+        "kit_confirmado",
+        "documentos_gerados",
+        "assinaturas_pendentes",
+        "assinaturas_concluidas",
+        "dossie_ok",
+        "protocolado_edp",
+        "aguardando_aprovacao",
+        "aprovado",
+        "indeferido",
+        "em_revisao",
+        "instalacao_agendada",
+        "sistema_instalado",
+        "vistoria_solicitada",
+        "aguardando_vistoria",
+        "vistoria_aprovada",
+        "monitoramento_cadastrado",
+        "concluido"
+      ],
+      "default": "pago_projeto_iniciado"
+    },
+    "motivo_indeferimento": {
+      "type": "string",
+      "description": "Motivo pelo qual o projeto foi indeferido pela EDP"
+    },
+    "equipamentos_confirmados": {
+      "type": "boolean",
+      "default": false,
+      "description": "Equipamentos (inversor/m\u00f3dulos) confirmados pelo financeiro ou suprimentos"
+    },
+    "equipamentos_confirmados_por": {
+      "type": "string"
+    },
+    "equipamentos_confirmados_em": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "transformador_confirmado": {
+      "type": "boolean",
+      "default": false,
+      "description": "Compra do transformador confirmada pelo financeiro/admin"
+    },
+    "transformador_confirmado_por": {
+      "type": "string"
+    },
+    "transformador_confirmado_em": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "data_pagamento": {
+      "type": "string",
+      "format": "date"
+    },
+    "pagamento_confirmado_por": {
+      "type": "string"
+    },
+    "uc_geradora": {
+      "type": "string"
+    },
+    "envio_creditos": {
+      "type": "boolean",
+      "default": false
+    },
+    "ucs_beneficiarias": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "numero_uc": {
+            "type": "string"
+          },
+          "titular": {
+            "type": "string"
+          },
+          "percentual_rateio": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "monitoramento_portal": {
+      "type": "string"
+    },
+    "monitoramento_login": {
+      "type": "string"
+    },
+    "monitoramento_senha_encrypted": {
+      "type": "string"
+    },
+    "monitoramento_auditoria": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "data_instalacao": {
+      "type": "string",
+      "format": "date"
+    },
+    "data_comissionamento": {
+      "type": "string",
+      "format": "date"
+    },
+    "evidencias_instalacao": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "sistema_instalado": {
+      "type": "boolean",
+      "default": false
+    },
+    "concluido": {
+      "type": "boolean",
+      "default": false
+    },
+    "timeline_eventos": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "nome_cliente",
+    "cpf"
+  ]
+}
