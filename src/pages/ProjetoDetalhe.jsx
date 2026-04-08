@@ -419,7 +419,7 @@ export default function ProjetoDetalhe() {
                 )}
                 {/* Info básica */}
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                  <h3 className="text-white font-semibold mb-4 flex items-center gap-2"><Sun size={16} className="text-amber-400" /> Dados do Projeto</h3>
+                  <h3 className="text-white font-semibold mb-4 flex items-center gap-2"><Sun size={16} className="text-amber-400" /> Dados do Contrato</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-slate-400 text-xs mb-1">Cliente</p>
