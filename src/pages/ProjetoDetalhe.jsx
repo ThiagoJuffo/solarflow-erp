@@ -592,6 +592,18 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
   const [saving, setSaving] = useState(false);
   const [emailForm, setEmailForm] = useState(preProjeto?.email || "");
   const [savingEmail, setSavingEmail] = useState(false);
+  const [searchingCoords, setSearchingCoords] = useState(false);
+
+  const handleBuscarCoordenadas = async () => {
+    const parts = [ucForm.endereco, ucForm.cidade, ucForm.estado, ucForm.cep].filter(Boolean);
+    if (!parts.length) return;
+    setSearchingCoords(true);
+    const res = await base44.functions.invoke('getCoordinates', { address: parts.join(', ') });
+    if (res.data?.latitude) {
+      setUcForm(p => ({ ...p, latitude: res.data.latitude, longitude: res.data.longitude }));
+    }
+    setSearchingCoords(false);
+  };
 
   const handleSaveUC = async () => {
     setSaving(true);
@@ -783,7 +795,7 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
             { label: "CEP", key: "cep" },
             { label: "Latitude", key: "latitude", type: "number" },
             { label: "Longitude", key: "longitude", type: "number" },
-            ].map(f => (
+            ].map((f, idx, arr) => (
             <div key={f.key}>
               <label className="text-slate-400 text-xs mb-1.5 block">{f.label}</label>
               <input
@@ -796,6 +808,17 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
               />
             </div>
             ))}
+          {canEdit && (
+            <button
+              type="button"
+              onClick={handleBuscarCoordenadas}
+              disabled={searchingCoords}
+              className="w-full flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-slate-300 py-2 rounded-xl text-xs font-medium transition-all"
+            >
+              {searchingCoords ? <Loader2 size={12} className="animate-spin" /> : <MapPin size={12} />}
+              {searchingCoords ? "Buscando coordenadas..." : "Buscar Lat/Long pelo endereço"}
+            </button>
+          )}
           <div>
             <label className="text-slate-400 text-xs mb-1.5 block">Tipo de Ligação</label>
             <select
