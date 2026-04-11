@@ -57,15 +57,18 @@ export default function Produtos() {
 
   const handleSalvar = async () => {
     setSaving(true);
-    if (editando?.id) {
-      const updated = await base44.entities.Produto.update(editando.id, form);
-      setProdutos(prev => prev.map(p => p.id === editando.id ? updated : p));
-    } else {
-      const novo = await base44.entities.Produto.create(form);
-      setProdutos(prev => [novo, ...prev]);
+    try {
+      if (editando?.id) {
+        const updated = await base44.entities.Produto.update(editando.id, form);
+        setProdutos(prev => prev.map(p => p.id === editando.id ? updated : p));
+      } else {
+        const novo = await base44.entities.Produto.create(form);
+        setProdutos(prev => [novo, ...prev]);
+      }
+      setModal(false);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    setModal(false);
   };
 
   const handlePreencherIA = async () => {
