@@ -1,0 +1,201 @@
+{
+  "name": "PreProjeto",
+  "type": "object",
+  "properties": {
+    "nome_cliente": {
+      "type": "string"
+    },
+    "cpf": {
+      "type": "string"
+    },
+    "cpf_extraido": {
+      "type": "string"
+    },
+    "cpf_validado": {
+      "type": "boolean",
+      "default": false
+    },
+    "cpf_divergence_resolution": {
+      "type": "string",
+      "enum": [
+        "different_holder",
+        "ownership_change_pending",
+        "corrected_by_seller"
+      ]
+    },
+    "original_uc_holder_name": {
+      "type": "string"
+    },
+    "ownership_change_pending": {
+      "type": "boolean",
+      "default": false
+    },
+    "telefone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "valor_projeto": {
+      "type": "string"
+    },
+    "forma_pagamento": {
+      "type": "string",
+      "enum": [
+        "a_vista",
+        "financiamento",
+        "consorcio",
+        "parcelado_cartao",
+        "boleto_parcelado"
+      ]
+    },
+    "kwh_prometidos": {
+      "type": "number"
+    },
+    "potencia_pico_kwp": {
+      "type": "number"
+    },
+    "inversores": {
+      "type": "array",
+      "description": "Lista de inversores do projeto (suporta m\u00faltiplos modelos)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "marca_modelo": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "inversor_marca_modelo": {
+      "type": "string",
+      "description": "Legado: primeiro inversor (mantido para compatibilidade)"
+    },
+    "inversor_quantidade": {
+      "type": "number",
+      "description": "Legado: quantidade do primeiro inversor"
+    },
+    "modulo_marca_modelo": {
+      "type": "string"
+    },
+    "modulo_quantidade": {
+      "type": "number"
+    },
+    "tipo_telhado": {
+      "type": "string",
+      "enum": [
+        "ceramica",
+        "fibrocimento",
+        "metalico",
+        "laje",
+        "sanduiche",
+        "outro"
+      ]
+    },
+    "modificacao_padrao": {
+      "type": "boolean",
+      "default": false
+    },
+    "aumento_carga": {
+      "type": "boolean",
+      "default": false
+    },
+    "usar_transformador": {
+      "type": "boolean",
+      "default": false
+    },
+    "tipo_instalacao": {
+      "type": "string",
+      "enum": [
+        "simples",
+        "agrupamento"
+      ]
+    },
+    "envio_creditos": {
+      "type": "boolean",
+      "default": false
+    },
+    "ucs_credito": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "numero_uc": {
+            "type": "string"
+          },
+          "percentual": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "aprovacao_xpress": {
+      "type": "boolean",
+      "default": false,
+      "description": "Projeto requer Aprova\u00e7\u00e3o Xpress"
+    },
+    "xpress_limite_fast_track": {
+      "type": "boolean",
+      "default": false
+    },
+    "xpress_envio_credito": {
+      "type": "boolean",
+      "default": false
+    },
+    "usina_fechada": {
+      "type": "boolean",
+      "default": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "rascunho",
+        "aguardando_pagamento",
+        "pago_projeto_iniciado"
+      ],
+      "default": "rascunho"
+    },
+    "conta_energia_url": {
+      "type": "string"
+    },
+    "conta_energia_pendente": {
+      "type": "boolean",
+      "default": false,
+      "description": "Sinaliza que o cliente ainda enviar\u00e1 a conta de energia"
+    },
+    "documento_foto_url": {
+      "type": "string"
+    },
+    "dados_extraidos": {
+      "type": "object"
+    },
+    "score_confianca": {
+      "type": "object"
+    },
+    "log_extracao": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "vendedor_id": {
+      "type": "string"
+    },
+    "vendedor_nome": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
+    },
+    "projeto_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "nome_cliente",
+    "cpf"
+  ]
+}

@@ -471,7 +471,7 @@ export default function ProjetoDetalhe() {
 
               {/* Sidebar */}
               <div className="space-y-4">
-                <DossieChecklist documentos={documentos} envioCreditos={projeto.envio_creditos} temInmetro={temInmetro} contaEnergiaPendente={documentos.some(d => d.tipo === 'conta_energia' && (d.status === 'pendente_cliente' || d.status === 'sem_padrao'))} />
+                <DossieChecklist documentos={documentos} envioCreditos={projeto.envio_creditos} temInmetro={temInmetro} contaEnergiaPendente={preProjeto?.conta_energia_pendente === true || documentos.some(d => d.tipo === 'conta_energia' && (d.status === 'pendente_cliente' || d.status === 'sem_padrao'))} />
                 <ProtocoloCard projetoId={id} protocolos={protocolos} onUpdate={p => setProtocolos(prev => [...prev, p])} />
               </div>
             </div>

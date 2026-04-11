@@ -37,6 +37,7 @@ export default function NovoPréProjeto() {
     ucs_credito: [],
   });
 
+  const [contaEnergiaPendente, setContaEnergiaPendente] = useState(false);
   const [contaEnergiaFile, setContaEnergiaFile] = useState(null);
   const [docFotoFile, setDocFotoFile] = useState(null);
   const [contaEnergiaUrl, setContaEnergiaUrl] = useState("");
@@ -183,6 +184,7 @@ Retorne apenas o JSON.`;
       xpress_limite_fast_track: form.xpress_limite_fast_track || false,
       xpress_envio_credito: form.xpress_envio_credito || false,
       conta_energia_url: contaEnergiaUrl,
+      conta_energia_pendente: contaEnergiaPendente,
       documento_foto_url: docFotoUrl,
       dados_extraidos: extraido,
       cpf_extraido: extraido?.cpf_extraido,
@@ -567,9 +569,10 @@ Retorne apenas o JSON.`;
           ) : (
             <>
               <p className="text-slate-400 text-sm">Os documentos serão processados para extração automática de dados.</p>
-              {[
+
+              {/* Conta de Energia - ocultada se marcada como pendente */}
+              {!contaEnergiaPendente && [
                 { label: "Conta de Energia (EDP) *", sub: "PDF ou foto. Usado para extrair UC, endereço e tipo de ligação.", handler: handleUploadConta, url: contaEnergiaUrl, icon: FileText },
-                { label: "Documento com Foto (CNH/RG) *", sub: "Para validação de identidade e CPF.", handler: handleUploadDoc, url: docFotoUrl, icon: User },
               ].map((item) => (
                 <div key={item.label} className="border border-slate-700 rounded-xl p-4">
                   <div className="flex items-start gap-3 mb-3">
@@ -590,6 +593,39 @@ Retorne apenas o JSON.`;
                   </label>
                 </div>
               ))}
+
+              {/* Documento com Foto - sempre visível */}
+              {[{ label: "Documento com Foto (CNH/RG) *", sub: "Para validação de identidade e CPF.", handler: handleUploadDoc, url: docFotoUrl, icon: User }].map((item) => (
+                <div key={item.label} className="border border-slate-700 rounded-xl p-4">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-9 h-9 bg-amber-500/10 rounded-lg flex items-center justify-center shrink-0">
+                      <item.icon size={16} className="text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-white text-sm font-medium">{item.label}</p>
+                      <p className="text-slate-400 text-xs mt-0.5">{item.sub}</p>
+                    </div>
+                    {item.url && <CheckCircle size={16} className="text-emerald-400 ml-auto shrink-0" />}
+                  </div>
+                  <label className="cursor-pointer">
+                    <div className="border border-dashed border-slate-600 hover:border-amber-500/50 rounded-lg p-3 text-center transition-colors">
+                      <p className="text-slate-400 text-xs">{item.url ? "✓ Arquivo enviado — clique para substituir" : "Clique para selecionar arquivo"}</p>
+                    </div>
+                    <input type="file" className="hidden" accept="image/*,.pdf" onChange={item.handler} />
+                  </label>
+                </div>
+              ))}
+
+              {/* Sinalização: cliente enviará a conta depois */}
+              <label className={`flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-all ${
+                contaEnergiaPendente ? "bg-orange-500/10 border-orange-500/40" : "bg-slate-800 border-slate-700 hover:border-amber-500/40"
+              }`}>
+                <input type="checkbox" checked={contaEnergiaPendente} onChange={e => setContaEnergiaPendente(e.target.checked)} className="w-4 h-4 accent-orange-500 mt-0.5" />
+                <div>
+                  <span className={`text-sm font-medium ${contaEnergiaPendente ? "text-orange-300" : "text-slate-300"}`}>Conta de energia pendente — cliente enviará depois</span>
+                  <p className="text-slate-400 text-xs mt-0.5">O cadastro será criado sem a conta de energia. Ficará sinalizado como pendente para acompanhamento.</p>
+                </div>
+              </label>
             </>
           )}
 
@@ -598,9 +634,10 @@ Retorne apenas o JSON.`;
             <button
               onClick={() => {
                 if (modoManual) { setExtraido({ ...dadosManuais }); setCpfMismatch(false); setStep(3); }
+                else if (contaEnergiaPendente && !contaEnergiaUrl) { setStep(3); }
                 else { setStep(2); }
               }}
-              disabled={modoManual ? !dadosManuais.numero_uc : (!contaEnergiaUrl && !docFotoUrl)}
+              disabled={modoManual ? !dadosManuais.numero_uc : (!contaEnergiaUrl && !docFotoUrl && !contaEnergiaPendente)}
               className="flex-2 flex-1 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
             >
               Próximo <ChevronRight size={16} />
@@ -783,6 +820,15 @@ Retorne apenas o JSON.`;
                 <div>
                   <p className="text-amber-300 text-sm font-medium">⚠️ Pendência: Mudança de Titularidade</p>
                   <p className="text-slate-400 text-xs mt-1">O cliente se comprometeu a efetuar a mudança de titularidade da conta de energia. Isso deverá ser resolvido antes do protocolo na EDP.</p>
+                </div>
+              </div>
+            )}
+            {contaEnergiaPendente && (
+              <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4 flex items-start gap-2">
+                <AlertTriangle size={14} className="text-orange-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-orange-300 text-sm font-medium">⚠️ Conta de energia pendente</p>
+                  <p className="text-slate-400 text-xs mt-1">Este projeto será cadastrado sem a conta de energia. Ficará sinalizado para acompanhamento até o cliente enviar.</p>
                 </div>
               </div>
             )}
