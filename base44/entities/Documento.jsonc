@@ -1,0 +1,67 @@
+{
+  "name": "Documento",
+  "type": "object",
+  "properties": {
+    "projeto_id": {
+      "type": "string"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "procuracao",
+        "memorial_tecnico",
+        "formulario_creditos",
+        "art",
+        "inmetro",
+        "requerimento",
+        "conta_energia",
+        "outros_anexos"
+      ]
+    },
+    "titulo": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "gerado",
+        "enviado_para_assinatura",
+        "assinado",
+        "pendente",
+        "pendente_cliente",
+        "sem_padrao",
+        "nao_aplicavel"
+      ],
+      "default": "pendente"
+    },
+    "url_gerado": {
+      "type": "string",
+      "description": "URL do PDF gerado pelo sistema"
+    },
+    "url_assinado": {
+      "type": "string",
+      "description": "URL do PDF assinado pelo cliente"
+    },
+    "data_geracao": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "data_assinatura": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "assinado_por": {
+      "type": "string"
+    },
+    "metadados": {
+      "type": "object"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "projeto_id",
+    "tipo"
+  ]
+}

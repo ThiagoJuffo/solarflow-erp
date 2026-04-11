@@ -9,7 +9,7 @@ const ITEMS_CHECKLIST = [
   { key: "formulario_creditos", label: "Formulário de créditos (se aplicável)", obrigatorio: false },
 ];
 
-export default function DossieChecklist({ documentos = [], envioCreditos = false, temInmetro = false }) {
+export default function DossieChecklist({ documentos = [], envioCreditos = false, temInmetro = false, contaEnergiaPendente = false }) {
   const getDocStatus = (tipo) => {
     if (tipo === "inmetro" && temInmetro) return "assinado";
     // ART pode estar salva como "art" ou "solicitacao_art"
@@ -43,6 +43,17 @@ export default function DossieChecklist({ documentos = [], envioCreditos = false
           </span>
         )}
       </div>
+
+      {contaEnergiaPendente && (
+        <div className="flex items-center gap-3 p-3 rounded-xl border bg-orange-500/10 border-orange-500/30">
+          <AlertTriangle size={15} className="text-orange-400 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-orange-300">Conta de energia pendente</p>
+            <p className="text-orange-400/70 text-xs">Aguardando envio pelo cliente</p>
+          </div>
+          <span className="text-xs px-2 py-0.5 rounded-md font-medium bg-orange-500/10 text-orange-400 border border-orange-500/20">Pendente</span>
+        </div>
+      )}
 
       <div className="space-y-2">
         {ITEMS_CHECKLIST.map(item => {

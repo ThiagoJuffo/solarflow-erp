@@ -471,7 +471,7 @@ export default function ProjetoDetalhe() {
 
               {/* Sidebar */}
               <div className="space-y-4">
-                <DossieChecklist documentos={documentos} envioCreditos={projeto.envio_creditos} temInmetro={temInmetro} />
+                <DossieChecklist documentos={documentos} envioCreditos={projeto.envio_creditos} temInmetro={temInmetro} contaEnergiaPendente={documentos.some(d => d.tipo === 'conta_energia' && (d.status === 'pendente_cliente' || d.status === 'sem_padrao'))} />
                 <ProtocoloCard projetoId={id} protocolos={protocolos} onUpdate={p => setProtocolos(prev => [...prev, p])} />
               </div>
             </div>
@@ -1014,7 +1014,7 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
     { key: "art", label: "ART", gerarivel: false },
     { key: "projeto_unifilar", label: "Projeto Unifilar", gerarivel: false },
     { key: "inmetro", label: "Certificado INMETRO", gerarivel: false, fromProduto: true },
-    { key: "conta_energia", label: "Conta de Energia", gerarivel: false, fromPreProjeto: "conta_energia_url" },
+    { key: "conta_energia", label: "Conta de Energia", gerarivel: false, fromPreProjeto: "conta_energia_url", comSinalizacao: true },
     { key: "outros_anexos", label: "Outros Anexos", gerarivel: false },
   ];
 
@@ -1091,6 +1091,14 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
                     <span className="text-xs px-2.5 py-1 rounded-lg border bg-blue-400/10 text-blue-400 border-blue-400/20">
                       Disponível
                     </span>
+                  ) : tipo.comSinalizacao && doc?.status === 'pendente_cliente' ? (
+                    <span className="text-xs px-2.5 py-1 rounded-lg border bg-orange-400/10 text-orange-400 border-orange-400/20">
+                      Aguardando cliente
+                    </span>
+                  ) : tipo.comSinalizacao && doc?.status === 'sem_padrao' ? (
+                    <span className="text-xs px-2.5 py-1 rounded-lg border bg-red-400/10 text-red-400 border-red-400/20">
+                      Sem padrão
+                    </span>
                   ) : tipo.fromProduto && inversorProduto?.inmetro_url && !doc ? (
                     <span className="text-xs px-2.5 py-1 rounded-lg border bg-emerald-400/10 text-emerald-400 border-emerald-400/20">
                       Assinado
@@ -1125,7 +1133,73 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
                       <FileText size={12} /> Download Conta de Energia
                     </a>
                   )}
-                  {tipo.fromPreProjeto && !preProjeto?.[tipo.fromPreProjeto] && (
+                  {tipo.comSinalizacao && !preProjeto?.[tipo.fromPreProjeto] && !doc?.url_gerado && !doc?.url_assinado && canEdit && (() => {
+                    const statusAtual = doc?.status;
+                    return (
+                      <div className="flex flex-wrap gap-2 items-center">
+                        {statusAtual === 'pendente_cliente' ? (
+                          <span className="text-xs bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1">
+                            <AlertTriangle size={12} /> Aguardando cliente
+                          </span>
+                        ) : statusAtual === 'sem_padrao' ? (
+                          <span className="text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1">
+                            <AlertTriangle size={12} /> Sem padrão de energia
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-500 italic">Não enviada</span>
+                        )}
+                        {statusAtual !== 'pendente_cliente' && (
+                          <button
+                            onClick={async () => {
+                              const existing = getDoc('conta_energia');
+                              if (existing) {
+                                const updated = await base44.entities.Documento.update(existing.id, { status: 'pendente_cliente' });
+                                setDocumentos(prev => prev.map(d => d.id === existing.id ? updated : d));
+                              } else {
+                                const novo = await base44.entities.Documento.create({ projeto_id: projetoId, tipo: 'conta_energia', status: 'pendente_cliente', titulo: 'Conta de Energia' });
+                                setDocumentos(prev => [...prev, novo]);
+                              }
+                            }}
+                            className="text-xs bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/20 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1"
+                          >
+                            <AlertTriangle size={12} /> Sinalizar: aguardando cliente
+                          </button>
+                        )}
+                        {statusAtual !== 'sem_padrao' && (
+                          <button
+                            onClick={async () => {
+                              const existing = getDoc('conta_energia');
+                              if (existing) {
+                                const updated = await base44.entities.Documento.update(existing.id, { status: 'sem_padrao' });
+                                setDocumentos(prev => prev.map(d => d.id === existing.id ? updated : d));
+                              } else {
+                                const novo = await base44.entities.Documento.create({ projeto_id: projetoId, tipo: 'conta_energia', status: 'sem_padrao', titulo: 'Conta de Energia' });
+                                setDocumentos(prev => [...prev, novo]);
+                              }
+                            }}
+                            className="text-xs bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1"
+                          >
+                            <AlertTriangle size={12} /> Sinalizar: sem padrão
+                          </button>
+                        )}
+                        {(statusAtual === 'pendente_cliente' || statusAtual === 'sem_padrao') && (
+                          <button
+                            onClick={async () => {
+                              const existing = getDoc('conta_energia');
+                              if (existing) {
+                                const updated = await base44.entities.Documento.update(existing.id, { status: 'pendente' });
+                                setDocumentos(prev => prev.map(d => d.id === existing.id ? updated : d));
+                              }
+                            }}
+                            className="text-xs text-slate-500 hover:text-slate-300 underline transition-all"
+                          >
+                            Remover sinalização
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })()}
+                  {tipo.fromPreProjeto && !preProjeto?.[tipo.fromPreProjeto] && !tipo.comSinalizacao && (
                     <span className="text-xs text-slate-500 italic">Não enviada pelo vendedor</span>
                   )}
                   {doc?.url_gerado && (
