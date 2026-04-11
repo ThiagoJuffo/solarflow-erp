@@ -327,7 +327,7 @@ Retorne apenas o JSON.`;
                 </select>
               </div>
               <div>
-                <label className="text-slate-400 text-xs font-medium block mb-1.5">Vendedor Responsável</label>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">Vendedor Responsável *</label>
                 <select value={form.vendedor_id || ""} onChange={e => set("vendedor_id", e.target.value)}
                   className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors">
                   <option value="">Selecionar vendedor...</option>
@@ -511,7 +511,7 @@ Retorne apenas o JSON.`;
 
           <button
             onClick={() => setStep(1)}
-            disabled={!form.nome_cliente || !form.cpf || !form.telefone || !form.valor_projeto || !form.forma_pagamento || !form.kwh_prometidos || !(form.inversores?.some(i => i.marca_modelo)) || !form.modulo_marca_modelo || !form.tipo_telhado}
+            disabled={!form.nome_cliente || !form.cpf || !form.telefone || !form.valor_projeto || !form.forma_pagamento || !form.kwh_prometidos || !(form.inversores?.some(i => i.marca_modelo)) || !form.modulo_marca_modelo || !form.tipo_telhado || !form.vendedor_id}
             className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
           >
             Próximo <ChevronRight size={16} />
