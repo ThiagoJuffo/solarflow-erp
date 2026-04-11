@@ -57,12 +57,24 @@ export default function Produtos() {
 
   const handleSalvar = async () => {
     setSaving(true);
+    // Limpar campos: converter strings vazias em undefined para campos numéricos
+    const CAMPOS_NUMERICOS = [
+      "garantia_anos","eficiencia","peso","potencia_wp","vmp","imp","voc","isc",
+      "eficiencia_modulo","corrente_max_fusivel_a","area_m2","potencia_kva",
+      "potencia_ac_w","corrente_max_ac_a","frequencia_operacao_hz","fator_potencia",
+      "corrente_max_dc_a","tensao_min_dc_v","tensao_max_dc_v","num_mppt","entradas_por_mppt"
+    ];
+    const payload = { ...form };
+    CAMPOS_NUMERICOS.forEach(k => {
+      if (payload[k] === "" || payload[k] === null) delete payload[k];
+      else if (payload[k] !== undefined) payload[k] = Number(payload[k]);
+    });
     try {
       if (editando?.id) {
-        const updated = await base44.entities.Produto.update(editando.id, form);
+        const updated = await base44.entities.Produto.update(editando.id, payload);
         setProdutos(prev => prev.map(p => p.id === editando.id ? updated : p));
       } else {
-        const novo = await base44.entities.Produto.create(form);
+        const novo = await base44.entities.Produto.create(payload);
         setProdutos(prev => [novo, ...prev]);
       }
       setModal(false);
