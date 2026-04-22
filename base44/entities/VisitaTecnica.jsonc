@@ -1,0 +1,84 @@
+{
+  "name": "VisitaTecnica",
+  "type": "object",
+  "properties": {
+    "projeto_id": {
+      "type": "string"
+    },
+    "pre_projeto_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "agendada",
+        "realizada",
+        "cancelada"
+      ],
+      "default": "agendada"
+    },
+    "data_visita": {
+      "type": "string",
+      "format": "date"
+    },
+    "tipo_instalacao": {
+      "type": "string",
+      "enum": [
+        "telhado",
+        "solo",
+        "carport",
+        "outro"
+      ]
+    },
+    "tipo_telhado": {
+      "type": "string",
+      "enum": [
+        "ceramica",
+        "fibrocimento",
+        "metalico",
+        "laje",
+        "sanduiche",
+        "outro"
+      ]
+    },
+    "foto_drone_telhado_url": {
+      "type": "string"
+    },
+    "fotos_telhado": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "foto_padrao_medidor_url": {
+      "type": "string"
+    },
+    "fotos_padrao": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "sombreamento": {
+      "type": "string"
+    },
+    "orientacao": {
+      "type": "string"
+    },
+    "inclinacao": {
+      "type": "string"
+    },
+    "estado_estrutura": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
+    },
+    "tecnico_responsavel": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "projeto_id"
+  ]
+}

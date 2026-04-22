@@ -252,6 +252,30 @@ export default function ProjetoDetalhe() {
               </button>
             )}
 
+            {/* Botão reabrir edição do kit */}
+            {projeto.equipamentos_confirmados && (user?.role === "admin" || user?.role === "financeiro" || user?.role === "suprimentos") && (
+              <button
+                onClick={async () => {
+                  if (!window.confirm("Deseja reabrir a edição dos equipamentos? O kit voltará para pendente de confirmação.")) return;
+                  const timeline = [...(projeto.timeline_eventos || []), {
+                    tipo: "kit_reaberto",
+                    data: new Date().toISOString(),
+                    usuario: user?.email
+                  }];
+                  await updateProjeto({
+                    equipamentos_confirmados: false,
+                    equipamentos_confirmados_por: null,
+                    equipamentos_confirmados_em: null,
+                    status: "pago_projeto_iniciado",
+                    timeline_eventos: timeline
+                  });
+                }}
+                className="text-xs bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-400 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
+              >
+                <Pencil size={12} /> Reabrir Kit
+              </button>
+            )}
+
             {/* Botões do fluxo normal */}
             {!["indeferido", "em_revisao"].includes(projeto.status) && (user?.role === "admin" || user?.role === "engenharia") && (
               <>

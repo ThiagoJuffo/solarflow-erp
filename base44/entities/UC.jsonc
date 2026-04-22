@@ -1,0 +1,88 @@
+{
+  "name": "UC",
+  "type": "object",
+  "properties": {
+    "projeto_id": {
+      "type": "string"
+    },
+    "pre_projeto_id": {
+      "type": "string"
+    },
+    "numero_uc": {
+      "type": "string",
+      "description": "N\u00famero da Unidade Consumidora / Instala\u00e7\u00e3o"
+    },
+    "titular": {
+      "type": "string"
+    },
+    "concessionaria": {
+      "type": "string",
+      "default": "EDP"
+    },
+    "endereco": {
+      "type": "string"
+    },
+    "cidade": {
+      "type": "string"
+    },
+    "estado": {
+      "type": "string"
+    },
+    "cep": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Latitude da UC (ex: -20.277672)"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Longitude da UC (ex: -40.406445)"
+    },
+    "tipo_ligacao": {
+      "type": "string",
+      "enum": [
+        "monofasico",
+        "bifasico",
+        "trifasico"
+      ],
+      "description": "Tipo de padr\u00e3o/liga\u00e7\u00e3o"
+    },
+    "situacao_padrao": {
+      "type": "string",
+      "enum": [
+        "adequado",
+        "precisa_aumento_carga",
+        "a_confirmar"
+      ],
+      "description": "Situa\u00e7\u00e3o do padr\u00e3o de entrada"
+    },
+    "pendencia_adequacao": {
+      "type": "boolean",
+      "default": false
+    },
+    "adequacao_resolvida": {
+      "type": "boolean",
+      "default": false
+    },
+    "fonte_extracao": {
+      "type": "string",
+      "description": "conta_energia / manual / ocr"
+    },
+    "score_confianca": {
+      "type": "number"
+    },
+    "classe_consumo": {
+      "type": "string"
+    },
+    "tensao": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "numero_uc"
+  ]
+}

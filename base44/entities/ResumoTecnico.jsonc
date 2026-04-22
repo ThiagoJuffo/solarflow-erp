@@ -1,0 +1,73 @@
+{
+  "name": "ResumoTecnico",
+  "type": "object",
+  "properties": {
+    "projeto_id": {
+      "type": "string"
+    },
+    "potencia_kwp": {
+      "type": "number"
+    },
+    "quantidade_modulos": {
+      "type": "number"
+    },
+    "modulo_produto_id": {
+      "type": "string"
+    },
+    "modulo_descricao": {
+      "type": "string"
+    },
+    "inversor_produto_id": {
+      "type": "string"
+    },
+    "inversor_descricao": {
+      "type": "string"
+    },
+    "num_strings": {
+      "type": "number"
+    },
+    "modulos_por_string": {
+      "type": "number"
+    },
+    "num_mppt": {
+      "type": "number"
+    },
+    "entradas_mppt": {
+      "type": "string",
+      "description": "Configura\u00e7\u00e3o de entradas MPPT"
+    },
+    "arranjo_descricao": {
+      "type": "string"
+    },
+    "data_prevista_instalacao": {
+      "type": "string",
+      "format": "date"
+    },
+    "data_prevista_comissionamento": {
+      "type": "string",
+      "format": "date"
+    },
+    "art_numero": {
+      "type": "string"
+    },
+    "art_url": {
+      "type": "string"
+    },
+    "art_assinada": {
+      "type": "boolean",
+      "default": false
+    },
+    "responsavel_tecnico": {
+      "type": "string"
+    },
+    "crea_responsavel": {
+      "type": "string"
+    },
+    "observacoes_tecnicas": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "projeto_id"
+  ]
+}

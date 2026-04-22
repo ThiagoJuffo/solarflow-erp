@@ -1,0 +1,156 @@
+{
+  "name": "Produto",
+  "type": "object",
+  "properties": {
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "modulo_fv",
+        "inversor_string",
+        "microinversor",
+        "hibrido"
+      ],
+      "description": "Tipo do produto"
+    },
+    "fabricante": {
+      "type": "string"
+    },
+    "modelo": {
+      "type": "string"
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    },
+    "observacoes": {
+      "type": "string"
+    },
+    "datasheet_url": {
+      "type": "string"
+    },
+    "garantia_anos": {
+      "type": "number"
+    },
+    "eficiencia": {
+      "type": "number"
+    },
+    "dimensoes": {
+      "type": "string"
+    },
+    "peso": {
+      "type": "number"
+    },
+    "inmetro_numero": {
+      "type": "string"
+    },
+    "inmetro_validade": {
+      "type": "string",
+      "format": "date"
+    },
+    "inmetro_url": {
+      "type": "string",
+      "description": "URL do certificado INMETRO"
+    },
+    "potencia_wp": {
+      "type": "number",
+      "description": "Pot\u00eancia de pico (Ppeak) em Wp"
+    },
+    "vmp": {
+      "type": "number",
+      "description": "Tens\u00e3o de funcionamento \u00f3timo (Vmp) em V"
+    },
+    "imp": {
+      "type": "number",
+      "description": "Corrente de funcionamento \u00f3timo (Imp) em A"
+    },
+    "voc": {
+      "type": "number",
+      "description": "Tens\u00e3o em circuito aberto (Voc) em V"
+    },
+    "isc": {
+      "type": "number",
+      "description": "Corrente de curto-circuito (Isc) em A"
+    },
+    "eficiencia_modulo": {
+      "type": "number",
+      "description": "Efici\u00eancia do m\u00f3dulo em %"
+    },
+    "corrente_max_fusivel_a": {
+      "type": "number",
+      "description": "Corrente m\u00e1xima por fus\u00edvel em s\u00e9rie (A)"
+    },
+    "coef_temp_ppeak": {
+      "type": "string",
+      "description": "Coeficiente de temperatura de Ppeak (ex: -0,30%/\u00b0C)"
+    },
+    "coef_temp_voc": {
+      "type": "string",
+      "description": "Coeficiente de temperatura de Voc (ex: -0,25%/\u00b0C)"
+    },
+    "coef_temp_isc": {
+      "type": "string",
+      "description": "Coeficiente de temperatura de Isc (ex: +0,05%/\u00b0C)"
+    },
+    "area_m2": {
+      "type": "number",
+      "description": "\u00c1rea do m\u00f3dulo em m\u00b2"
+    },
+    "potencia_kva": {
+      "type": "number",
+      "description": "Pot\u00eancia nominal em kVA (inversores)"
+    },
+    "potencia_ac_w": {
+      "type": "number",
+      "description": "Pot\u00eancia de sa\u00edda AC em W"
+    },
+    "tensao_nominal_ac_v": {
+      "type": "string",
+      "description": "Tens\u00e3o nominal AC (ex: 220 V (176/224V))"
+    },
+    "corrente_max_ac_a": {
+      "type": "number",
+      "description": "Corrente m\u00e1xima AC em A"
+    },
+    "frequencia_operacao_hz": {
+      "type": "number",
+      "description": "Frequ\u00eancia de opera\u00e7\u00e3o em Hz"
+    },
+    "range_frequencia_hz": {
+      "type": "string",
+      "description": "Range de frequ\u00eancia admiss\u00edvel"
+    },
+    "corrente_max_dc_a": {
+      "type": "number",
+      "description": "Corrente m\u00e1xima DC em A"
+    },
+    "fator_potencia": {
+      "type": "number",
+      "description": "Fator de pot\u00eancia"
+    },
+    "range_temperatura": {
+      "type": "string",
+      "description": "Range de temperatura de opera\u00e7\u00e3o"
+    },
+    "tensao_min_dc_v": {
+      "type": "number",
+      "description": "Tens\u00e3o m\u00ednima DC de entrada (start) em V"
+    },
+    "tensao_max_dc_v": {
+      "type": "number",
+      "description": "Tens\u00e3o m\u00e1xima DC de entrada em V"
+    },
+    "num_mppt": {
+      "type": "number",
+      "description": "N\u00famero de rastreadores MPPT"
+    },
+    "entradas_por_mppt": {
+      "type": "number",
+      "description": "N\u00famero de entradas (strings) por MPPT"
+    }
+  },
+  "required": [
+    "tipo",
+    "fabricante",
+    "modelo"
+  ]
+}

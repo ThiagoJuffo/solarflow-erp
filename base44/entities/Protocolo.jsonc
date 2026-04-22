@@ -1,0 +1,80 @@
+{
+  "name": "Protocolo",
+  "type": "object",
+  "properties": {
+    "projeto_id": {
+      "type": "string"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "PROJETO",
+        "VISTORIA"
+      ]
+    },
+    "numero_protocolo": {
+      "type": "string"
+    },
+    "data_entrada": {
+      "type": "string",
+      "format": "date"
+    },
+    "modalidade": {
+      "type": "string",
+      "enum": [
+        "convencional",
+        "fast_track"
+      ],
+      "default": "convencional",
+      "description": "Modalidade do pedido de aprova\u00e7\u00e3o"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "aberto",
+        "pendente",
+        "em_analise",
+        "concluido",
+        "indeferido"
+      ],
+      "default": "aberto"
+    },
+    "pendencias": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "descricao": {
+            "type": "string"
+          },
+          "resolvida": {
+            "type": "boolean"
+          },
+          "data_resolucao": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "anexos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "data_resposta": {
+      "type": "string",
+      "format": "date"
+    },
+    "resultado": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "projeto_id",
+    "tipo"
+  ]
+}
