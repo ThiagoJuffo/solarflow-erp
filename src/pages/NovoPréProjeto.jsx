@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Upload, User, FileText, CheckCircle, AlertTriangle, Loader2, ChevronRight, Zap, PartyPopper, Plus, Trash2 } from "lucide-react";
+import { Upload, User, FileText, CheckCircle, AlertTriangle, Loader2, ChevronRight, Zap, PartyPopper, Plus, Trash2, Save, Clock, X } from "lucide-react";
 
 const STEPS = ["Dados do Cliente", "Upload de Documentos", "Extração & Revisão", "Confirmar"];
 
@@ -10,6 +10,11 @@ export default function NovoPréProjeto() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [savingRascunho, setSavingRascunho] = useState(false);
+  const [rascunhoId, setRascunhoId] = useState(null);
+  const [rascunhoSalvoEm, setRascunhoSalvoEm] = useState(null);
+  const [rascunhos, setRascunhos] = useState([]);
+  const [mostrarRascunhos, setMostrarRascunhos] = useState(false);
   const [concluido, setConcluido] = useState(false);
   const [extracting, setExtracting] = useState(false);
   const [extractAbortController, setExtractAbortController] = useState(null);
@@ -55,6 +60,8 @@ export default function NovoPréProjeto() {
   const [modulos, setModulos] = useState([]);
 
   useEffect(() => {
+    // Carregar rascunhos existentes
+    base44.entities.PreProjeto.filter({ status: "rascunho" }).then(setRascunhos).catch(() => {});
     base44.entities.Vendedor.filter({ ativo: true }).then(setVendedores).catch(() => {});
     base44.entities.Produto.filter({ ativo: true }).then(produtos => {
       const allInversores = produtos.filter(p => ["inversor_string", "microinversor", "hibrido"].includes(p.tipo));
@@ -72,6 +79,109 @@ export default function NovoPréProjeto() {
   }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const buildPayload = (statusFinal) => ({
+    nome_cliente: form.nome_cliente,
+    cpf: form.cpf,
+    telefone: form.telefone,
+    email: form.email,
+    usina_fechada: form.usina_fechada,
+    valor_projeto: form.valor_projeto,
+    forma_pagamento: form.forma_pagamento,
+    potencia_pico_kwp: form.potencia_pico_kwp ? Number(form.potencia_pico_kwp) : null,
+    kwh_prometidos: form.kwh_prometidos ? Number(form.kwh_prometidos) : null,
+    inversores: (form.inversores || []).filter(i => i.marca_modelo).map(i => ({ marca_modelo: i.marca_modelo, quantidade: Number(i.quantidade) || 1 })),
+    inversor_marca_modelo: form.inversores?.[0]?.marca_modelo || "",
+    inversor_quantidade: form.inversores?.[0]?.quantidade ? Number(form.inversores[0].quantidade) : null,
+    modulo_marca_modelo: form.modulo_marca_modelo,
+    modulo_quantidade: form.modulo_quantidade ? Number(form.modulo_quantidade) : null,
+    tipo_telhado: form.tipo_telhado,
+    modificacao_padrao: form.modificacao_padrao || false,
+    aumento_carga: form.aumento_carga || false,
+    usar_transformador: form.usar_transformador || false,
+    tipo_instalacao: form.tipo_instalacao,
+    envio_creditos: form.envio_creditos || false,
+    ucs_credito: form.envio_creditos ? (form.ucs_credito || []).map(uc => ({ ...uc, percentual: uc.percentual !== null && uc.percentual !== "" ? Number(uc.percentual) : null })) : [],
+    aprovacao_xpress: form.aprovacao_xpress || false,
+    xpress_limite_fast_track: form.xpress_limite_fast_track || false,
+    xpress_envio_credito: form.xpress_envio_credito || false,
+    conta_energia_url: contaEnergiaUrl,
+    conta_energia_pendente: contaEnergiaPendente,
+    documento_foto_url: docFotoUrl,
+    dados_extraidos: extraido,
+    cpf_extraido: extraido?.cpf_extraido,
+    cpf_validado: !cpfMismatch,
+    cpf_divergence_resolution: cpfMismatch ? cpfDivergenceOption : null,
+    original_uc_holder_name: cpfDivergenceOption === "different_holder" ? extraido?.titular : null,
+    ownership_change_pending: cpfDivergenceOption === "ownership_change_pending",
+    vendedor_id: form.vendedor_id || null,
+    vendedor_nome: vendedores.find(v => v.id === form.vendedor_id)?.nome || null,
+    status: statusFinal,
+  });
+
+  const handleSalvarRascunho = async () => {
+    if (!form.nome_cliente) return;
+    setSavingRascunho(true);
+    const payload = buildPayload("rascunho");
+    let saved;
+    if (rascunhoId) {
+      saved = await base44.entities.PreProjeto.update(rascunhoId, payload);
+    } else {
+      saved = await base44.entities.PreProjeto.create(payload);
+      setRascunhoId(saved.id);
+    }
+    setRascunhoSalvoEm(new Date());
+    setRascunhos(prev => {
+      const others = prev.filter(r => r.id !== saved.id);
+      return [saved, ...others];
+    });
+    setSavingRascunho(false);
+  };
+
+  const handleCarregarRascunho = (r) => {
+    setRascunhoId(r.id);
+    setForm({
+      nome_cliente: r.nome_cliente || "",
+      cpf: r.cpf || "",
+      telefone: r.telefone || "",
+      email: r.email || "",
+      usina_fechada: r.usina_fechada || false,
+      aprovacao_xpress: r.aprovacao_xpress || false,
+      xpress_limite_fast_track: r.xpress_limite_fast_track || false,
+      xpress_envio_credito: r.xpress_envio_credito || false,
+      potencia_pico_kwp: r.potencia_pico_kwp || "",
+      kwh_prometidos: r.kwh_prometidos || "",
+      inversores: r.inversores?.length ? r.inversores : [{ marca_modelo: r.inversor_marca_modelo || "", quantidade: r.inversor_quantidade || "" }],
+      modulo_marca_modelo: r.modulo_marca_modelo || "",
+      modulo_quantidade: r.modulo_quantidade || "",
+      tipo_telhado: r.tipo_telhado || "",
+      modificacao_padrao: r.modificacao_padrao || false,
+      aumento_carga: r.aumento_carga || false,
+      usar_transformador: r.usar_transformador || false,
+      tipo_instalacao: r.tipo_instalacao || "simples",
+      envio_creditos: r.envio_creditos || false,
+      ucs_credito: r.ucs_credito || [],
+      valor_projeto: r.valor_projeto || "",
+      forma_pagamento: r.forma_pagamento || "",
+      vendedor_id: r.vendedor_id || "",
+    });
+    setContaEnergiaUrl(r.conta_energia_url || "");
+    setDocFotoUrl(r.documento_foto_url || "");
+    setContaEnergiaPendente(r.conta_energia_pendente || false);
+    if (r.dados_extraidos) setExtraido(r.dados_extraidos);
+    setMostrarRascunhos(false);
+    setRascunhoSalvoEm(new Date(r.updated_date || r.created_date));
+  };
+
+  const handleDeletarRascunho = async (id, e) => {
+    e.stopPropagation();
+    await base44.entities.PreProjeto.delete(id);
+    setRascunhos(prev => prev.filter(r => r.id !== id));
+    if (rascunhoId === id) {
+      setRascunhoId(null);
+      setRascunhoSalvoEm(null);
+    }
+  };
 
   // Upload de arquivo
   const uploadFile = async (file) => {
@@ -157,45 +267,13 @@ Retorne apenas o JSON.`;
 
   const handleSalvar = async () => {
     setSaving(true);
-    const preProjeto = await base44.entities.PreProjeto.create({
-      nome_cliente: form.nome_cliente,
-      cpf: form.cpf,
-      telefone: form.telefone,
-      email: form.email,
-      usina_fechada: form.usina_fechada,
-      valor_projeto: form.valor_projeto,
-      forma_pagamento: form.forma_pagamento,
-      potencia_pico_kwp: form.potencia_pico_kwp ? Number(form.potencia_pico_kwp) : null,
-      kwh_prometidos: form.kwh_prometidos ? Number(form.kwh_prometidos) : null,
-      inversores: (form.inversores || []).filter(i => i.marca_modelo).map(i => ({ marca_modelo: i.marca_modelo, quantidade: Number(i.quantidade) || 1 })),
-      // campos legado para compatibilidade
-      inversor_marca_modelo: form.inversores?.[0]?.marca_modelo || "",
-      inversor_quantidade: form.inversores?.[0]?.quantidade ? Number(form.inversores[0].quantidade) : null,
-      modulo_marca_modelo: form.modulo_marca_modelo,
-      modulo_quantidade: form.modulo_quantidade ? Number(form.modulo_quantidade) : null,
-      tipo_telhado: form.tipo_telhado,
-      modificacao_padrao: form.modificacao_padrao || false,
-      aumento_carga: form.aumento_carga || false,
-      usar_transformador: form.usar_transformador || false,
-      tipo_instalacao: form.tipo_instalacao,
-      envio_creditos: form.envio_creditos || false,
-      ucs_credito: form.envio_creditos ? (form.ucs_credito || []).map(uc => ({ ...uc, percentual: uc.percentual !== null && uc.percentual !== "" ? Number(uc.percentual) : null })) : [],
-      aprovacao_xpress: form.aprovacao_xpress || false,
-      xpress_limite_fast_track: form.xpress_limite_fast_track || false,
-      xpress_envio_credito: form.xpress_envio_credito || false,
-      conta_energia_url: contaEnergiaUrl,
-      conta_energia_pendente: contaEnergiaPendente,
-      documento_foto_url: docFotoUrl,
-      dados_extraidos: extraido,
-      cpf_extraido: extraido?.cpf_extraido,
-      cpf_validado: !cpfMismatch,
-      cpf_divergence_resolution: cpfMismatch ? cpfDivergenceOption : null,
-      original_uc_holder_name: cpfDivergenceOption === "different_holder" ? extraido?.titular : null,
-      ownership_change_pending: cpfDivergenceOption === "ownership_change_pending",
-      vendedor_id: form.vendedor_id || null,
-      vendedor_nome: vendedores.find(v => v.id === form.vendedor_id)?.nome || null,
-      status: "aguardando_pagamento"
-    });
+    const payload = buildPayload("aguardando_pagamento");
+    let preProjeto;
+    if (rascunhoId) {
+      preProjeto = await base44.entities.PreProjeto.update(rascunhoId, payload);
+    } else {
+      preProjeto = await base44.entities.PreProjeto.create(payload);
+    }
 
     // Criar UC
     if (extraido) {
@@ -259,12 +337,69 @@ Retorne apenas o JSON.`;
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Zap className="text-amber-400" size={22} /> Novo Cliente
-        </h1>
-        <p className="text-slate-400 text-sm mt-1">Cadastro de novo cliente solar</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Zap className="text-amber-400" size={22} /> Novo Cliente
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">Cadastro de novo cliente solar</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {rascunhos.length > 0 && (
+            <button
+              onClick={() => setMostrarRascunhos(v => !v)}
+              className="flex items-center gap-1.5 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-3 py-2 rounded-xl transition-all"
+            >
+              <Clock size={13} /> Rascunhos ({rascunhos.length})
+            </button>
+          )}
+          {form.nome_cliente && (
+            <button
+              onClick={handleSalvarRascunho}
+              disabled={savingRascunho}
+              className="flex items-center gap-1.5 text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 text-amber-400 px-3 py-2 rounded-xl transition-all"
+            >
+              {savingRascunho ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+              {savingRascunho ? "Salvando..." : rascunhoId ? "Rascunho salvo" : "Salvar rascunho"}
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Indicador de rascunho ativo */}
+      {rascunhoId && rascunhoSalvoEm && (
+        <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-2.5">
+          <Save size={13} className="text-amber-400 shrink-0" />
+          <p className="text-amber-300 text-xs flex-1">Rascunho ativo — salvo em {rascunhoSalvoEm.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
+          <button onClick={() => { setRascunhoId(null); setRascunhoSalvoEm(null); }} className="text-slate-500 hover:text-slate-300 transition-colors"><X size={13} /></button>
+        </div>
+      )}
+
+      {/* Lista de rascunhos */}
+      {mostrarRascunhos && (
+        <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-2">
+          <p className="text-slate-300 text-sm font-semibold mb-3">Rascunhos salvos</p>
+          {rascunhos.map(r => (
+            <div
+              key={r.id}
+              onClick={() => handleCarregarRascunho(r)}
+              className="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 rounded-xl px-4 py-3 cursor-pointer transition-all group"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-white text-sm font-medium truncate">{r.nome_cliente || "Sem nome"}</p>
+                <p className="text-slate-500 text-xs">CPF: {r.cpf || "—"} · {r.updated_date ? new Date(r.updated_date).toLocaleDateString("pt-BR") : "—"}</p>
+              </div>
+              <span className="text-xs text-amber-400 group-hover:underline shrink-0">Carregar</span>
+              <button
+                onClick={(e) => handleDeletarRascunho(r.id, e)}
+                className="text-slate-600 hover:text-red-400 transition-colors shrink-0"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Stepper */}
       <div className="flex items-center gap-2">
@@ -509,13 +644,23 @@ Retorne apenas o JSON.`;
             )}
           </div>
 
-          <button
-            onClick={() => setStep(1)}
-            disabled={!form.nome_cliente || !form.cpf || !form.telefone || !form.valor_projeto || !form.forma_pagamento || !form.kwh_prometidos || !(form.inversores?.some(i => i.marca_modelo)) || !form.modulo_marca_modelo || !form.tipo_telhado || !form.vendedor_id}
-            className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
-          >
-            Próximo <ChevronRight size={16} />
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleSalvarRascunho}
+              disabled={savingRascunho || !form.nome_cliente}
+              className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 border border-slate-700 text-slate-300 px-4 py-3 rounded-xl text-sm font-medium transition-all shrink-0"
+            >
+              {savingRascunho ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+              Salvar rascunho
+            </button>
+            <button
+              onClick={() => setStep(1)}
+              disabled={!form.nome_cliente || !form.cpf || !form.telefone || !form.valor_projeto || !form.forma_pagamento || !form.kwh_prometidos || !(form.inversores?.some(i => i.marca_modelo)) || !form.modulo_marca_modelo || !form.tipo_telhado || !form.vendedor_id}
+              className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+            >
+              Próximo <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
       )}
 
