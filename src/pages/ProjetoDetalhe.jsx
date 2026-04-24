@@ -1035,7 +1035,6 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
     { key: "memorial_tecnico", label: "Memorial Técnico", gerarivel: true },
     { key: "solicitacao_art", label: "Solicitação ART", gerarivel: true },
     { key: "formulario_creditos", label: "Form. Envio de Créditos", gerarivel: false },
-    { key: "art", label: "ART", gerarivel: false },
     { key: "projeto_unifilar", label: "Projeto Unifilar", gerarivel: false },
     { key: "inmetro", label: "Certificado INMETRO", gerarivel: false, fromProduto: true },
     { key: "conta_energia", label: "Conta de Energia", gerarivel: false, fromPreProjeto: "conta_energia_url", comSinalizacao: true },
