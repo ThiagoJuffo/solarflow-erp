@@ -1,0 +1,89 @@
+{
+  "name": "Lancamento",
+  "type": "object",
+  "properties": {
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "receita",
+        "despesa"
+      ],
+      "description": "Tipo do lan\u00e7amento"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "venda_projeto",
+        "comissao",
+        "kit_equipamentos",
+        "mao_de_obra",
+        "despesa_operacional",
+        "despesa_marketing",
+        "despesa_financeira",
+        "imposto",
+        "pro_labore",
+        "distribuicao_lucro",
+        "capex",
+        "outros"
+      ]
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "valor": {
+      "type": "number"
+    },
+    "data_vencimento": {
+      "type": "string",
+      "format": "date"
+    },
+    "data_pagamento": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "pago",
+        "atrasado",
+        "cancelado"
+      ],
+      "default": "pendente"
+    },
+    "projeto_id": {
+      "type": "string",
+      "description": "Vincula\u00e7\u00e3o opcional ao projeto"
+    },
+    "nome_cliente_fornecedor": {
+      "type": "string"
+    },
+    "forma_pagamento": {
+      "type": "string",
+      "enum": [
+        "pix",
+        "boleto",
+        "cartao",
+        "transferencia",
+        "dinheiro",
+        "financiamento"
+      ]
+    },
+    "comprovante_url": {
+      "type": "string"
+    },
+    "recorrente": {
+      "type": "boolean",
+      "default": false
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "tipo",
+    "descricao",
+    "valor",
+    "data_vencimento"
+  ]
+}

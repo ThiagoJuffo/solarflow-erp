@@ -1,0 +1,44 @@
+{
+  "name": "CustoProjeto",
+  "type": "object",
+  "properties": {
+    "projeto_id": {
+      "type": "string"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "kit_equipamentos",
+        "frete",
+        "mao_de_obra",
+        "comissao_vendedor",
+        "art_taxas",
+        "materiais_extras",
+        "deslocamento",
+        "hospedagem",
+        "outros"
+      ]
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "valor": {
+      "type": "number"
+    },
+    "data": {
+      "type": "string",
+      "format": "date"
+    },
+    "comprovante_url": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "projeto_id",
+    "categoria",
+    "valor"
+  ]
+}
