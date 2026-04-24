@@ -1079,22 +1079,40 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
     const forcarAssinado = UPLOAD_DIRETO_ASSINADO.includes(tipo);
     const isAssinado = signed || forcarAssinado;
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    const existing = getDoc(tipo);
-    if (existing) {
-      const updated = await base44.entities.Documento.update(existing.id, {
-        ...(isAssinado ? { url_assinado: file_url, status: "assinado", data_assinatura: new Date().toISOString() } : { url_gerado: file_url, status: "gerado" })
-      });
-      setDocumentos(prev => prev.map(d => d.id === existing.id ? updated : d));
-    } else {
-      const novo = await base44.entities.Documento.create({
-        projeto_id: projetoId, tipo,
-        url_gerado: isAssinado ? undefined : file_url,
-        url_assinado: isAssinado ? file_url : undefined,
-        status: isAssinado ? "assinado" : "gerado",
-        titulo: TIPOS.find(t => t.key === tipo)?.label
-      });
-      setDocumentos(prev => [...prev, novo]);
-    }
+    // Re-busca o doc atual do state para evitar closure stale
+    setDocumentos(prev => {
+      const existing = prev.find(d => d.tipo === tipo);
+      // Side-effect de persistência assíncrona após atualização local
+      if (existing) {
+        const payload = isAssinado
+          ? { url_assinado: file_url, status: "assinado", data_assinatura: new Date().toISOString() }
+          : { url_gerado: file_url, status: "gerado" };
+        base44.entities.Documento.update(existing.id, payload).then(updated =>
+          setDocumentos(curr => curr.map(d => d.id === updated.id ? updated : d))
+        );
+        return prev.map(d => d.tipo === tipo ? { ...d, ...payload } : d);
+      } else {
+        const novoLocal = {
+          id: `tmp_${Date.now()}`,
+          projeto_id: projetoId,
+          tipo,
+          url_gerado: isAssinado ? undefined : file_url,
+          url_assinado: isAssinado ? file_url : undefined,
+          status: isAssinado ? "assinado" : "gerado",
+          titulo: TIPOS.find(t => t.key === tipo)?.label
+        };
+        base44.entities.Documento.create({
+          projeto_id: projetoId, tipo,
+          url_gerado: isAssinado ? undefined : file_url,
+          url_assinado: isAssinado ? file_url : undefined,
+          status: isAssinado ? "assinado" : "gerado",
+          titulo: TIPOS.find(t => t.key === tipo)?.label
+        }).then(saved =>
+          setDocumentos(curr => curr.map(d => d.id === novoLocal.id ? saved : d))
+        );
+        return [...prev, novoLocal];
+      }
+    });
     setUploading(null);
   };
 
