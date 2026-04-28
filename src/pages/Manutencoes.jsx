@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Wrench, Search, Plus, ChevronRight, Calendar, DollarSign, X, Loader2, CheckCircle, Clock, Target } from "lucide-react";
+import { Wrench, Search, Plus, ChevronRight, Calendar, DollarSign, X, Loader2, CheckCircle, Clock, Target, Copy, Check } from "lucide-react";
 
 const STATUS_LABELS = {
   agendar: "A Agendar",
@@ -28,7 +28,9 @@ export default function Manutencoes() {
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [metaQuantidade, setMetaQuantidade] = useState(10);
+  const [metaValor, setMetaValor] = useState(10000);
   const [editandoMeta, setEditandoMeta] = useState(false);
+  const [copiado, setCopiado] = useState(false);
   const [form, setForm] = useState({
     nome_cliente: "", kit: "", endereco: "", valor: "", condicao_pagamento: ""
   });
@@ -48,8 +50,18 @@ export default function Manutencoes() {
     });
     setManutencoes(prev => [nova, ...prev]);
     setForm({ nome_cliente: "", kit: "", endereco: "", valor: "", condicao_pagamento: "" });
+    setCopiado(false);
     setShowModal(false);
     setSaving(false);
+  };
+
+  const mensagemNovaManutencao = () =>
+    `MANUTENÇÃO\nNome: ${form.nome_cliente || "—"}\nEndereço: ${form.endereco || "—"}\nKit: ${form.kit || "—"}`;
+
+  const copiarMsgModal = () => {
+    navigator.clipboard.writeText(mensagemNovaManutencao());
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
   };
 
   // Manutenções do mês atual
@@ -63,6 +75,7 @@ export default function Manutencoes() {
   const qtdAgendadas = manutencoesDoMes.filter(m => m.status === "agendada" || m.status === "concluida").length;
 
   const pctQtd = Math.min((qtdAgendadas / metaQuantidade) * 100, 100);
+  const pctValor = Math.min((valorMes / metaValor) * 100, 100);
 
   const filtered = manutencoes.filter(m => {
     const matchSearch = !search || m.nome_cliente?.toLowerCase().includes(search.toLowerCase());
@@ -103,27 +116,54 @@ export default function Manutencoes() {
         </div>
 
         {editandoMeta && (
-          <div className="max-w-xs">
-            <label className="text-slate-400 text-xs mb-1 block">Meta de Quantidade de Manutenções</label>
-            <input type="number" value={metaQuantidade} onChange={e => setMetaQuantidade(Number(e.target.value))}
-              className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="text-slate-400 text-xs mb-1 block">Meta de Quantidade</label>
+              <input type="number" value={metaQuantidade} onChange={e => setMetaQuantidade(Number(e.target.value))}
+                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+            </div>
+            <div>
+              <label className="text-slate-400 text-xs mb-1 block">Meta de Faturamento (R$)</label>
+              <input type="number" value={metaValor} onChange={e => setMetaValor(Number(e.target.value))}
+                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
+            </div>
           </div>
         )}
 
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-slate-400 text-xs flex items-center gap-1"><Wrench size={12} /> Manutenções agendadas no mês</span>
-            <span className="text-white text-xs font-semibold">{qtdAgendadas} / {metaQuantidade}</span>
+        <div className="space-y-4">
+          {/* Barra de quantidade */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-xs flex items-center gap-1"><Wrench size={12} /> Manutenções no mês</span>
+              <span className="text-white text-xs font-semibold">{qtdAgendadas} / {metaQuantidade}</span>
+            </div>
+            <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${pctQtd >= 100 ? "bg-emerald-500" : "bg-amber-500"}`}
+                style={{ width: `${pctQtd}%` }}
+              />
+            </div>
+            <p className={`text-xs font-medium ${pctQtd >= 100 ? "text-emerald-400" : "text-slate-500"}`}>
+              {pctQtd >= 100 ? "✓ Meta de quantidade atingida!" : `${pctQtd.toFixed(0)}% — faltam ${metaQuantidade - qtdAgendadas} manutenção(ões)`}
+            </p>
           </div>
-          <div className="h-4 bg-slate-800 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${pctQtd >= 100 ? "bg-emerald-500" : pctQtd >= 60 ? "bg-amber-500" : "bg-amber-500/50"}`}
-              style={{ width: `${pctQtd}%` }}
-            />
+
+          {/* Barra de faturamento */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-xs flex items-center gap-1"><DollarSign size={12} /> Faturamento no mês</span>
+              <span className="text-white text-xs font-semibold">{fmt(valorMes)} / {fmt(metaValor)}</span>
+            </div>
+            <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${pctValor >= 100 ? "bg-emerald-500" : "bg-blue-500"}`}
+                style={{ width: `${pctValor}%` }}
+              />
+            </div>
+            <p className={`text-xs font-medium ${pctValor >= 100 ? "text-emerald-400" : "text-slate-500"}`}>
+              {pctValor >= 100 ? "✓ Meta de faturamento atingida!" : `${pctValor.toFixed(0)}% — faltam ${fmt(metaValor - valorMes)}`}
+            </p>
           </div>
-          <p className={`text-xs font-medium ${pctQtd >= 100 ? "text-emerald-400" : "text-slate-400"}`}>
-            {pctQtd >= 100 ? "✓ Meta atingida!" : `${pctQtd.toFixed(0)}% da meta — faltam ${metaQuantidade - qtdAgendadas} manutenção(ões)`}
-          </p>
         </div>
       </div>
 
@@ -243,6 +283,17 @@ export default function Manutencoes() {
                 </div>
               </div>
             </div>
+
+            {form.nome_cliente && (
+              <button
+                type="button"
+                onClick={copiarMsgModal}
+                className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all border ${copiado ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700"}`}
+              >
+                {copiado ? <Check size={14} /> : <Copy size={14} />}
+                {copiado ? "Copiado!" : "Copiar mensagem para o grupo"}
+              </button>
+            )}
 
             <div className="flex gap-2 pt-1">
               <button onClick={() => setShowModal(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm font-medium transition-all">Cancelar</button>

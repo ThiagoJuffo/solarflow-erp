@@ -44,6 +44,10 @@ export default function ManutencaoDetalhe() {
   // Status
   const [salvandoStatus, setSalvandoStatus] = useState(false);
 
+  // Cancelar modal
+  const [showCancelarModal, setShowCancelarModal] = useState(false);
+  const [showExcluirModal, setShowExcluirModal] = useState(false);
+
   // Copiar msg
   const [copiado, setCopiado] = useState(false);
 
@@ -111,9 +115,8 @@ export default function ManutencaoDetalhe() {
   };
 
   const handleCancelar = async () => {
-    if (!window.confirm("Deseja cancelar esta manutenção?")) return;
     setSalvandoStatus(true);
-    // Deletar evento do calendar se existir
+    setShowCancelarModal(false);
     if (manutencao.google_calendar_event_id) {
       await base44.functions.invoke('manutencaoCalendar', {
         action: 'delete',
@@ -131,7 +134,7 @@ export default function ManutencaoDetalhe() {
   };
 
   const handleExcluir = async () => {
-    if (!window.confirm("Deseja excluir permanentemente esta manutenção? Esta ação não pode ser desfeita.")) return;
+    setShowExcluirModal(false);
     if (manutencao.google_calendar_event_id) {
       await base44.functions.invoke('manutencaoCalendar', {
         action: 'delete',
@@ -206,7 +209,7 @@ export default function ManutencaoDetalhe() {
             </button>
           )}
           {(manutencao.status === "agendada" || manutencao.status === "agendar") && (
-            <button onClick={handleCancelar} disabled={salvandoStatus}
+            <button onClick={() => setShowCancelarModal(true)} disabled={salvandoStatus}
               className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-2 rounded-xl text-sm font-medium transition-all">
               {salvandoStatus ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
               Cancelar
@@ -220,7 +223,7 @@ export default function ManutencaoDetalhe() {
             </button>
           )}
           {manutencao.status === "concluida" && (
-            <button onClick={handleExcluir}
+            <button onClick={() => setShowExcluirModal(true)}
               className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-2 rounded-xl text-sm font-medium transition-all">
               <Trash2 size={14} /> Excluir
             </button>
@@ -288,6 +291,63 @@ export default function ManutencaoDetalhe() {
                 className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
                 {agendando ? <Loader2 size={14} className="animate-spin" /> : <Calendar size={14} />}
                 {agendando ? "Agendando..." : "Confirmar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Excluir */}
+      {showExcluirModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-red-500/20 rounded-xl flex items-center justify-center shrink-0">
+                  <Trash2 size={16} className="text-red-400" />
+                </div>
+                <h3 className="text-white font-bold">Excluir Manutenção</h3>
+              </div>
+              <button onClick={() => setShowExcluirModal(false)} className="text-slate-500 hover:text-white"><X size={16} /></button>
+            </div>
+            <p className="text-slate-300 text-sm">Deseja excluir permanentemente esta manutenção?</p>
+            <p className="text-red-400/70 text-xs font-medium">⚠️ Esta ação não pode ser desfeita.</p>
+            <div className="flex gap-2">
+              <button onClick={() => setShowExcluirModal(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm font-medium transition-all">Voltar</button>
+              <button onClick={handleExcluir}
+                className="flex-1 bg-red-500 hover:bg-red-400 text-white py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2">
+                <Trash2 size={14} /> Excluir permanentemente
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Cancelar */}
+      {showCancelarModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-red-500/20 rounded-xl flex items-center justify-center shrink-0">
+                  <X size={16} className="text-red-400" />
+                </div>
+                <h3 className="text-white font-bold">Cancelar Manutenção</h3>
+              </div>
+              <button onClick={() => setShowCancelarModal(false)} className="text-slate-500 hover:text-white"><X size={16} /></button>
+            </div>
+            <p className="text-slate-300 text-sm">Tem certeza que deseja cancelar esta manutenção?</p>
+            <p className="text-slate-500 text-xs">
+              {manutencao.google_calendar_event_id
+                ? "O evento no Google Calendar também será removido."
+                : "Esta ação irá marcar a manutenção como cancelada."}
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setShowCancelarModal(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm font-medium transition-all">Voltar</button>
+              <button onClick={handleCancelar} disabled={salvandoStatus}
+                className="flex-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2">
+                {salvandoStatus ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
+                Confirmar Cancelamento
               </button>
             </div>
           </div>
