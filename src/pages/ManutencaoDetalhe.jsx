@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   Wrench, ChevronLeft, Calendar, DollarSign, MapPin, Package,
-  CheckCircle, X, Clock, Loader2, Copy, Check, RefreshCw
+  CheckCircle, X, Clock, Loader2, Copy, Check, RefreshCw, Trash2
 } from "lucide-react";
 
 const STATUS_LABELS = {
@@ -130,6 +130,18 @@ export default function ManutencaoDetalhe() {
     setSalvandoStatus(false);
   };
 
+  const handleExcluir = async () => {
+    if (!window.confirm("Deseja excluir permanentemente esta manutenção? Esta ação não pode ser desfeita.")) return;
+    if (manutencao.google_calendar_event_id) {
+      await base44.functions.invoke('manutencaoCalendar', {
+        action: 'delete',
+        event_id: manutencao.google_calendar_event_id
+      });
+    }
+    await base44.entities.Manutencao.delete(id);
+    window.location.href = createPageUrl("Manutencoes");
+  };
+
   const mensagemWhatsApp = manutencao
     ? `MANUTENÇÃO\nNome: ${manutencao.nome_cliente}\nEndereço: ${manutencao.endereco || "—"}\nKit: ${manutencao.kit || "—"}`
     : "";
@@ -171,6 +183,54 @@ export default function ManutencaoDetalhe() {
         </span>
       </div>
 
+      {/* Ações */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <div className="flex flex-wrap gap-2 items-center">
+          {(manutencao.status === "agendar") && canAgendar && (
+            <button onClick={() => setShowAgendarModal(true)}
+              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all">
+              <Calendar size={14} /> Agendar
+            </button>
+          )}
+          {manutencao.status === "agendada" && canAgendar && (
+            <button onClick={() => setShowReagendarModal(true)}
+              className="flex items-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 px-4 py-2 rounded-xl text-sm font-medium transition-all">
+              <RefreshCw size={14} /> Reagendar
+            </button>
+          )}
+          {manutencao.status === "agendada" && (
+            <button onClick={handleConcluir} disabled={salvandoStatus}
+              className="flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-4 py-2 rounded-xl text-sm font-medium transition-all">
+              {salvandoStatus ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+              Concluir
+            </button>
+          )}
+          {(manutencao.status === "agendada" || manutencao.status === "agendar") && (
+            <button onClick={handleCancelar} disabled={salvandoStatus}
+              className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-2 rounded-xl text-sm font-medium transition-all">
+              {salvandoStatus ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
+              Cancelar
+            </button>
+          )}
+          {manutencao.status === "cancelada" && (
+            <button onClick={handleReativar} disabled={salvandoStatus}
+              className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium transition-all">
+              {salvandoStatus ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+              Reativar
+            </button>
+          )}
+          {manutencao.status === "concluida" && (
+            <button onClick={handleExcluir}
+              className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-2 rounded-xl text-sm font-medium transition-all">
+              <Trash2 size={14} /> Excluir
+            </button>
+          )}
+          {!canAgendar && manutencao.status === "agendar" && (
+            <p className="text-slate-500 text-xs">O agendamento deve ser feito pelo perfil Financeiro ou Admin.</p>
+          )}
+        </div>
+      </div>
+
       {/* Dados */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
         <h2 className="text-white font-semibold flex items-center gap-2 text-sm">
@@ -208,71 +268,6 @@ export default function ManutencaoDetalhe() {
         </button>
       </div>
 
-      {/* Ações */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
-        <h2 className="text-white font-semibold text-sm">Ações</h2>
-        <div className="flex flex-wrap gap-2">
-          {/* Agendar */}
-          {(manutencao.status === "agendar") && canAgendar && (
-            <button
-              onClick={() => setShowAgendarModal(true)}
-              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all"
-            >
-              <Calendar size={14} /> Agendar
-            </button>
-          )}
-
-          {/* Reagendar */}
-          {manutencao.status === "agendada" && canAgendar && (
-            <button
-              onClick={() => setShowReagendarModal(true)}
-              className="flex items-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 px-4 py-2 rounded-xl text-sm font-medium transition-all"
-            >
-              <RefreshCw size={14} /> Reagendar
-            </button>
-          )}
-
-          {/* Concluir */}
-          {(manutencao.status === "agendada") && (
-            <button
-              onClick={handleConcluir}
-              disabled={salvandoStatus}
-              className="flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-4 py-2 rounded-xl text-sm font-medium transition-all"
-            >
-              {salvandoStatus ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
-              Concluir
-            </button>
-          )}
-
-          {/* Cancelar */}
-          {(manutencao.status === "agendada" || manutencao.status === "agendar") && (
-            <button
-              onClick={handleCancelar}
-              disabled={salvandoStatus}
-              className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-2 rounded-xl text-sm font-medium transition-all"
-            >
-              {salvandoStatus ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
-              Cancelar
-            </button>
-          )}
-
-          {/* Reativar (de cancelada ou concluída) */}
-          {(manutencao.status === "cancelada" || manutencao.status === "concluida") && (
-            <button
-              onClick={handleReativar}
-              disabled={salvandoStatus}
-              className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium transition-all"
-            >
-              {salvandoStatus ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-              Reativar (voltar para "A Agendar")
-            </button>
-          )}
-        </div>
-        {!canAgendar && manutencao.status === "agendar" && (
-          <p className="text-slate-500 text-xs">O agendamento no calendário deve ser feito pelo perfil Financeiro ou Admin.</p>
-        )}
-      </div>
-
       {/* Modal Agendar */}
       {showAgendarModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -282,8 +277,8 @@ export default function ManutencaoDetalhe() {
               <button onClick={() => setShowAgendarModal(false)} className="text-slate-500 hover:text-white"><X size={16} /></button>
             </div>
             <div>
-              <label className="text-slate-400 text-xs mb-1.5 block">Data e Hora *</label>
-              <input type="datetime-local" value={dataAgendamento} onChange={e => setDataAgendamento(e.target.value)}
+              <label className="text-slate-400 text-xs mb-1.5 block">Data *</label>
+              <input type="date" value={dataAgendamento} onChange={e => setDataAgendamento(e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500" />
             </div>
             <p className="text-slate-500 text-xs">Será criado um evento no Google Calendar automaticamente.</p>
@@ -309,8 +304,8 @@ export default function ManutencaoDetalhe() {
             </div>
             <p className="text-slate-400 text-sm">O evento atual no Google Calendar será removido e um novo será criado na data escolhida.</p>
             <div>
-              <label className="text-slate-400 text-xs mb-1.5 block">Nova Data e Hora *</label>
-              <input type="datetime-local" value={novaData} onChange={e => setNovaData(e.target.value)}
+              <label className="text-slate-400 text-xs mb-1.5 block">Nova Data *</label>
+              <input type="date" value={novaData} onChange={e => setNovaData(e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500" />
             </div>
             <div className="flex gap-2">

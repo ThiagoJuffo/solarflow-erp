@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { FileText, Plus, CheckCircle, AlertTriangle, Clock, XCircle, Loader2 } from "lucide-react";
+import { FileText, Plus, CheckCircle, AlertTriangle, Clock, XCircle, Loader2, Copy, Check } from "lucide-react";
 
 const STATUS_ICONS = {
   aberto: <Clock size={14} className="text-blue-400" />,
@@ -29,6 +29,13 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
   const [expandido, setExpandido] = useState(null);
   const [editandoStatus, setEditandoStatus] = useState({});
   const [salvanidoStatus, setSalvandoStatus] = useState({});
+  const [copiado, setCopiado] = useState(null);
+
+  const copiarProtocolo = (p) => {
+    navigator.clipboard.writeText(p.numero_protocolo || "");
+    setCopiado(p.id);
+    setTimeout(() => setCopiado(null), 2000);
+  };
 
   const handleCriar = async () => {
     setSaving(true);
@@ -146,7 +153,18 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
                      </span>
                    )}
                  </div>
-                 <p className="text-slate-400 text-xs">Nº {p.numero_protocolo || "—"} · {p.data_entrada || "sem data"}</p>
+                 <div className="flex items-center gap-1">
+                  <p className="text-slate-400 text-xs">Nº {p.numero_protocolo || "—"} · {p.data_entrada || "sem data"}</p>
+                  {p.numero_protocolo && (
+                    <button
+                      onClick={e => { e.stopPropagation(); copiarProtocolo(p); }}
+                      className="text-slate-500 hover:text-amber-400 transition-colors p-0.5 rounded"
+                      title="Copiar número do protocolo"
+                    >
+                      {copiado === p.id ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+                    </button>
+                  )}
+                </div>
                </div>
                <span className={`text-xs px-2 py-1 rounded-lg ${p.status === "concluido" ? "bg-emerald-400/10 text-emerald-400" : p.status === "indeferido" ? "bg-red-400/10 text-red-400" : "bg-slate-700 text-slate-400"}`}>
                  {STATUS_LABELS[p.status] || p.status}

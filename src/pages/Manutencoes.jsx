@@ -27,7 +27,6 @@ export default function Manutencoes() {
   const [filtroStatus, setFiltroStatus] = useState("todos");
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [metaValor, setMetaValor] = useState(10000);
   const [metaQuantidade, setMetaQuantidade] = useState(10);
   const [editandoMeta, setEditandoMeta] = useState(false);
   const [form, setForm] = useState({
@@ -45,7 +44,6 @@ export default function Manutencoes() {
     setSaving(true);
     const nova = await base44.entities.Manutencao.create({
       ...form,
-      valor: form.valor ? Number(form.valor) : null,
       status: "agendar"
     });
     setManutencoes(prev => [nova, ...prev]);
@@ -64,7 +62,6 @@ export default function Manutencoes() {
   const valorMes = manutencoesDoMes.reduce((acc, m) => acc + (m.valor || 0), 0);
   const qtdAgendadas = manutencoesDoMes.filter(m => m.status === "agendada" || m.status === "concluida").length;
 
-  const pctValor = Math.min((valorMes / metaValor) * 100, 100);
   const pctQtd = Math.min((qtdAgendadas / metaQuantidade) * 100, 100);
 
   const filtered = manutencoes.filter(m => {
@@ -106,54 +103,27 @@ export default function Manutencoes() {
         </div>
 
         {editandoMeta && (
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-slate-400 text-xs mb-1 block">Meta de Valor (R$)</label>
-              <input type="number" value={metaValor} onChange={e => setMetaValor(Number(e.target.value))}
-                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
-            </div>
-            <div>
-              <label className="text-slate-400 text-xs mb-1 block">Meta de Quantidade</label>
-              <input type="number" value={metaQuantidade} onChange={e => setMetaQuantidade(Number(e.target.value))}
-                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
-            </div>
+          <div className="max-w-xs">
+            <label className="text-slate-400 text-xs mb-1 block">Meta de Quantidade de Manutenções</label>
+            <input type="number" value={metaQuantidade} onChange={e => setMetaQuantidade(Number(e.target.value))}
+              className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Meta Valor */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400 text-xs flex items-center gap-1"><DollarSign size={12} /> Valor faturado</span>
-              <span className="text-white text-xs font-semibold">{fmt(valorMes)} / {fmt(metaValor)}</span>
-            </div>
-            <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${pctValor >= 100 ? "bg-emerald-500" : pctValor >= 60 ? "bg-amber-500" : "bg-amber-500/60"}`}
-                style={{ width: `${pctValor}%` }}
-              />
-            </div>
-            <p className={`text-xs font-medium ${pctValor >= 100 ? "text-emerald-400" : "text-slate-400"}`}>
-              {pctValor >= 100 ? "✓ Meta atingida!" : `${pctValor.toFixed(0)}% da meta`}
-            </p>
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-slate-400 text-xs flex items-center gap-1"><Wrench size={12} /> Manutenções agendadas no mês</span>
+            <span className="text-white text-xs font-semibold">{qtdAgendadas} / {metaQuantidade}</span>
           </div>
-
-          {/* Meta Quantidade */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400 text-xs flex items-center gap-1"><Wrench size={12} /> Manutenções agendadas</span>
-              <span className="text-white text-xs font-semibold">{qtdAgendadas} / {metaQuantidade}</span>
-            </div>
-            <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${pctQtd >= 100 ? "bg-emerald-500" : pctQtd >= 60 ? "bg-blue-500" : "bg-blue-500/60"}`}
-                style={{ width: `${pctQtd}%` }}
-              />
-            </div>
-            <p className={`text-xs font-medium ${pctQtd >= 100 ? "text-emerald-400" : "text-slate-400"}`}>
-              {pctQtd >= 100 ? "✓ Meta atingida!" : `${pctQtd.toFixed(0)}% da meta`}
-            </p>
+          <div className="h-4 bg-slate-800 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${pctQtd >= 100 ? "bg-emerald-500" : pctQtd >= 60 ? "bg-amber-500" : "bg-amber-500/50"}`}
+              style={{ width: `${pctQtd}%` }}
+            />
           </div>
+          <p className={`text-xs font-medium ${pctQtd >= 100 ? "text-emerald-400" : "text-slate-400"}`}>
+            {pctQtd >= 100 ? "✓ Meta atingida!" : `${pctQtd.toFixed(0)}% da meta — faltam ${metaQuantidade - qtdAgendadas} manutenção(ões)`}
+          </p>
         </div>
       </div>
 
@@ -201,7 +171,7 @@ export default function Manutencoes() {
                   <p className="text-white font-semibold text-sm">{m.nome_cliente}</p>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
                     <span className="text-slate-400 text-xs flex items-center gap-1">
-                      <DollarSign size={10} /> {m.valor ? fmt(m.valor) : "—"}
+                      <DollarSign size={10} /> {m.valor || "—"}
                     </span>
                     <span className="text-slate-400 text-xs flex items-center gap-1">
                       <Calendar size={10} />
@@ -261,8 +231,8 @@ export default function Manutencoes() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-400 text-xs mb-1.5 block">Valor (R$)</label>
-                  <input type="number" value={form.valor} onChange={e => set("valor", e.target.value)}
-                    placeholder="Ex: 500"
+                  <input type="text" value={form.valor} onChange={e => set("valor", e.target.value)}
+                    placeholder="Ex: R$ 500,00"
                     className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 placeholder-slate-600" />
                 </div>
                 <div>
