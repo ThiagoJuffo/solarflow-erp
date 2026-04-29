@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Wrench, Search, Plus, ChevronRight, Calendar, DollarSign, X, Loader2, CheckCircle, Clock, Target, Copy, Check, Trash2 } from "lucide-react";
+import { Wrench, Search, Plus, ChevronRight, Calendar, DollarSign, X, Loader2, CheckCircle, Clock, Target, Copy, Check, Trash2, Phone, MapPin } from "lucide-react";
 
 const STATUS_LABELS = {
   agendar: "A Agendar",
@@ -33,8 +33,11 @@ export default function Manutencoes() {
   const [confirmarExcluir, setConfirmarExcluir] = useState(null); // guarda o objeto manutencao
   const [excluindo, setExcluindo] = useState(false);
   const [form, setForm] = useState({
-    nome_cliente: "", kit: "", endereco: "", valor: "", condicao_pagamento: ""
+    nome_cliente: "", telefone: "", kit: "", endereco: "", valor: "", condicao_pagamento: "", google_maps_url: ""
   });
+  const [buscandoMaps, setBuscandoMaps] = useState(false);
+  const [mapsErro, setMapsErro] = useState("");
+  const debounceTimer = useRef(null);
 
   useEffect(() => {
     base44.entities.Manutencao.list("-created_date", 200).then(setManutencoes).finally(() => setLoading(false));
@@ -42,22 +45,44 @@ export default function Manutencoes() {
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
+  const buscarLocalizacao = (endereco) => {
+    setForm(f => ({ ...f, google_maps_url: "" }));
+    setMapsErro("");
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    if (!endereco || endereco.length < 8) return;
+    debounceTimer.current = setTimeout(async () => {
+      setBuscandoMaps(true);
+      const res = await base44.functions.invoke('getCoordinates', { address: endereco });
+      setBuscandoMaps(false);
+      if (res.data?.latitude && res.data?.longitude) {
+        const url = `https://www.google.com/maps?q=${res.data.latitude},${res.data.longitude}`;
+        setForm(f => ({ ...f, google_maps_url: url }));
+      } else {
+        setMapsErro("Localização não encontrada para este endereço.");
+      }
+    }, 1200);
+  };
+
   const handleCriar = async () => {
     if (!form.nome_cliente) return;
     setSaving(true);
     const nova = await base44.entities.Manutencao.create({
       ...form,
+      valor: form.valor ? parseFloat(String(form.valor).replace(",", ".")) : undefined,
       status: "agendar"
     });
     setManutencoes(prev => [nova, ...prev]);
-    setForm({ nome_cliente: "", kit: "", endereco: "", valor: "", condicao_pagamento: "" });
+    setForm({ nome_cliente: "", telefone: "", kit: "", endereco: "", valor: "", condicao_pagamento: "", google_maps_url: "" });
     setCopiado(false);
     setShowModal(false);
     setSaving(false);
   };
 
-  const mensagemNovaManutencao = () =>
-    `MANUTENÇÃO\nNome: ${form.nome_cliente || "—"}\nEndereço: ${form.endereco || "—"}\nKit: ${form.kit || "—"}`;
+  const mensagemNovaManutencao = () => {
+    let msg = `MANUTENÇÃO\nNome: ${form.nome_cliente || "—"}\nEndereço: ${form.endereco || "—"}\nKit: ${form.kit || "—"}`;
+    if (form.google_maps_url) msg += `\nLocalização: ${form.google_maps_url}`;
+    return msg;
+  };
 
   const copiarMsgModal = () => {
     navigator.clipboard.writeText(mensagemNovaManutencao());
@@ -276,7 +301,7 @@ export default function Manutencoes() {
           <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-white font-bold text-base flex items-center gap-2"><Wrench size={16} className="text-amber-400" /> Nova Manutenção</h3>
-              <button onClick={() => setShowModal(false)} className="text-slate-500 hover:text-white transition-colors"><X size={18} /></button>
+              <button onClick={() => { setShowModal(false); setMapsErro(""); setBuscandoMaps(false); }} className="text-slate-500 hover:text-white transition-colors"><X size={18} /></button>
             </div>
 
             <div className="space-y-3">
@@ -287,6 +312,12 @@ export default function Manutencoes() {
                   className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 placeholder-slate-600" />
               </div>
               <div>
+                <label className="text-slate-400 text-xs mb-1.5 block">Telefone</label>
+                <input value={form.telefone} onChange={e => set("telefone", e.target.value)}
+                  placeholder="Ex: (27) 99999-9999"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 placeholder-slate-600" />
+              </div>
+              <div>
                 <label className="text-slate-400 text-xs mb-1.5 block">Kit (Sistema Solar)</label>
                 <textarea value={form.kit} onChange={e => set("kit", e.target.value)}
                   placeholder="Ex: 12x Canadian 550W + Inversor Solplanet 5kW"
@@ -294,10 +325,15 @@ export default function Manutencoes() {
                   className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 placeholder-slate-600 resize-none" />
               </div>
               <div>
-                <label className="text-slate-400 text-xs mb-1.5 block">Endereço</label>
-                <input value={form.endereco} onChange={e => set("endereco", e.target.value)}
+                <label className="text-slate-400 text-xs mb-1.5 block flex items-center gap-1.5">
+                  <MapPin size={11} /> Endereço
+                  {buscandoMaps && <Loader2 size={11} className="animate-spin text-amber-400" />}
+                  {form.google_maps_url && <span className="text-emerald-400 text-xs">✓ Localização encontrada</span>}
+                </label>
+                <input value={form.endereco} onChange={e => { set("endereco", e.target.value); buscarLocalizacao(e.target.value); }}
                   placeholder="Ex: Rua X, 123 - Bairro, Cidade-ES"
                   className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 placeholder-slate-600" />
+                {mapsErro && <p className="text-red-400 text-xs mt-1">{mapsErro}</p>}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

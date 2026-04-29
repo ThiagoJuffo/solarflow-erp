@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   Wrench, ChevronLeft, Calendar, DollarSign, MapPin, Package,
-  CheckCircle, X, Clock, Loader2, Copy, Check, RefreshCw, Trash2
+  CheckCircle, X, Clock, Loader2, Copy, Check, RefreshCw, Trash2, Phone, ExternalLink
 } from "lucide-react";
 
 const STATUS_LABELS = {
@@ -50,6 +50,7 @@ export default function ManutencaoDetalhe() {
 
   // Copiar msg
   const [copiado, setCopiado] = useState(false);
+  const [copiadoMaps, setCopiadoMaps] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -146,8 +147,14 @@ export default function ManutencaoDetalhe() {
   };
 
   const mensagemWhatsApp = manutencao
-    ? `MANUTENÇÃO\nNome: ${manutencao.nome_cliente}\nEndereço: ${manutencao.endereco || "—"}\nKit: ${manutencao.kit || "—"}`
+    ? `MANUTENÇÃO\nNome: ${manutencao.nome_cliente}\nEndereço: ${manutencao.endereco || "—"}\nKit: ${manutencao.kit || "—"}${manutencao.google_maps_url ? `\nLocalização: ${manutencao.google_maps_url}` : ""}`
     : "";
+
+  const copiarMaps = () => {
+    navigator.clipboard.writeText(manutencao.google_maps_url);
+    setCopiadoMaps(true);
+    setTimeout(() => setCopiadoMaps(false), 2000);
+  };
 
   const copiarMensagem = () => {
     navigator.clipboard.writeText(mensagemWhatsApp);
@@ -240,6 +247,9 @@ export default function ManutencaoDetalhe() {
           <Wrench size={14} className="text-amber-400" /> Informações da Manutenção
         </h2>
         <div className="grid grid-cols-1 gap-3">
+          {manutencao.telefone && (
+            <DataRow icon={<Phone size={13} className="text-amber-400 shrink-0" />} label="Telefone" value={manutencao.telefone} />
+          )}
           <DataRow icon={<Package size={13} className="text-amber-400 shrink-0" />} label="Kit" value={manutencao.kit || "—"} />
           <DataRow icon={<MapPin size={13} className="text-amber-400 shrink-0" />} label="Endereço" value={manutencao.endereco || "—"} />
           <DataRow icon={<DollarSign size={13} className="text-amber-400 shrink-0" />} label="Valor" value={manutencao.valor ? fmt(manutencao.valor) : "—"} />
@@ -252,6 +262,29 @@ export default function ManutencaoDetalhe() {
               : "Sem data"}
           />
         </div>
+
+        {/* Localização Google Maps */}
+        {manutencao.google_maps_url && (
+          <div className="mt-3 bg-slate-800/50 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <MapPin size={13} className="text-amber-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-slate-400 text-xs mb-0.5">Localização</p>
+                <a href={manutencao.google_maps_url} target="_blank" rel="noreferrer"
+                  className="text-amber-400 hover:text-amber-300 text-xs truncate flex items-center gap-1 transition-colors">
+                  <ExternalLink size={11} /> Ver no Google Maps
+                </a>
+              </div>
+            </div>
+            <button
+              onClick={copiarMaps}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${copiadoMaps ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-slate-700 hover:bg-slate-600 text-slate-300"}`}
+            >
+              {copiadoMaps ? <Check size={12} /> : <Copy size={12} />}
+              {copiadoMaps ? "Copiado!" : "Copiar link"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Mensagem WhatsApp */}
