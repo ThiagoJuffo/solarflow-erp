@@ -85,77 +85,47 @@ export default function PrazoDocumentacao({ projeto, documentos, user, onUpdate 
   if (!unifilarOk) faltando.push("Diagrama Unifilar");
 
   return (
-    <div className={`mt-2 rounded-xl px-3 py-2 border text-xs flex flex-col gap-1.5 ${
-      atrasado
-        ? "bg-red-500/10 border-red-500/20"
-        : diasRestantes <= 1
-        ? "bg-amber-500/10 border-amber-500/20"
-        : "bg-slate-800/60 border-slate-700"
-    }`}>
-      <div className="flex items-center gap-2 flex-wrap">
-        {atrasado ? (
-          <AlertCircle size={13} className="text-red-400 shrink-0" />
-        ) : (
-          <Clock size={13} className={diasRestantes <= 1 ? "text-amber-400 shrink-0" : "text-slate-400 shrink-0"} />
-        )}
-        <span className={atrasado ? "text-red-300 font-medium" : diasRestantes <= 1 ? "text-amber-300 font-medium" : "text-slate-300"}>
-          {atrasado
-            ? `Docs atrasados ${diasAtraso}d útil${diasAtraso !== 1 ? "is" : ""}`
-            : diasRestantes === 0
-            ? "Último dia útil para entregar os docs"
-            : `${diasRestantes} dia${diasRestantes !== 1 ? "s" : ""} útil${diasRestantes !== 1 ? "is" : ""} restante${diasRestantes !== 1 ? "s" : ""}`
-          }
-        </span>
-        <span className="text-slate-500">·</span>
-        <span className="text-slate-400">{faltando.join(", ")}</span>
-      </div>
+    <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+      {atrasado ? (
+        <AlertCircle size={12} className="text-red-400 shrink-0" />
+      ) : (
+        <Clock size={12} className={diasRestantes <= 1 ? "text-amber-400 shrink-0" : "text-slate-500 shrink-0"} />
+      )}
+      <span className={`text-xs ${atrasado ? "text-red-400" : diasRestantes <= 1 ? "text-amber-400" : "text-slate-500"}`}>
+        {atrasado
+          ? `Documentação atrasada ${diasAtraso} dia${diasAtraso !== 1 ? "s" : ""} útil${diasAtraso !== 1 ? "is" : ""}`
+          : diasRestantes === 0
+          ? "Último dia útil para entregar os documentos"
+          : `${diasRestantes} dia${diasRestantes !== 1 ? "s" : ""} úteis restantes`
+        }
+      </span>
 
       {/* Motivo do atraso */}
-      {atrasado && (
-        <div>
-          {editandoMotivo ? (
-            <div className="flex gap-2 items-end mt-0.5">
-              <textarea
-                value={motivo}
-                onChange={e => setMotivo(e.target.value)}
-                placeholder="Informe o motivo do atraso..."
-                rows={2}
-                className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-amber-500 resize-none placeholder-slate-600"
-              />
-              <div className="flex flex-col gap-1">
-                <button
-                  onClick={handleSalvar}
-                  disabled={salvando}
-                  className="bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-white px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 transition-all"
-                >
-                  {salvando ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle size={10} />}
-                  Salvar
-                </button>
-                <button
-                  onClick={() => { setMotivo(projeto.motivo_atraso_documentacao || ""); setEditandoMotivo(false); }}
-                  className="bg-slate-700 hover:bg-slate-600 text-slate-300 px-2.5 py-1.5 rounded-lg text-xs transition-all"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-start gap-2">
-              {projeto.motivo_atraso_documentacao ? (
-                <span className="text-slate-400 italic flex-1">"{projeto.motivo_atraso_documentacao}"</span>
-              ) : (
-                <span className="text-red-400/70 flex-1">Nenhum motivo informado.</span>
-              )}
-              {canEdit && (
-                <button
-                  onClick={() => setEditandoMotivo(true)}
-                  className="text-slate-500 hover:text-white underline transition-colors shrink-0"
-                >
-                  {projeto.motivo_atraso_documentacao ? "Editar" : "Informar motivo"}
-                </button>
-              )}
-            </div>
+      {atrasado && !editandoMotivo && (
+        <>
+          {projeto.motivo_atraso_documentacao && (
+            <span className="text-xs text-slate-500 italic">— "{projeto.motivo_atraso_documentacao}"</span>
           )}
+          {canEdit && (
+            <button onClick={() => setEditandoMotivo(true)} className="text-xs text-slate-600 hover:text-slate-300 underline transition-colors">
+              {projeto.motivo_atraso_documentacao ? "editar motivo" : "informar motivo"}
+            </button>
+          )}
+        </>
+      )}
+
+      {atrasado && editandoMotivo && (
+        <div className="flex gap-2 items-center w-full mt-1">
+          <input
+            value={motivo}
+            onChange={e => setMotivo(e.target.value)}
+            placeholder="Motivo do atraso..."
+            className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-amber-500 placeholder-slate-600"
+          />
+          <button onClick={handleSalvar} disabled={salvando} className="text-xs bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-white px-2.5 py-1 rounded-lg transition-all flex items-center gap-1">
+            {salvando ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle size={10} />} Salvar
+          </button>
+          <button onClick={() => { setMotivo(projeto.motivo_atraso_documentacao || ""); setEditandoMotivo(false); }} className="text-xs text-slate-500 hover:text-white transition-colors">Cancelar</button>
         </div>
       )}
     </div>
