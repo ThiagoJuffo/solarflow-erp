@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
 
     // DELETE event
     if (action === 'delete' && event_id) {
-      const calendarId = encodeURIComponent('projetos@ecomareng.com');
+      const calendarId = encodeURIComponent('atendimento@ecomareng.com');
       const del = await fetch(
         `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${event_id}`,
         { method: 'DELETE', headers }
@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
         end: { dateTime: end.toISOString(), timeZone: 'America/Sao_Paulo' }
       };
 
-      const calendarId = encodeURIComponent('projetos@ecomareng.com');
+      const calendarId = encodeURIComponent('atendimento@ecomareng.com');
       const res = await fetch(
         `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
         { method: 'POST', headers, body: JSON.stringify(event) }
