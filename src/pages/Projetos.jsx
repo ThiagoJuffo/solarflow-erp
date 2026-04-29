@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Sun, ChevronRight, Search, CheckCircle, Clock, Zap, X, Lock, Package, Trash2, AlertTriangle } from "lucide-react";
+import PrazoDocumentacao from "../components/projeto/PrazoDocumentacao";
 
 const CHECKLIST_OBRIGATORIOS = [
   { key: "procuracao", label: "Procuração" },
@@ -263,6 +264,14 @@ export default function Projetos() {
                       </>;
                     })()}
                   </div>
+                  {item._tipo === "projeto" && (
+                    <PrazoDocumentacao
+                      projeto={item}
+                      documentos={documentosPorProjeto[item.id] || []}
+                      user={user}
+                      onUpdate={updated => setProjetos(prev => prev.map(p => p.id === updated.id ? updated : p))}
+                    />
+                  )}
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="flex items-center gap-1.5 flex-wrap justify-end">

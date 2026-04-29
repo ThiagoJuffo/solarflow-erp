@@ -42,13 +42,15 @@
       "default": "pago_projeto_iniciado"
     },
     "motivo_indeferimento": {
+      "type": "string"
+    },
+    "motivo_atraso_documentacao": {
       "type": "string",
-      "description": "Motivo pelo qual o projeto foi indeferido pela EDP"
+      "description": "Justificativa para atraso na entrega do memorial descritivo e diagrama unifilar"
     },
     "equipamentos_confirmados": {
       "type": "boolean",
-      "default": false,
-      "description": "Equipamentos (inversor/m\u00f3dulos) confirmados pelo financeiro ou suprimentos"
+      "default": false
     },
     "equipamentos_confirmados_por": {
       "type": "string"
@@ -59,8 +61,7 @@
     },
     "transformador_confirmado": {
       "type": "boolean",
-      "default": false,
-      "description": "Compra do transformador confirmada pelo financeiro/admin"
+      "default": false
     },
     "transformador_confirmado_por": {
       "type": "string"
