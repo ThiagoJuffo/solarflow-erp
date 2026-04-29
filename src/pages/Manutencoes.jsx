@@ -30,6 +30,8 @@ export default function Manutencoes() {
   const [metaQuantidade, setMetaQuantidade] = useState(10);
   const [editandoMeta, setEditandoMeta] = useState(false);
   const [copiado, setCopiado] = useState(false);
+  const [confirmarExcluir, setConfirmarExcluir] = useState(null); // guarda o objeto manutencao
+  const [excluindo, setExcluindo] = useState(false);
   const [form, setForm] = useState({
     nome_cliente: "", kit: "", endereco: "", valor: "", condicao_pagamento: ""
   });
@@ -207,12 +209,7 @@ export default function Manutencoes() {
                     {STATUS_LABELS[m.status]}
                   </span>
                   <button
-                    onClick={async (e) => {
-                      e.preventDefault();
-                      if (!window.confirm(`Excluir manutenção de "${m.nome_cliente}"? Esta ação não pode ser desfeita.`)) return;
-                      await base44.entities.Manutencao.delete(m.id);
-                      setManutencoes(prev => prev.filter(x => x.id !== m.id));
-                    }}
+                    onClick={() => setConfirmarExcluir(m)}
                     className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-red-500/20 flex items-center justify-center text-slate-500 hover:text-red-400 transition-all"
                     title="Excluir"
                   >
@@ -228,6 +225,48 @@ export default function Manutencoes() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Modal Confirmar Exclusão */}
+      {confirmarExcluir && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center shrink-0">
+                <Trash2 size={18} className="text-red-400" />
+              </div>
+              <div>
+                <p className="text-white font-bold text-sm">Excluir Manutenção</p>
+                <p className="text-slate-400 text-xs mt-0.5">Esta ação não pode ser desfeita.</p>
+              </div>
+            </div>
+            <p className="text-slate-300 text-sm">
+              Deseja excluir permanentemente a manutenção de <span className="text-white font-semibold">"{confirmarExcluir.nome_cliente}"</span>?
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirmarExcluir(null)}
+                className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm font-medium transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  setExcluindo(true);
+                  await base44.entities.Manutencao.delete(confirmarExcluir.id);
+                  setManutencoes(prev => prev.filter(x => x.id !== confirmarExcluir.id));
+                  setConfirmarExcluir(null);
+                  setExcluindo(false);
+                }}
+                disabled={excluindo}
+                className="flex-1 bg-red-500 hover:bg-red-400 disabled:opacity-50 text-white py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
+              >
+                {excluindo ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                Excluir
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
