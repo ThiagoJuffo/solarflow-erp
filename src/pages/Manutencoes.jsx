@@ -75,7 +75,7 @@ export default function Manutencoes() {
   const qtdAgendadas = manutencoesDoMes.filter(m => m.status === "agendada" || m.status === "concluida").length;
 
   const pctQtd = Math.min((qtdAgendadas / metaQuantidade) * 100, 100);
-  const pctValor = Math.min((valorMes / metaValor) * 100, 100);
+  const pctValor = (valorMes / metaValor) * 100;
 
   const filtered = manutencoes.filter(m => {
     const matchSearch = !search || m.nome_cliente?.toLowerCase().includes(search.toLowerCase());
@@ -156,12 +156,12 @@ export default function Manutencoes() {
             </div>
             <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${pctValor >= 100 ? "bg-emerald-500" : "bg-blue-500"}`}
-                style={{ width: `${pctValor}%` }}
+                className="h-full rounded-full transition-all duration-500 bg-blue-500"
+                style={{ width: `${Math.min(pctValor, 100)}%` }}
               />
             </div>
-            <p className={`text-xs font-medium ${pctValor >= 100 ? "text-emerald-400" : "text-slate-500"}`}>
-              {pctValor >= 100 ? "✓ Meta de faturamento atingida!" : `${pctValor.toFixed(0)}% — faltam ${fmt(metaValor - valorMes)}`}
+            <p className="text-xs font-medium text-slate-500">
+              {pctValor.toFixed(0)}% da referência{valorMes > metaValor ? ` — superou em ${fmt(valorMes - metaValor)}` : ` — faltam ${fmt(metaValor - valorMes)}`}
             </p>
           </div>
         </div>
