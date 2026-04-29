@@ -28,7 +28,6 @@ export default function Manutencoes() {
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [metaQuantidade, setMetaQuantidade] = useState(10);
-  const [metaValor, setMetaValor] = useState(10000);
   const [editandoMeta, setEditandoMeta] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [form, setForm] = useState({
@@ -75,7 +74,6 @@ export default function Manutencoes() {
   const qtdAgendadas = manutencoesDoMes.filter(m => m.status === "agendada" || m.status === "concluida").length;
 
   const pctQtd = Math.min((qtdAgendadas / metaQuantidade) * 100, 100);
-  const pctValor = (valorMes / metaValor) * 100;
 
   const filtered = manutencoes.filter(m => {
     const matchSearch = !search || m.nome_cliente?.toLowerCase().includes(search.toLowerCase());
@@ -116,17 +114,10 @@ export default function Manutencoes() {
         </div>
 
         {editandoMeta && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label className="text-slate-400 text-xs mb-1 block">Meta de Quantidade</label>
-              <input type="number" value={metaQuantidade} onChange={e => setMetaQuantidade(Number(e.target.value))}
-                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
-            </div>
-            <div>
-              <label className="text-slate-400 text-xs mb-1 block">Meta de Faturamento (R$)</label>
-              <input type="number" value={metaValor} onChange={e => setMetaValor(Number(e.target.value))}
-                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
-            </div>
+          <div className="max-w-xs">
+            <label className="text-slate-400 text-xs mb-1 block">Meta de Quantidade</label>
+            <input type="number" value={metaQuantidade} onChange={e => setMetaQuantidade(Number(e.target.value))}
+              className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
           </div>
         )}
 
@@ -148,21 +139,10 @@ export default function Manutencoes() {
             </p>
           </div>
 
-          {/* Barra de faturamento */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400 text-xs flex items-center gap-1"><DollarSign size={12} /> Faturamento no mês</span>
-              <span className="text-white text-xs font-semibold">{fmt(valorMes)} / {fmt(metaValor)}</span>
-            </div>
-            <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-500 bg-blue-500"
-                style={{ width: `${Math.min(pctValor, 100)}%` }}
-              />
-            </div>
-            <p className="text-xs font-medium text-slate-500">
-              {pctValor.toFixed(0)}% da referência{valorMes > metaValor ? ` — superou em ${fmt(valorMes - metaValor)}` : ` — faltam ${fmt(metaValor - valorMes)}`}
-            </p>
+          {/* Faturamento informativo */}
+          <div className="flex items-center justify-between bg-slate-800/50 rounded-xl px-4 py-3">
+            <span className="text-slate-400 text-xs flex items-center gap-1.5"><DollarSign size={12} /> Faturamento no mês</span>
+            <span className="text-white text-sm font-semibold">{fmt(valorMes)}</span>
           </div>
         </div>
       </div>
