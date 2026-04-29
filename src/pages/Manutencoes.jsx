@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Wrench, Search, Plus, ChevronRight, Calendar, DollarSign, X, Loader2, CheckCircle, Clock, Target, Copy, Check } from "lucide-react";
+import { Wrench, Search, Plus, ChevronRight, Calendar, DollarSign, X, Loader2, CheckCircle, Clock, Target, Copy, Check, Trash2 } from "lucide-react";
 
 const STATUS_LABELS = {
   agendar: "A Agendar",
@@ -206,6 +206,18 @@ export default function Manutencoes() {
                   <span className={`text-xs font-medium px-2.5 py-1 rounded-lg border ${STATUS_COLORS[m.status]}`}>
                     {STATUS_LABELS[m.status]}
                   </span>
+                  <button
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      if (!window.confirm(`Excluir manutenção de "${m.nome_cliente}"? Esta ação não pode ser desfeita.`)) return;
+                      await base44.entities.Manutencao.delete(m.id);
+                      setManutencoes(prev => prev.filter(x => x.id !== m.id));
+                    }}
+                    className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-red-500/20 flex items-center justify-center text-slate-500 hover:text-red-400 transition-all"
+                    title="Excluir"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                   <Link
                     to={createPageUrl(`ManutencaoDetalhe?id=${m.id}`)}
                     className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-all"
