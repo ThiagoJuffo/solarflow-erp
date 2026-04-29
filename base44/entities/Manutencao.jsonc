@@ -6,10 +6,6 @@
       "type": "string",
       "description": "Nome do cliente da manuten\u00e7\u00e3o"
     },
-    "telefone": {
-      "type": "string",
-      "description": "Telefone do cliente"
-    },
     "kit": {
       "type": "string",
       "description": "Descri\u00e7\u00e3o do sistema solar (quantidade, marca e modelo)"
@@ -17,10 +13,6 @@
     "endereco": {
       "type": "string",
       "description": "Endere\u00e7o onde ser\u00e1 realizada a manuten\u00e7\u00e3o"
-    },
-    "google_maps_url": {
-      "type": "string",
-      "description": "Link do Google Maps para o endere\u00e7o do cliente"
     },
     "valor": {
       "type": "number",

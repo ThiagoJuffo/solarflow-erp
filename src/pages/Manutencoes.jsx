@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Wrench, Search, Plus, ChevronRight, Calendar, DollarSign, X, Loader2, CheckCircle, Clock, Target, Copy, Check, Trash2, Phone, MapPin } from "lucide-react";
+import { Wrench, Search, Plus, ChevronRight, Calendar, DollarSign, X, Loader2, CheckCircle, Clock, Target, Copy, Check, Trash2 } from "lucide-react";
 
 const STATUS_LABELS = {
   agendar: "A Agendar",
@@ -30,12 +30,10 @@ export default function Manutencoes() {
   const [metaQuantidade, setMetaQuantidade] = useState(10);
   const [editandoMeta, setEditandoMeta] = useState(false);
   const [copiado, setCopiado] = useState(false);
-  const [confirmarExcluir, setConfirmarExcluir] = useState(null);
+  const [confirmarExcluir, setConfirmarExcluir] = useState(null); // guarda o objeto manutencao
   const [excluindo, setExcluindo] = useState(false);
-  const [buscandoMaps, setBuscandoMaps] = useState(false);
-  const [mapsErro, setMapsErro] = useState("");
   const [form, setForm] = useState({
-    nome_cliente: "", telefone: "", kit: "", endereco: "", google_maps_url: "", valor: "", condicao_pagamento: ""
+    nome_cliente: "", kit: "", endereco: "", valor: "", condicao_pagamento: ""
   });
 
   useEffect(() => {
@@ -43,19 +41,6 @@ export default function Manutencoes() {
   }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-
-  const buscarMapsUrl = async () => {
-    if (!form.endereco) return;
-    setBuscandoMaps(true);
-    setMapsErro("");
-    const res = await base44.functions.invoke('getMapsUrl', { endereco: form.endereco });
-    if (res.data?.url) {
-      setForm(f => ({ ...f, google_maps_url: res.data.url }));
-    } else {
-      setMapsErro(res.data?.error || "Endereço não encontrado");
-    }
-    setBuscandoMaps(false);
-  };
 
   const handleCriar = async () => {
     if (!form.nome_cliente) return;
@@ -65,17 +50,14 @@ export default function Manutencoes() {
       status: "agendar"
     });
     setManutencoes(prev => [nova, ...prev]);
-    setForm({ nome_cliente: "", telefone: "", kit: "", endereco: "", google_maps_url: "", valor: "", condicao_pagamento: "" });
+    setForm({ nome_cliente: "", kit: "", endereco: "", valor: "", condicao_pagamento: "" });
     setCopiado(false);
     setShowModal(false);
     setSaving(false);
   };
 
-  const mensagemNovaManutencao = () => {
-    let msg = `MANUTENÇÃO\nNome: ${form.nome_cliente || "—"}\nTelefone: ${form.telefone || "—"}\nEndereço: ${form.endereco || "—"}\nKit: ${form.kit || "—"}`;
-    if (form.google_maps_url) msg += `\nLocalização: ${form.google_maps_url}`;
-    return msg;
-  };
+  const mensagemNovaManutencao = () =>
+    `MANUTENÇÃO\nNome: ${form.nome_cliente || "—"}\nEndereço: ${form.endereco || "—"}\nKit: ${form.kit || "—"}`;
 
   const copiarMsgModal = () => {
     navigator.clipboard.writeText(mensagemNovaManutencao());
@@ -305,12 +287,6 @@ export default function Manutencoes() {
                   className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 placeholder-slate-600" />
               </div>
               <div>
-                <label className="text-slate-400 text-xs mb-1.5 block">Telefone</label>
-                <input value={form.telefone} onChange={e => set("telefone", e.target.value)}
-                  placeholder="Ex: (27) 99999-9999"
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 placeholder-slate-600" />
-              </div>
-              <div>
                 <label className="text-slate-400 text-xs mb-1.5 block">Kit (Sistema Solar)</label>
                 <textarea value={form.kit} onChange={e => set("kit", e.target.value)}
                   placeholder="Ex: 12x Canadian 550W + Inversor Solplanet 5kW"
@@ -319,23 +295,9 @@ export default function Manutencoes() {
               </div>
               <div>
                 <label className="text-slate-400 text-xs mb-1.5 block">Endereço</label>
-                <div className="flex gap-2">
-                  <input value={form.endereco} onChange={e => { set("endereco", e.target.value); setMapsErro(""); set("google_maps_url", ""); }}
-                    placeholder="Ex: Rua X, 123 - Bairro, Cidade-ES"
-                    className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 placeholder-slate-600" />
-                  <button type="button" onClick={buscarMapsUrl} disabled={!form.endereco || buscandoMaps}
-                    className="flex items-center gap-1.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-slate-300 px-3 py-2 rounded-xl text-xs font-medium transition-all shrink-0">
-                    {buscandoMaps ? <Loader2 size={13} className="animate-spin" /> : <MapPin size={13} />}
-                    {buscandoMaps ? "..." : "Maps"}
-                  </button>
-                </div>
-                {mapsErro && <p className="text-red-400 text-xs mt-1">{mapsErro}</p>}
-                {form.google_maps_url && (
-                  <a href={form.google_maps_url} target="_blank" rel="noreferrer"
-                    className="flex items-center gap-1.5 text-emerald-400 text-xs mt-1.5 hover:underline">
-                    <MapPin size={11} /> Localização encontrada — ver no Maps
-                  </a>
-                )}
+                <input value={form.endereco} onChange={e => set("endereco", e.target.value)}
+                  placeholder="Ex: Rua X, 123 - Bairro, Cidade-ES"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 placeholder-slate-600" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

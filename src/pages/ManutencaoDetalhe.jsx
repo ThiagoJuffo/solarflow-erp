@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   Wrench, ChevronLeft, Calendar, DollarSign, MapPin, Package,
-  CheckCircle, X, Clock, Loader2, Copy, Check, RefreshCw, Trash2, Phone, ExternalLink
+  CheckCircle, X, Clock, Loader2, Copy, Check, RefreshCw, Trash2
 } from "lucide-react";
 
 const STATUS_LABELS = {
@@ -146,14 +146,7 @@ export default function ManutencaoDetalhe() {
   };
 
   const mensagemWhatsApp = manutencao
-    ? [
-        `MANUTENÇÃO`,
-        `Nome: ${manutencao.nome_cliente}`,
-        manutencao.telefone ? `Telefone: ${manutencao.telefone}` : null,
-        `Endereço: ${manutencao.endereco || "—"}`,
-        `Kit: ${manutencao.kit || "—"}`,
-        manutencao.google_maps_url ? `Localização: ${manutencao.google_maps_url}` : null,
-      ].filter(Boolean).join("\n")
+    ? `MANUTENÇÃO\nNome: ${manutencao.nome_cliente}\nEndereço: ${manutencao.endereco || "—"}\nKit: ${manutencao.kit || "—"}`
     : "";
 
   const copiarMensagem = () => {
@@ -247,14 +240,8 @@ export default function ManutencaoDetalhe() {
           <Wrench size={14} className="text-amber-400" /> Informações da Manutenção
         </h2>
         <div className="grid grid-cols-1 gap-3">
-          {manutencao.telefone && (
-            <DataRow icon={<Phone size={13} className="text-amber-400 shrink-0" />} label="Telefone" value={manutencao.telefone} />
-          )}
           <DataRow icon={<Package size={13} className="text-amber-400 shrink-0" />} label="Kit" value={manutencao.kit || "—"} />
           <DataRow icon={<MapPin size={13} className="text-amber-400 shrink-0" />} label="Endereço" value={manutencao.endereco || "—"} />
-          {manutencao.google_maps_url && (
-            <LocalizacaoRow url={manutencao.google_maps_url} />
-          )}
           <DataRow icon={<DollarSign size={13} className="text-amber-400 shrink-0" />} label="Valor" value={manutencao.valor ? fmt(manutencao.valor) : "—"} />
           <DataRow icon={<Clock size={13} className="text-amber-400 shrink-0" />} label="Condição de Pagamento" value={manutencao.condicao_pagamento || "—"} />
           <DataRow
@@ -403,34 +390,6 @@ function DataRow({ icon, label, value }) {
       <div className="min-w-0">
         <p className="text-slate-400 text-xs mb-0.5">{label}</p>
         <p className="text-white text-sm">{value}</p>
-      </div>
-    </div>
-  );
-}
-
-function LocalizacaoRow({ url }) {
-  const [copiado, setCopiado] = useState(false);
-  const copiar = () => {
-    navigator.clipboard.writeText(url);
-    setCopiado(true);
-    setTimeout(() => setCopiado(false), 2000);
-  };
-  return (
-    <div className="flex items-center gap-3 bg-slate-800/50 rounded-xl px-4 py-3">
-      <MapPin size={13} className="text-emerald-400 shrink-0 mt-0.5" />
-      <div className="flex-1 min-w-0">
-        <p className="text-slate-400 text-xs mb-1">Localização Google Maps</p>
-        <div className="flex items-center gap-2 flex-wrap">
-          <a href={url} target="_blank" rel="noreferrer"
-            className="flex items-center gap-1 text-emerald-400 text-xs hover:underline">
-            <ExternalLink size={11} /> Abrir no Maps
-          </a>
-          <button onClick={copiar}
-            className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg transition-all ${copiado ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-700 hover:bg-slate-600 text-slate-300"}`}>
-            {copiado ? <Check size={11} /> : <Copy size={11} />}
-            {copiado ? "Copiado!" : "Copiar link"}
-          </button>
-        </div>
       </div>
     </div>
   );
