@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     // DELETE event
     if (action === 'delete' && event_id) {
       const del = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/primary/events/${event_id}`,
+        `https://www.googleapis.com/calendar/v3/calendars/projetos%40ecomareng.com/events/${event_id}`,
         { method: 'DELETE', headers }
       );
       if (del.status === 204 || del.status === 404) {
@@ -33,13 +33,14 @@ Deno.serve(async (req) => {
       const end = new Date(start.getTime() + 60 * 60 * 1000); // +1h
 
       const event = {
-        summary: `Manutenção - ${nome_cliente}`,
+        summary: `Manutenção ${nome_cliente}`,
+        colorId: '3', // grape/roxo no Google Calendar
         start: { dateTime: start.toISOString(), timeZone: 'America/Sao_Paulo' },
         end: { dateTime: end.toISOString(), timeZone: 'America/Sao_Paulo' }
       };
 
       const res = await fetch(
-        'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+        `https://www.googleapis.com/calendar/v3/calendars/projetos%40ecomareng.com/events`,
         { method: 'POST', headers, body: JSON.stringify(event) }
       );
       const data = await res.json();
