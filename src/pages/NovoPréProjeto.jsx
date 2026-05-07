@@ -47,7 +47,7 @@ export default function NovoPréProjeto() {
   const [docFotoFile, setDocFotoFile] = useState(null);
   const [contaEnergiaUrl, setContaEnergiaUrl] = useState("");
   const [docFotoUrl, setDocFotoUrl] = useState("");
-  const [modoManual, setModoManual] = useState(false);
+  const [modoManual, setModoManual] = useState(true);
   const [dadosManuais, setDadosManuais] = useState({
     numero_uc: "", titular: "", cpf_extraido: "", endereco: "", cidade: "",
     estado: "", cep: "", tipo_ligacao: "", concessionaria: "EDP"
@@ -671,11 +671,11 @@ Retorne apenas o JSON.`;
           
           {/* Toggle manual/automático */}
           <div className="flex gap-2">
-            <button onClick={() => setModoManual(false)} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${!modoManual ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}>
-              Upload automático (IA)
-            </button>
             <button onClick={() => setModoManual(true)} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${modoManual ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}>
               Digitar manualmente
+            </button>
+            <button onClick={() => setModoManual(false)} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${!modoManual ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}>
+              Upload automático (IA)
             </button>
           </div>
 
