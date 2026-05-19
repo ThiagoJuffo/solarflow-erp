@@ -142,8 +142,44 @@ export default function Projetos() {
     ...projetos.map(p => ({ ...p, _tipo: "projeto" }))
   ];
 
+  const matchesSearch = (item, query) => {
+    if (!query) return true;
+    const q = query.toLowerCase().trim();
+    const nome = (item.nome_cliente || "").toLowerCase();
+    const cpf = (item.cpf || "").replace(/\D/g, "");
+    const cpfQuery = q.replace(/\D/g, "");
+
+    // CPF parcial (apenas dígitos)
+    if (cpfQuery.length >= 3 && cpf.includes(cpfQuery)) return true;
+
+    // Nome: match exato por inclusão
+    if (nome.includes(q)) return true;
+
+    // Fuzzy: cada palavra da busca precisa estar "perto" de alguma palavra do nome
+    const queryWords = q.split(/\s+/).filter(Boolean);
+    const nomeWords = nome.split(/\s+/).filter(Boolean);
+
+    const levenshtein = (a, b) => {
+      const m = a.length, n = b.length;
+      const dp = Array.from({ length: m + 1 }, (_, i) => [i]);
+      for (let j = 0; j <= n; j++) dp[0][j] = j;
+      for (let i = 1; i <= m; i++)
+        for (let j = 1; j <= n; j++)
+          dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j-1], dp[i-1][j], dp[i][j-1]);
+      return dp[m][n];
+    };
+
+    return queryWords.every(qw =>
+      nomeWords.some(nw => {
+        if (nw.includes(qw) || qw.includes(nw)) return true;
+        const maxErr = qw.length <= 4 ? 1 : 2;
+        return levenshtein(qw, nw) <= maxErr;
+      })
+    );
+  };
+
   const filtered = allItems.filter(item => {
-    const searchMatch = !search || item.nome_cliente?.toLowerCase().includes(search.toLowerCase()) || item.cpf?.includes(search);
+    const searchMatch = matchesSearch(item, search);
     const groupStatuses = filtroGrupo !== "Todos" ? STATUS_GROUPS[filtroGrupo] : null;
     const groupMatch = !groupStatuses || groupStatuses.includes(item.status);
     return searchMatch && groupMatch;
