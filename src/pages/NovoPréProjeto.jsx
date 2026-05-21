@@ -16,6 +16,7 @@ export default function NovoPréProjeto() {
   const [rascunhos, setRascunhos] = useState([]);
   const [mostrarRascunhos, setMostrarRascunhos] = useState(false);
   const [concluido, setConcluido] = useState(false);
+  const [aumentoCargaConfirmado, setAumentoCargaConfirmado] = useState(false);
   const [extracting, setExtracting] = useState(false);
   const [extractAbortController, setExtractAbortController] = useState(null);
 
@@ -266,7 +267,10 @@ Retorne apenas o JSON.`;
   };
 
   const handleSalvar = async () => {
-    setSaving(true);
+    if (form.aumento_carga && !aumentoCargaConfirmado) {
+      // Bloqueia até confirmação explícita
+      return;
+    }
     const payload = buildPayload("aguardando_pagamento");
     let preProjeto;
     if (rascunhoId) {
@@ -977,6 +981,48 @@ Retorne apenas o JSON.`;
                 </div>
               </div>
             )}
+            {form.aumento_carga && (
+              <div className={`border-2 rounded-xl p-5 transition-all ${
+                aumentoCargaConfirmado
+                  ? "bg-emerald-500/10 border-emerald-500/40"
+                  : "bg-red-500/10 border-red-500/50"
+              }`}>
+                <div className="flex items-start gap-3 mb-4">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    aumentoCargaConfirmado ? "bg-emerald-500/20" : "bg-red-500/20"
+                  }`}>
+                    <AlertTriangle size={20} className={aumentoCargaConfirmado ? "text-emerald-400" : "text-red-400"} />
+                  </div>
+                  <div className="flex-1">
+                    <p className={`font-bold text-sm ${
+                      aumentoCargaConfirmado ? "text-emerald-300" : "text-red-300"
+                    }`}>
+                      {aumentoCargaConfirmado ? "✓ Aumento de carga confirmado" : "⚠️ ATENÇÃO: Este projeto requer aumento de carga!"}
+                    </p>
+                    <p className="text-slate-400 text-xs mt-1">
+                      {aumentoCargaConfirmado
+                        ? "O aumento de carga foi confirmado como finalizado. Você pode prosseguir com o cadastro."
+                        : "NÃO envie o projeto para a EDP antes de confirmar que o aumento de carga foi concluído. Isso pode resultar em indeferimento."}
+                    </p>
+                  </div>
+                </div>
+                {!aumentoCargaConfirmado ? (
+                  <button
+                    onClick={() => setAumentoCargaConfirmado(true)}
+                    className="w-full bg-red-500 hover:bg-red-400 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm"
+                  >
+                    <CheckCircle size={16} /> Confirmo que o aumento de carga foi finalizado
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setAumentoCargaConfirmado(false)}
+                    className="text-xs text-slate-500 hover:text-slate-300 underline transition-colors"
+                  >
+                    Desfazer confirmação
+                  </button>
+                )}
+              </div>
+            )}
             <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
               <p className="text-amber-300 text-sm font-medium">Status inicial: <span className="text-white">Aguardando Pagamento</span></p>
               <p className="text-slate-400 text-xs mt-1">O projeto será iniciado após confirmação do pagamento pelo financeiro.</p>
@@ -984,10 +1030,9 @@ Retorne apenas o JSON.`;
           </div>
 
           <div className="flex gap-3">
-            <button onClick={() => setStep(2)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl text-sm font-medium transition-all">Voltar</button>
             <button
               onClick={handleSalvar}
-              disabled={saving}
+              disabled={saving || (form.aumento_carga && !aumentoCargaConfirmado)}
               className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
             >
               {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
