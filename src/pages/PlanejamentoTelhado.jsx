@@ -31,16 +31,21 @@ export default function PlanejamentoTelhado() {
     if (!enderecoSolar) return;
     setBuscandoSolar(true);
     setDadosSolar(null);
-    const res = await base44.functions.invoke('solarApi', { address: enderecoSolar });
-    const data = res.data;
-    if (data.error) {
-      setDadosSolar({ erro: data.error, details: data.details });
-    } else {
-      setDadosSolar(data);
-      if (data.buildingArea) {
-        const lado = Math.sqrt(data.buildingArea);
-        setDimensoes(d => ({ ...d, largura: lado.toFixed(1), comprimento: lado.toFixed(1) }));
+    try {
+      const res = await base44.functions.invoke('solarApi', { address: enderecoSolar });
+      const data = res.data;
+      if (data.error) {
+        setDadosSolar({ erro: data.error, details: data.details });
+      } else {
+        setDadosSolar(data);
+        if (data.buildingArea) {
+          const lado = Math.sqrt(data.buildingArea);
+          setDimensoes(d => ({ ...d, largura: lado.toFixed(1), comprimento: lado.toFixed(1) }));
+        }
       }
+    } catch (err) {
+      const errData = err.response?.data;
+      setDadosSolar({ erro: errData?.error || 'Endereço não encontrado ou sem cobertura da Solar API', details: errData?.details || err.message });
     }
     setBuscandoSolar(false);
   };
