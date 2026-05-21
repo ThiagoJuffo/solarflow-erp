@@ -250,6 +250,7 @@ Retorne apenas JSON com esses campos. Se não conseguir identificar, use null.`,
       potenciaKwp,
       areaOcupada,
       aproveitamento,
+      ...(dadosSolar?.lat ? { satelite: true, lat_center: dadosSolar.lat, staticMapUrl: dadosSolar.staticMapUrl } : {}),
     });
 
     // Calcular strings se houver inversores selecionados
@@ -269,61 +270,73 @@ Retorne apenas JSON com esses campos. Se não conseguir identificar, use null.`,
     const ctx = canvas.getContext("2d");
     const W = canvas.width;
     const H = canvas.height;
-
-    const escalaX = (W - 40) / r.telhadoL;
-    const escalaY = (H - 40) / r.telhadoC;
-    const escala = Math.min(escalaX, escalaY);
-
-    const tw = r.telhadoL * escala;
-    const th = r.telhadoC * escala;
-    const ox = (W - tw) / 2;
-    const oy = (H - th) / 2;
-
     ctx.clearRect(0, 0, W, H);
 
-    // Telhado
-    ctx.fillStyle = "#1e293b";
-    ctx.fillRect(ox, oy, tw, th);
-    ctx.strokeStyle = "#f59e0b";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(ox, oy, tw, th);
-
-    // Margem de borda
-    ctx.strokeStyle = "#64748b";
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    ctx.strokeRect(ox + MARGEM_BORDA * escala, oy + MARGEM_BORDA * escala,
-      tw - 2 * MARGEM_BORDA * escala, th - 2 * MARGEM_BORDA * escala);
-    ctx.setLineDash([]);
-
-    // Módulos
-    const mwPx = r.mW * escala;
-    const mhPx = r.mH * escala;
-    const startX = ox + MARGEM_BORDA * escala;
-    const startY = oy + MARGEM_BORDA * escala;
-
-    for (let row = 0; row < r.rows; row++) {
-      for (let col = 0; col < r.cols; col++) {
-        const x = startX + col * (mwPx + ESPACO_ENTRE * escala);
-        const y = startY + row * (mhPx + ESPACO_ENTRE * escala);
-        ctx.fillStyle = "#1d4ed8";
-        ctx.fillRect(x, y, mwPx, mhPx);
-        ctx.strokeStyle = "#93c5fd";
-        ctx.lineWidth = 0.5;
-        ctx.strokeRect(x, y, mwPx, mhPx);
-        // Linha diagonal (célula)
-        ctx.strokeStyle = "#3b82f620";
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + mwPx, y + mhPx);
-        ctx.stroke();
+    const drawPanels = (startX, startY, mwPx, mhPx, gapPx, satelite) => {
+      for (let row = 0; row < r.rows; row++) {
+        for (let col = 0; col < r.cols; col++) {
+          const x = startX + col * (mwPx + gapPx);
+          const y = startY + row * (mhPx + gapPx);
+          ctx.fillStyle = satelite ? "rgba(29, 78, 216, 0.72)" : "#1d4ed8";
+          ctx.fillRect(x, y, mwPx, mhPx);
+          ctx.strokeStyle = "#93c5fd";
+          ctx.lineWidth = satelite ? 1.5 : 0.5;
+          ctx.strokeRect(x, y, mwPx, mhPx);
+          if (!satelite) {
+            ctx.strokeStyle = "#3b82f620";
+            ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + mwPx, y + mhPx); ctx.stroke();
+          }
+        }
       }
-    }
+    };
 
-    // Legenda
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "11px sans-serif";
-    ctx.fillText(`${r.telhadoL}m × ${r.telhadoC}m`, ox + 4, oy - 6);
+    if (r.satelite && r.staticMapUrl) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, W, H);
+        // Escala baseada em metros/pixel no zoom 20 para a latitude do local
+        const metersPerPx = 156543.03392 * Math.cos((r.lat_center || -15) * Math.PI / 180) / Math.pow(2, 20);
+        const mwPx = r.mW / metersPerPx;
+        const mhPx = r.mH / metersPerPx;
+        const gapPx = ESPACO_ENTRE / metersPerPx;
+        const totalW = r.cols * mwPx + Math.max(0, r.cols - 1) * gapPx;
+        const totalH = r.rows * mhPx + Math.max(0, r.rows - 1) * gapPx;
+        drawPanels((W - totalW) / 2, (H - totalH) / 2, mwPx, mhPx, gapPx, true);
+        // Legenda
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
+        ctx.fillRect(6, H - 26, 220, 20);
+        ctx.fillStyle = "#e2e8f0";
+        ctx.font = "11px sans-serif";
+        ctx.fillText(`${r.total} módulos · ${r.potenciaKwp.toFixed(2)} kWp`, 10, H - 12);
+      };
+      img.src = r.staticMapUrl;
+    } else {
+      const escalaX = (W - 40) / r.telhadoL;
+      const escalaY = (H - 40) / r.telhadoC;
+      const escala = Math.min(escalaX, escalaY);
+      const tw = r.telhadoL * escala;
+      const th = r.telhadoC * escala;
+      const ox = (W - tw) / 2;
+      const oy = (H - th) / 2;
+
+      ctx.fillStyle = "#1e293b";
+      ctx.fillRect(ox, oy, tw, th);
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(ox, oy, tw, th);
+      ctx.strokeStyle = "#64748b";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.strokeRect(ox + MARGEM_BORDA * escala, oy + MARGEM_BORDA * escala, tw - 2 * MARGEM_BORDA * escala, th - 2 * MARGEM_BORDA * escala);
+      ctx.setLineDash([]);
+
+      drawPanels(ox + MARGEM_BORDA * escala, oy + MARGEM_BORDA * escala, r.mW * escala, r.mH * escala, ESPACO_ENTRE * escala, false);
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "11px sans-serif";
+      ctx.fillText(`${r.telhadoL}m × ${r.telhadoC}m`, ox + 4, oy - 6);
+    }
   };
 
   const modSel = modulos.find(m => m.id === moduloSelecionado);
@@ -428,12 +441,12 @@ Retorne apenas JSON com esses campos. Se não conseguir identificar, use null.`,
                     {(dadosSolar.bestConfig || dadosSolar.midConfig) && (
                       <div className="flex gap-2 pt-1">
                         {dadosSolar.midConfig && (() => { const c = dadosSolar.midConfig; const kwp = (c.panelsCount * dadosSolar.panelCapacityWatts) / 1000; return (
-                          <button onClick={() => { setConfigSolar("mid"); setResultado({ total: c.panelsCount, potenciaKwp: kwp, cols: Math.ceil(Math.sqrt(c.panelsCount)), rows: Math.ceil(c.panelsCount / Math.ceil(Math.sqrt(c.panelsCount))), mW: dadosSolar.panelWidthMeters, mH: dadosSolar.panelHeightMeters, telhadoL: Math.sqrt(dadosSolar.buildingArea || 100), telhadoC: Math.sqrt(dadosSolar.buildingArea || 100), areaOcupada: c.panelsCount * dadosSolar.panelWidthMeters * dadosSolar.panelHeightMeters, aproveitamento: (c.panelsCount * dadosSolar.panelWidthMeters * dadosSolar.panelHeightMeters / (dadosSolar.buildingArea || 100)) * 100, orientacao: "Google Solar", modulo: modSel, yearlyEnergyDcKwh: c.yearlyEnergyDcKwh }); }}
+                          <button onClick={() => { setConfigSolar("mid"); setResultado({ total: c.panelsCount, potenciaKwp: kwp, cols: Math.ceil(Math.sqrt(c.panelsCount)), rows: Math.ceil(c.panelsCount / Math.ceil(Math.sqrt(c.panelsCount))), mW: dadosSolar.panelWidthMeters, mH: dadosSolar.panelHeightMeters, telhadoL: Math.sqrt(dadosSolar.buildingArea || 100), telhadoC: Math.sqrt(dadosSolar.buildingArea || 100), areaOcupada: c.panelsCount * dadosSolar.panelWidthMeters * dadosSolar.panelHeightMeters, aproveitamento: (c.panelsCount * dadosSolar.panelWidthMeters * dadosSolar.panelHeightMeters / (dadosSolar.buildingArea || 100)) * 100, orientacao: "Google Solar", modulo: modSel, satelite: true, lat_center: dadosSolar.lat, staticMapUrl: dadosSolar.staticMapUrl, yearlyEnergyDcKwh: c.yearlyEnergyDcKwh }); }}
                             className={`flex-1 rounded-xl p-2.5 text-xs border text-left transition-all ${configSolar === "mid" ? "bg-blue-500/20 border-blue-500/50 text-blue-300" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"}`}>
                             <p className="font-bold">{c.panelsCount} painéis</p><p>{kwp.toFixed(1)} kWp</p>
                           </button>); })()}
                         {dadosSolar.bestConfig && (() => { const c = dadosSolar.bestConfig; const kwp = (c.panelsCount * dadosSolar.panelCapacityWatts) / 1000; return (
-                          <button onClick={() => { setConfigSolar("best"); setResultado({ total: c.panelsCount, potenciaKwp: kwp, cols: Math.ceil(Math.sqrt(c.panelsCount)), rows: Math.ceil(c.panelsCount / Math.ceil(Math.sqrt(c.panelsCount))), mW: dadosSolar.panelWidthMeters, mH: dadosSolar.panelHeightMeters, telhadoL: Math.sqrt(dadosSolar.buildingArea || 100), telhadoC: Math.sqrt(dadosSolar.buildingArea || 100), areaOcupada: c.panelsCount * dadosSolar.panelWidthMeters * dadosSolar.panelHeightMeters, aproveitamento: (c.panelsCount * dadosSolar.panelWidthMeters * dadosSolar.panelHeightMeters / (dadosSolar.buildingArea || 100)) * 100, orientacao: "Google Solar (máx)", modulo: modSel, yearlyEnergyDcKwh: c.yearlyEnergyDcKwh }); }}
+                          <button onClick={() => { setConfigSolar("best"); setResultado({ total: c.panelsCount, potenciaKwp: kwp, cols: Math.ceil(Math.sqrt(c.panelsCount)), rows: Math.ceil(c.panelsCount / Math.ceil(Math.sqrt(c.panelsCount))), mW: dadosSolar.panelWidthMeters, mH: dadosSolar.panelHeightMeters, telhadoL: Math.sqrt(dadosSolar.buildingArea || 100), telhadoC: Math.sqrt(dadosSolar.buildingArea || 100), areaOcupada: c.panelsCount * dadosSolar.panelWidthMeters * dadosSolar.panelHeightMeters, aproveitamento: (c.panelsCount * dadosSolar.panelWidthMeters * dadosSolar.panelHeightMeters / (dadosSolar.buildingArea || 100)) * 100, orientacao: "Google Solar (máx)", modulo: modSel, satelite: true, lat_center: dadosSolar.lat, staticMapUrl: dadosSolar.staticMapUrl, yearlyEnergyDcKwh: c.yearlyEnergyDcKwh }); }}
                             className={`flex-1 rounded-xl p-2.5 text-xs border text-left transition-all ${configSolar === "best" ? "bg-amber-500/20 border-amber-500/50 text-amber-300" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"}`}>
                             <p className="font-bold">{c.panelsCount} painéis (máx)</p><p>{kwp.toFixed(1)} kWp</p>
                           </button>); })()}

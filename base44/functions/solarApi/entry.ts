@@ -77,6 +77,7 @@ Deno.serve(async (req) => {
       midConfig,     // configuração intermediária
       allConfigsCount: configs.length,
       address: data.name || address,
+      staticMapUrl: `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=20&size=600x460&maptype=satellite&key=${apiKey}`,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
