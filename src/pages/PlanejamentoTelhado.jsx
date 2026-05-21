@@ -404,6 +404,20 @@ Retorne apenas JSON com esses campos. Se não conseguir identificar, use null.`,
                 )}
               </div>
             )}
+            {dadosSolar && !dadosSolar.erro && dadosSolar.lat && (
+              <div className="rounded-xl overflow-hidden border border-blue-500/20">
+                <p className="text-slate-400 text-xs px-3 py-2 bg-slate-800 flex items-center gap-1.5">
+                  <Satellite size={11} className="text-blue-400" /> Imagem de satélite — confirme que é o telhado correto
+                </p>
+                <iframe
+                  src={`https://www.google.com/maps?q=${dadosSolar.lat},${dadosSolar.lng}&t=k&z=20&output=embed`}
+                  width="100%" height="230"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  title="Satélite do telhado"
+                />
+              </div>
+            )}
 
             {modo === "drone" && (
               <div className="space-y-3">
