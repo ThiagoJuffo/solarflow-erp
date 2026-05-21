@@ -27,6 +27,8 @@ export default function PlanejamentoTelhado() {
   const [stringCalc, setStringCalc] = useState(null);
   const [modoQuantidade, setModoQuantidade] = useState("auto"); // "auto" | "manual"
   const [quantidadeManual, setQuantidadeManual] = useState("");
+  const [identificandoTelhado, setIdentificandoTelhado] = useState(false);
+  const [telhadoIdentificado, setTelhadoIdentificado] = useState(false);
   const canvasRef = useRef(null);
 
   const handleBuscarSolarAPI = async () => {
@@ -54,6 +56,42 @@ export default function PlanejamentoTelhado() {
       setDadosSolar({ erro: errData?.error || 'Endereço não encontrado ou sem cobertura da Solar API', details: errData?.details || err.message });
     }
     setBuscandoSolar(false);
+    setTelhadoIdentificado(false);
+    setAnaliseIA(null);
+  };
+
+  const handleIdentificarTelhado = async () => {
+    if (!dadosSolar?.staticMapUrl) return;
+    setIdentificandoTelhado(true);
+    setTelhadoIdentificado(false);
+    const res = await base44.integrations.Core.InvokeLLM({
+      prompt: `Esta é uma imagem de satélite com zoom máximo (zoom 20) de uma edificação.
+Identifique o telhado principal visível e estime suas dimensões reais em metros.
+O Google Solar API informou área total do telhado de ${dadosSolar.buildingArea?.toFixed(0)} m².
+Retorne:
+- largura_m: largura do maior plano utilizável do telhado (número, em metros)
+- comprimento_m: comprimento do maior plano utilizável (número, em metros)
+- inclinacao_graus: inclinação estimada (0 para laje plana, 15-30 para telha comum)
+- tipo_telhado: tipo (laje, ceramica, metalico, fibrocimento, outro)
+- observacoes: sombreamentos, obstáculos, múltiplos planos relevantes`,
+      file_urls: [dadosSolar.staticMapUrl],
+      response_json_schema: {
+        type: "object",
+        properties: {
+          largura_m: { type: "number" },
+          comprimento_m: { type: "number" },
+          inclinacao_graus: { type: "number" },
+          tipo_telhado: { type: "string" },
+          observacoes: { type: "string" }
+        }
+      }
+    });
+    if (res.largura_m) setDimensoes(d => ({ ...d, largura: String(res.largura_m) }));
+    if (res.comprimento_m) setDimensoes(d => ({ ...d, comprimento: String(res.comprimento_m) }));
+    if (res.inclinacao_graus) setDimensoes(d => ({ ...d, inclinacao: String(res.inclinacao_graus) }));
+    setAnaliseIA(res);
+    setTelhadoIdentificado(true);
+    setIdentificandoTelhado(false);
   };
 
   useEffect(() => {
@@ -457,17 +495,67 @@ Retorne apenas JSON com esses campos. Se não conseguir identificar, use null.`,
               </div>
             )}
             {dadosSolar && !dadosSolar.erro && dadosSolar.lat && (
-              <div className="rounded-xl overflow-hidden border border-blue-500/20">
-                <p className="text-slate-400 text-xs px-3 py-2 bg-slate-800 flex items-center gap-1.5">
-                  <Satellite size={11} className="text-blue-400" /> Imagem de satélite — confirme que é o telhado correto
-                </p>
-                <iframe
-                  src={`https://www.google.com/maps?q=${dadosSolar.lat},${dadosSolar.lng}&t=k&z=20&output=embed`}
-                  width="100%" height="230"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  title="Satélite do telhado"
-                />
+              <div className="space-y-3">
+                <div className="rounded-xl overflow-hidden border border-blue-500/20">
+                  <p className="text-slate-400 text-xs px-3 py-2 bg-slate-800 flex items-center gap-1.5">
+                    <Satellite size={11} className="text-blue-400" /> Imagem de satélite — confirme que é o telhado correto
+                  </p>
+                  <iframe
+                    src={`https://www.google.com/maps?q=${dadosSolar.lat},${dadosSolar.lng}&t=k&z=20&output=embed`}
+                    width="100%" height="230"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    title="Satélite do telhado"
+                  />
+                </div>
+
+                {/* Botão identificar telhado com IA */}
+                {!telhadoIdentificado && (
+                  <button
+                    onClick={handleIdentificarTelhado}
+                    disabled={identificandoTelhado}
+                    className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm"
+                  >
+                    {identificandoTelhado ? <Loader2 size={15} className="animate-spin" /> : <Satellite size={15} />}
+                    {identificandoTelhado ? "Identificando telhado com IA..." : "Identificar Telhado com IA"}
+                  </button>
+                )}
+
+                {/* Resultado da identificação */}
+                {telhadoIdentificado && analiseIA && (
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-blue-300 text-xs font-semibold flex items-center gap-1.5"><CheckCircle size={13} /> Telhado identificado pela IA</p>
+                      <button onClick={handleIdentificarTelhado} disabled={identificandoTelhado} className="text-slate-400 hover:text-blue-300 text-xs underline">
+                        {identificandoTelhado ? "Analisando..." : "Re-analisar"}
+                      </button>
+                    </div>
+                    {analiseIA.tipo_telhado && (
+                      <p className="text-slate-300 text-xs">Tipo detectado: <strong className="text-white">{analiseIA.tipo_telhado}</strong></p>
+                    )}
+                    {analiseIA.observacoes && (
+                      <p className="text-slate-400 text-xs italic">{analiseIA.observacoes}</p>
+                    )}
+                    <p className="text-slate-400 text-xs font-medium pt-1">Ajuste as dimensões se necessário:</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { label: "Largura (m)", key: "largura" },
+                        { label: "Comprimento (m)", key: "comprimento" },
+                        { label: "Inclinação (°)", key: "inclinacao" },
+                      ].map(f => (
+                        <div key={f.key}>
+                          <label className="text-slate-500 text-xs block mb-1">{f.label}</label>
+                          <input
+                            type="number"
+                            value={dimensoes[f.key]}
+                            onChange={e => setDimensoes(d => ({ ...d, [f.key]: e.target.value }))}
+                            className="w-full bg-slate-800 border border-blue-500/40 text-white rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-blue-400"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
