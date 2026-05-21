@@ -17,6 +17,8 @@ export default function PlanejamentoTelhado() {
   const [resultado, setResultado] = useState(null);
   const [analiseIA, setAnaliseIA] = useState(null);
   const [enderecoSolar, setEnderecoSolar] = useState("");
+  const [tipoEntradaSolar, setTipoEntradaSolar] = useState("endereco"); // "endereco" | "coordenadas"
+  const [coordSolar, setCoordSolar] = useState({ lat: "", lng: "" });
   const [dadosSolar, setDadosSolar] = useState(null);
   const [buscandoSolar, setBuscandoSolar] = useState(false);
   const [configSolar, setConfigSolar] = useState("best");
@@ -28,11 +30,15 @@ export default function PlanejamentoTelhado() {
   const canvasRef = useRef(null);
 
   const handleBuscarSolarAPI = async () => {
-    if (!enderecoSolar) return;
+    const podeExecutar = tipoEntradaSolar === "endereco" ? !!enderecoSolar : (!!coordSolar.lat && !!coordSolar.lng);
+    if (!podeExecutar) return;
     setBuscandoSolar(true);
     setDadosSolar(null);
     try {
-      const res = await base44.functions.invoke('solarApi', { address: enderecoSolar });
+      const payload = tipoEntradaSolar === "coordenadas"
+        ? { latitude: parseFloat(coordSolar.lat), longitude: parseFloat(coordSolar.lng) }
+        : { address: enderecoSolar };
+      const res = await base44.functions.invoke('solarApi', payload);
       const data = res.data;
       if (data.error) {
         setDadosSolar({ erro: data.error, details: data.details });
@@ -353,20 +359,48 @@ Retorne apenas JSON com esses campos. Se não conseguir identificar, use null.`,
             {modo === "solar_api" && (
               <div className="space-y-3">
                 <p className="text-slate-400 text-xs">Busca dados reais do telhado via <strong className="text-blue-400">Google Solar API</strong> — satélite + IA do Google.</p>
-                <div className="flex gap-2">
-                  <input
-                    value={enderecoSolar}
-                    onChange={e => setEnderecoSolar(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && handleBuscarSolarAPI()}
-                    placeholder="Ex: Rua das Flores 123, Vitória ES"
-                    className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500"
-                  />
-                  <button onClick={handleBuscarSolarAPI} disabled={buscandoSolar || !enderecoSolar}
-                    className="bg-blue-500 hover:bg-blue-400 disabled:bg-slate-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-1.5 shrink-0">
-                    {buscandoSolar ? <Loader2 size={14} className="animate-spin" /> : <MapPin size={14} />}
-                    {buscandoSolar ? "Buscando..." : "Buscar"}
-                  </button>
+                <div className="flex gap-1 bg-slate-800 rounded-xl p-1">
+                  <button onClick={() => setTipoEntradaSolar("endereco")} className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${tipoEntradaSolar === "endereco" ? "bg-blue-500 text-white" : "text-slate-400 hover:text-white"}`}>Endereço</button>
+                  <button onClick={() => setTipoEntradaSolar("coordenadas")} className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${tipoEntradaSolar === "coordenadas" ? "bg-blue-500 text-white" : "text-slate-400 hover:text-white"}`}>Coordenadas</button>
                 </div>
+                {tipoEntradaSolar === "endereco" ? (
+                  <div className="flex gap-2">
+                    <input
+                      value={enderecoSolar}
+                      onChange={e => setEnderecoSolar(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && handleBuscarSolarAPI()}
+                      placeholder="Ex: Rua das Flores 123, Vitória ES"
+                      className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                    />
+                    <button onClick={handleBuscarSolarAPI} disabled={buscandoSolar || !enderecoSolar}
+                      className="bg-blue-500 hover:bg-blue-400 disabled:bg-slate-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-1.5 shrink-0">
+                      {buscandoSolar ? <Loader2 size={14} className="animate-spin" /> : <MapPin size={14} />}
+                      {buscandoSolar ? "Buscando..." : "Buscar"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      value={coordSolar.lat}
+                      onChange={e => setCoordSolar(c => ({ ...c, lat: e.target.value }))}
+                      onKeyDown={e => e.key === "Enter" && handleBuscarSolarAPI()}
+                      placeholder="Latitude (ex: -20.2773)"
+                      className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                    />
+                    <input
+                      value={coordSolar.lng}
+                      onChange={e => setCoordSolar(c => ({ ...c, lng: e.target.value }))}
+                      onKeyDown={e => e.key === "Enter" && handleBuscarSolarAPI()}
+                      placeholder="Longitude (ex: -40.4064)"
+                      className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                    />
+                    <button onClick={handleBuscarSolarAPI} disabled={buscandoSolar || !coordSolar.lat || !coordSolar.lng}
+                      className="bg-blue-500 hover:bg-blue-400 disabled:bg-slate-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-1.5 shrink-0">
+                      {buscandoSolar ? <Loader2 size={14} className="animate-spin" /> : <MapPin size={14} />}
+                      {buscandoSolar ? "Buscando..." : "Buscar"}
+                    </button>
+                  </div>
+                )}
                 {dadosSolar?.erro && (
                   <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-start gap-2">
                     <AlertTriangle size={14} className="text-red-400 shrink-0 mt-0.5" />
