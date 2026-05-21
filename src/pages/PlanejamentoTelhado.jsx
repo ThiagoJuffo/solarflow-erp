@@ -30,6 +30,7 @@ export default function PlanejamentoTelhado() {
   const [identificandoTelhado, setIdentificandoTelhado] = useState(false);
   const [telhadoIdentificado, setTelhadoIdentificado] = useState(false);
   const canvasRef = useRef(null);
+  const roofOverlayRef = useRef(null);
 
   const handleBuscarSolarAPI = async () => {
     const podeExecutar = tipoEntradaSolar === "endereco" ? !!enderecoSolar : (!!coordSolar.lat && !!coordSolar.lng);
@@ -104,6 +105,40 @@ Retorne:
   useEffect(() => {
     if (resultado) desenharLayout(resultado);
   }, [resultado]);
+
+  useEffect(() => {
+    const canvas = roofOverlayRef.current;
+    if (!canvas || !dadosSolar?.lat) return;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 600, 460);
+    if (!telhadoIdentificado || !dimensoes.largura || !dimensoes.comprimento) return;
+    const metersPerPx = 156543.03392 * Math.cos(dadosSolar.lat * Math.PI / 180) / Math.pow(2, 20);
+    const roofW = parseFloat(dimensoes.largura) / metersPerPx;
+    const roofH = parseFloat(dimensoes.comprimento) / metersPerPx;
+    const sx = (600 - roofW) / 2;
+    const sy = (460 - roofH) / 2;
+    // Preenchimento semitransparente
+    ctx.fillStyle = "rgba(245, 158, 11, 0.18)";
+    ctx.fillRect(sx, sy, roofW, roofH);
+    // Borda
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 3;
+    ctx.shadowColor = "#f59e0b";
+    ctx.shadowBlur = 10;
+    ctx.strokeRect(sx, sy, roofW, roofH);
+    ctx.shadowBlur = 0;
+    // Marcadores de canto
+    ctx.fillStyle = "#f59e0b";
+    [[sx, sy], [sx + roofW, sy], [sx, sy + roofH], [sx + roofW, sy + roofH]].forEach(([x, y]) => {
+      ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
+    });
+    // Etiqueta de dimensões
+    ctx.fillStyle = "rgba(0,0,0,0.65)";
+    ctx.fillRect(sx + 4, sy + 4, 130, 22);
+    ctx.fillStyle = "#fef3c7";
+    ctx.font = "bold 13px sans-serif";
+    ctx.fillText(`${dimensoes.largura}m × ${dimensoes.comprimento}m`, sx + 8, sy + 20);
+  }, [telhadoIdentificado, dimensoes, dadosSolar]);
 
   const handleUploadDrone = async (e) => {
     const file = e.target.files[0];
@@ -498,15 +533,23 @@ Retorne apenas JSON com esses campos. Se não conseguir identificar, use null.`,
               <div className="space-y-3">
                 <div className="rounded-xl overflow-hidden border border-blue-500/20">
                   <p className="text-slate-400 text-xs px-3 py-2 bg-slate-800 flex items-center gap-1.5">
-                    <Satellite size={11} className="text-blue-400" /> Imagem de satélite — confirme que é o telhado correto
+                    <Satellite size={11} className="text-blue-400" />
+                    {telhadoIdentificado ? "Telhado identificado — ajuste se necessário" : "Imagem de satélite — confirme que é o telhado correto"}
                   </p>
-                  <iframe
-                    src={`https://www.google.com/maps?q=${dadosSolar.lat},${dadosSolar.lng}&t=k&z=20&output=embed`}
-                    width="100%" height="230"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    title="Satélite do telhado"
-                  />
+                  <div style={{ position: "relative" }}>
+                    <img
+                      src={dadosSolar.staticMapUrl}
+                      alt="Satélite"
+                      crossOrigin="anonymous"
+                      style={{ width: "100%", display: "block" }}
+                    />
+                    <canvas
+                      ref={roofOverlayRef}
+                      width={600}
+                      height={460}
+                      style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none" }}
+                    />
+                  </div>
                 </div>
 
                 {/* Botão identificar telhado com IA */}
