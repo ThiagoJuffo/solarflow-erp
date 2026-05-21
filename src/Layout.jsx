@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { label: "Fluxo de Caixa", page: "FluxoCaixa", icon: DollarSign, roles: ["admin","financeiro"] },
   { label: "DRE por Projeto", page: "DREProjeto", icon: BarChart2, roles: ["admin","financeiro","engenharia"] },
   { label: "Manutenções", page: "Manutencoes", icon: Wrench, roles: ["admin","financeiro","engenharia"] },
+  { label: "Planej. Telhado", page: "PlanejamentoTelhado", icon: Sun, roles: ["admin","engenharia","instalacao"] },
   { label: "Usuários", page: "Usuarios", icon: Users, roles: ["admin"] },
 ];
 
