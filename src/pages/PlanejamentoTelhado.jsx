@@ -487,10 +487,36 @@ Retorne apenas JSON com esses campos. Se não conseguir identificar, use null.`,
             )}
           </div>
 
+          {/* Quantidade de Módulos */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+            <p className="text-white font-semibold text-sm">3. Quantidade de Módulos</p>
+            <div className="flex gap-2">
+              <button onClick={() => setModoQuantidade("auto")} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${modoQuantidade === "auto" ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}>
+                Máximo possível
+              </button>
+              <button onClick={() => setModoQuantidade("manual")} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${modoQuantidade === "manual" ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}>
+                Definir quantidade
+              </button>
+            </div>
+            {modoQuantidade === "manual" && (
+              <div>
+                <label className="text-slate-400 text-xs block mb-1.5">Quantidade de módulos desejada</label>
+                <input
+                  type="number" min="1"
+                  value={quantidadeManual}
+                  onChange={e => setQuantidadeManual(e.target.value)}
+                  placeholder="ex: 12"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors"
+                />
+                <p className="text-slate-500 text-xs mt-1.5">O sistema calculará a melhor disposição para essa quantidade no telhado.</p>
+              </div>
+            )}
+          </div>
+
           {/* Seleção de inversores */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-white font-semibold text-sm">3. Inversores <span className="text-slate-500 font-normal text-xs">(opcional — para dimensionamento de strings)</span></p>
+              <p className="text-white font-semibold text-sm">4. Inversores <span className="text-slate-500 font-normal text-xs">(opcional — para dimensionamento de strings)</span></p>
               <button
                 onClick={() => setInversoresSelecionados(prev => [...prev, { produto_id: "", quantidade: 1 }])}
                 className="text-amber-400 hover:text-amber-300 text-xs font-medium"
@@ -545,32 +571,6 @@ Retorne apenas JSON com esses campos. Se não conseguir identificar, use null.`,
                 </div>
               );
             })}
-          </div>
-
-          {/* Modo de quantidade */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
-            <p className="text-white font-semibold text-sm">4. Quantidade de Módulos</p>
-            <div className="flex gap-2">
-              <button onClick={() => setModoQuantidade("auto")} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${modoQuantidade === "auto" ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}>
-                Máximo possível
-              </button>
-              <button onClick={() => setModoQuantidade("manual")} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${modoQuantidade === "manual" ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}>
-                Definir quantidade
-              </button>
-            </div>
-            {modoQuantidade === "manual" && (
-              <div>
-                <label className="text-slate-400 text-xs block mb-1.5">Quantidade de módulos desejada</label>
-                <input
-                  type="number" min="1"
-                  value={quantidadeManual}
-                  onChange={e => setQuantidadeManual(e.target.value)}
-                  placeholder="ex: 12"
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors"
-                />
-                <p className="text-slate-500 text-xs mt-1.5">O sistema calculará a melhor disposição para essa quantidade no telhado.</p>
-              </div>
-            )}
           </div>
 
           {/* Botão calcular */}
