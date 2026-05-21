@@ -23,6 +23,8 @@ export default function PlanejamentoTelhado() {
   const [inversores, setInversores] = useState([]);
   const [inversoresSelecionados, setInversoresSelecionados] = useState([]);
   const [stringCalc, setStringCalc] = useState(null);
+  const [modoQuantidade, setModoQuantidade] = useState("auto"); // "auto" | "manual"
+  const [quantidadeManual, setQuantidadeManual] = useState("");
   const canvasRef = useRef(null);
 
   const handleBuscarSolarAPI = async () => {
@@ -204,12 +206,33 @@ Retorne apenas JSON com esses campos. Se não conseguir identificar, use null.`,
     const opt2 = calcOrientation(modH, modW);       // landscape
     const melhor = opt2.total >= opt1.total ? { ...opt2, orientacao: "landscape" } : { ...opt1, orientacao: "portrait" };
 
-    const potenciaKwp = (melhor.total * (mod.potencia_wp || 0)) / 1000;
-    const areaOcupada = melhor.total * (melhor.mW * melhor.mH);
+    // Limitar pela quantidade manual se definida
+    let totalFinal = melhor.total;
+    let colsFinal = melhor.cols;
+    let rowsFinal = melhor.rows;
+    if (modoQuantidade === "manual" && quantidadeManual) {
+      const qtdDesejada = parseInt(quantidadeManual);
+      if (qtdDesejada < melhor.total) {
+        totalFinal = qtdDesejada;
+        // Recalcula linhas/colunas mantendo proporção
+        colsFinal = Math.ceil(Math.sqrt(qtdDesejada * (melhor.cols / melhor.rows)));
+        rowsFinal = Math.ceil(qtdDesejada / colsFinal);
+        // Garante que não ultrapasse o telhado
+        colsFinal = Math.min(colsFinal, melhor.cols);
+        rowsFinal = Math.min(rowsFinal, melhor.rows);
+        totalFinal = colsFinal * rowsFinal;
+      }
+    }
+
+    const potenciaKwp = (totalFinal * (mod.potencia_wp || 0)) / 1000;
+    const areaOcupada = totalFinal * (melhor.mW * melhor.mH);
     const aproveitamento = areaUtil > 0 ? (areaOcupada / areaUtil) * 100 : 0;
 
     setResultado({
       ...melhor,
+      total: totalFinal,
+      cols: colsFinal,
+      rows: rowsFinal,
       telhadoL,
       telhadoC,
       modulo: mod,
@@ -522,6 +545,32 @@ Retorne apenas JSON com esses campos. Se não conseguir identificar, use null.`,
                 </div>
               );
             })}
+          </div>
+
+          {/* Modo de quantidade */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+            <p className="text-white font-semibold text-sm">4. Quantidade de Módulos</p>
+            <div className="flex gap-2">
+              <button onClick={() => setModoQuantidade("auto")} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${modoQuantidade === "auto" ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}>
+                Máximo possível
+              </button>
+              <button onClick={() => setModoQuantidade("manual")} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${modoQuantidade === "manual" ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}>
+                Definir quantidade
+              </button>
+            </div>
+            {modoQuantidade === "manual" && (
+              <div>
+                <label className="text-slate-400 text-xs block mb-1.5">Quantidade de módulos desejada</label>
+                <input
+                  type="number" min="1"
+                  value={quantidadeManual}
+                  onChange={e => setQuantidadeManual(e.target.value)}
+                  placeholder="ex: 12"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors"
+                />
+                <p className="text-slate-500 text-xs mt-1.5">O sistema calculará a melhor disposição para essa quantidade no telhado.</p>
+              </div>
+            )}
           </div>
 
           {/* Botão calcular */}
