@@ -267,10 +267,6 @@ Retorne apenas o JSON.`;
   };
 
   const handleSalvar = async () => {
-    if (form.aumento_carga && !aumentoCargaConfirmado) {
-      // Bloqueia até confirmação explícita
-      return;
-    }
     const payload = buildPayload("aguardando_pagamento");
     let preProjeto;
     if (rascunhoId) {
@@ -982,45 +978,16 @@ Retorne apenas o JSON.`;
               </div>
             )}
             {form.aumento_carga && (
-              <div className={`border-2 rounded-xl p-5 transition-all ${
-                aumentoCargaConfirmado
-                  ? "bg-emerald-500/10 border-emerald-500/40"
-                  : "bg-red-500/10 border-red-500/50"
-              }`}>
-                <div className="flex items-start gap-3 mb-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    aumentoCargaConfirmado ? "bg-emerald-500/20" : "bg-red-500/20"
-                  }`}>
-                    <AlertTriangle size={20} className={aumentoCargaConfirmado ? "text-emerald-400" : "text-red-400"} />
+              <div className="bg-red-500/10 border-2 border-red-500/50 rounded-xl p-5">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-red-500/20">
+                    <AlertTriangle size={20} className="text-red-400" />
                   </div>
                   <div className="flex-1">
-                    <p className={`font-bold text-sm ${
-                      aumentoCargaConfirmado ? "text-emerald-300" : "text-red-300"
-                    }`}>
-                      {aumentoCargaConfirmado ? "✓ Aumento de carga confirmado" : "⚠️ ATENÇÃO: Este projeto requer aumento de carga!"}
-                    </p>
-                    <p className="text-slate-400 text-xs mt-1">
-                      {aumentoCargaConfirmado
-                        ? "O aumento de carga foi confirmado como finalizado. Você pode prosseguir com o cadastro."
-                        : "NÃO envie o projeto para a EDP antes de confirmar que o aumento de carga foi concluído. Isso pode resultar em indeferimento."}
-                    </p>
+                    <p className="font-bold text-sm text-red-300">⚠️ ATENÇÃO: Este projeto requer aumento de carga!</p>
+                    <p className="text-slate-400 text-xs mt-1">NÃO envie o projeto para a EDP antes de confirmar que o aumento de carga foi concluído. Isso pode resultar em indeferimento.</p>
                   </div>
                 </div>
-                {!aumentoCargaConfirmado ? (
-                  <button
-                    onClick={() => setAumentoCargaConfirmado(true)}
-                    className="w-full bg-red-500 hover:bg-red-400 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm"
-                  >
-                    <CheckCircle size={16} /> Confirmo que o aumento de carga foi finalizado
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setAumentoCargaConfirmado(false)}
-                    className="text-xs text-slate-500 hover:text-slate-300 underline transition-colors"
-                  >
-                    Desfazer confirmação
-                  </button>
-                )}
               </div>
             )}
             <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
@@ -1032,7 +999,7 @@ Retorne apenas o JSON.`;
           <div className="flex gap-3">
             <button
               onClick={handleSalvar}
-              disabled={saving || (form.aumento_carga && !aumentoCargaConfirmado)}
+              disabled={saving}
               className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
             >
               {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
