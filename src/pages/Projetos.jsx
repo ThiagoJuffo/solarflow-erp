@@ -147,10 +147,14 @@ export default function Projetos() {
     const q = query.toLowerCase().trim();
     const nome = (item.nome_cliente || "").toLowerCase();
     const cpf = (item.cpf || "").replace(/\D/g, "");
+    const telefone = (item.telefone || "").replace(/\D/g, "");
     const cpfQuery = q.replace(/\D/g, "");
 
     // CPF parcial (apenas dígitos)
     if (cpfQuery.length >= 3 && cpf.includes(cpfQuery)) return true;
+
+    // Telefone parcial (apenas dígitos)
+    if (cpfQuery.length >= 3 && telefone.includes(cpfQuery)) return true;
 
     // Nome: match exato por inclusão
     if (nome.includes(q)) return true;
