@@ -53,7 +53,7 @@ const STATUS_GROUPS = {
   "Finalizado": ["monitoramento_cadastrado", "concluido"]
 };
 
-const ADMIN_SENHA = "solar2024";
+const ADMIN_SENHA = "2200001122";
 
 const statusColor = (status) => {
   if (["concluido", "vistoria_aprovada", "monitoramento_cadastrado", "aprovado"].includes(status)) return "bg-emerald-400/10 text-emerald-400 border-emerald-400/20";
