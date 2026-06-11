@@ -285,7 +285,7 @@ export default function Projetos() {
                         setPreProjetos(prev => prev.map(p => p.id === editValorItem.item.id ? { ...p, valor_projeto: novoValor } : p));
                       } else {
                         // Projeto: atualizar o pré-projeto vinculado
-                        const ppId = editValorItem.item.pre_projeto_id;
+                        const ppId = editValorItem.item.id;
                         if (ppId) {
                           await base44.entities.PreProjeto.update(ppId, { valor_projeto: novoValor });
                           setPreProjetos(prev => prev.map(p => p.id === ppId ? { ...p, valor_projeto: novoValor } : p));
