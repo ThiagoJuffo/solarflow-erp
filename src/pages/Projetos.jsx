@@ -318,6 +318,17 @@ export default function Projetos() {
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-lg border ${statusColor(item.status)}`}>
                       {STATUS_LABELS[item.status] || item.status}
                     </span>
+                    {(() => {
+                      const ehExpansao = item._tipo === "pre_projeto"
+                        ? item.expansao
+                        : preProjetos.find(p => p.id === item.pre_projeto_id)?.expansao;
+                      if (!ehExpansao) return null;
+                      return (
+                        <span className="text-xs font-medium px-2.5 py-1 rounded-lg border border-violet-400/20 text-violet-400 bg-violet-400/10 flex items-center gap-1">
+                          <Zap size={10} /> Expansão
+                        </span>
+                      );
+                    })()}
                     {item._tipo === "projeto" && item.status === "pago_projeto_iniciado" && !item.equipamentos_confirmados && (
                       <span className="text-xs font-medium px-2.5 py-1 rounded-lg border border-orange-400/20 text-orange-400 bg-orange-400/10 flex items-center gap-1">
                         <Package size={10} /> Kit Pendente

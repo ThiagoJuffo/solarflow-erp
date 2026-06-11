@@ -38,6 +38,7 @@ export default function NovoPréProjeto() {
     modificacao_padrao: false,
     aumento_carga: false,
     usar_transformador: false,
+    expansao: false,
     tipo_instalacao: "simples",
     envio_creditos: false,
     ucs_credito: [],
@@ -100,6 +101,7 @@ export default function NovoPréProjeto() {
     modificacao_padrao: form.modificacao_padrao || false,
     aumento_carga: form.aumento_carga || false,
     usar_transformador: form.usar_transformador || false,
+    expansao: form.expansao || false,
     tipo_instalacao: form.tipo_instalacao,
     envio_creditos: form.envio_creditos || false,
     ucs_credito: form.envio_creditos ? (form.ucs_credito || []).map(uc => ({ ...uc, percentual: uc.percentual !== null && uc.percentual !== "" ? Number(uc.percentual) : null })) : [],
@@ -159,6 +161,7 @@ export default function NovoPréProjeto() {
       modificacao_padrao: r.modificacao_padrao || false,
       aumento_carga: r.aumento_carga || false,
       usar_transformador: r.usar_transformador || false,
+      expansao: r.expansao || false,
       tipo_instalacao: r.tipo_instalacao || "simples",
       envio_creditos: r.envio_creditos || false,
       ucs_credito: r.ucs_credito || [],
@@ -579,10 +582,14 @@ Retorne apenas o JSON.`;
               {[
                 { label: "Aumento de carga?", key: "aumento_carga" },
                 { label: "Vai usar transformador?", key: "usar_transformador" },
+                { label: "Projeto de expansão?", key: "expansao", desc: "Sinalizar para engenharia que é expansão de sistema existente" },
               ].map(f => (
-                <label key={f.key} className="flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 cursor-pointer hover:border-amber-500/40 transition-colors">
-                  <input type="checkbox" checked={form[f.key] || false} onChange={e => set(f.key, e.target.checked)} className="w-4 h-4 accent-amber-500" />
-                  <span className="text-slate-300 text-sm">{f.label}</span>
+                <label key={f.key} className="flex items-start gap-3 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 cursor-pointer hover:border-amber-500/40 transition-colors">
+                  <input type="checkbox" checked={form[f.key] || false} onChange={e => set(f.key, e.target.checked)} className="w-4 h-4 accent-amber-500 mt-0.5" />
+                  <div>
+                    <span className="text-slate-300 text-sm">{f.label}</span>
+                    {f.desc && <p className="text-slate-500 text-xs mt-0.5">{f.desc}</p>}
+                  </div>
                 </label>
               ))}
             </div>

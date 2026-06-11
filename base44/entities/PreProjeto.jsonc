@@ -107,6 +107,11 @@
       "type": "boolean",
       "default": false
     },
+    "expansao": {
+      "type": "boolean",
+      "default": false,
+      "description": "Sinaliza que o projeto fechado \u00e9 uma expans\u00e3o de sistema existente"
+    },
     "tipo_instalacao": {
       "type": "string",
       "enum": [
