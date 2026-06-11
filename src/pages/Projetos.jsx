@@ -75,6 +75,7 @@ export default function Projetos() {
   const [inmetroPorProjeto, setInmetroPorProjeto] = useState({});
   const [editValorItem, setEditValorItem] = useState(null);
   const [senhaAdmin, setSenhaAdmin] = useState("");
+  const [senhaVerificada, setSenhaVerificada] = useState(false);
   const [senhaErro, setSenhaErro] = useState(false);
   const [novoValor, setNovoValor] = useState("");
   const [salvandoValor, setSalvandoValor] = useState(false);
@@ -232,7 +233,7 @@ export default function Projetos() {
               </button>
             </div>
 
-            {!senhaAdmin || senhaErro ? (
+            {!senhaVerificada ? (
               <>
                 <p className="text-slate-400 text-xs mb-3">Digite a senha de administrador para continuar:</p>
                 <input
@@ -247,6 +248,7 @@ export default function Projetos() {
                 <button
                   onClick={() => {
                     if (senhaAdmin === ADMIN_SENHA) {
+                      setSenhaVerificada(true);
                       setSenhaErro(false);
                     } else {
                       setSenhaErro(true);
@@ -407,6 +409,7 @@ export default function Projetos() {
                                 e.stopPropagation();
                                 setEditValorItem({ item: pp, _tipo: item._tipo === "projeto" ? "projeto" : "pre_projeto" });
                                 setSenhaAdmin("");
+                                setSenhaVerificada(false);
                                 setSenhaErro(false);
                                 setNovoValor(pp.valor_projeto || "");
                               }}
