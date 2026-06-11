@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Sun, ChevronRight, Search, CheckCircle, Clock, Zap, X, Lock, Package, Trash2, AlertTriangle } from "lucide-react";
+import { Sun, ChevronRight, Search, CheckCircle, Clock, Zap, X, Lock, Package, Trash2, AlertTriangle, Pencil } from "lucide-react";
 import PrazoDocumentacao from "../components/projeto/PrazoDocumentacao";
 
 const CHECKLIST_OBRIGATORIOS = [
@@ -53,6 +53,8 @@ const STATUS_GROUPS = {
   "Finalizado": ["monitoramento_cadastrado", "concluido"]
 };
 
+const ADMIN_SENHA = "solar2024";
+
 const statusColor = (status) => {
   if (["concluido", "vistoria_aprovada", "monitoramento_cadastrado", "aprovado"].includes(status)) return "bg-emerald-400/10 text-emerald-400 border-emerald-400/20";
   if (["aguardando_pagamento", "rascunho"].includes(status)) return "bg-slate-400/10 text-slate-400 border-slate-400/20";
@@ -71,6 +73,11 @@ export default function Projetos() {
   const [avisoSemPermissao, setAvisoSemPermissao] = useState(false);
   const [documentosPorProjeto, setDocumentosPorProjeto] = useState({});
   const [inmetroPorProjeto, setInmetroPorProjeto] = useState({});
+  const [editValorItem, setEditValorItem] = useState(null);
+  const [senhaAdmin, setSenhaAdmin] = useState("");
+  const [senhaErro, setSenhaErro] = useState(false);
+  const [novoValor, setNovoValor] = useState("");
+  const [salvandoValor, setSalvandoValor] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -206,6 +213,97 @@ export default function Projetos() {
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+      {/* Modal editar valor */}
+      {editValorItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center shrink-0">
+                <Lock size={18} className="text-amber-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-semibold text-sm">Editar Valor do Projeto</p>
+                <p className="text-slate-400 text-xs mt-1">
+                  {editValorItem.item.nome_cliente}
+                </p>
+              </div>
+              <button onClick={() => setEditValorItem(null)} className="text-slate-500 hover:text-white transition-colors shrink-0">
+                <X size={16} />
+              </button>
+            </div>
+
+            {!senhaAdmin || senhaErro ? (
+              <>
+                <p className="text-slate-400 text-xs mb-3">Digite a senha de administrador para continuar:</p>
+                <input
+                  type="password"
+                  value={senhaAdmin}
+                  onChange={e => { setSenhaAdmin(e.target.value); setSenhaErro(false); }}
+                  placeholder="Senha admin"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors mb-3"
+                  autoFocus
+                />
+                {senhaErro && <p className="text-red-400 text-xs mb-3">Senha incorreta.</p>}
+                <button
+                  onClick={() => {
+                    if (senhaAdmin === ADMIN_SENHA) {
+                      setSenhaErro(false);
+                    } else {
+                      setSenhaErro(true);
+                    }
+                  }}
+                  className="w-full bg-amber-500 hover:bg-amber-400 text-white font-semibold py-2.5 rounded-xl transition-all text-sm"
+                >
+                  Verificar
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-slate-400 text-xs mb-3">Valor atual: <span className="text-emerald-400">R$ {editValorItem.item.valor_projeto}</span></p>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">Novo valor:</label>
+                <input
+                  value={novoValor}
+                  onChange={e => setNovoValor(e.target.value)}
+                  placeholder="R$ 25.000,00"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors mb-4"
+                  autoFocus
+                />
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setEditValorItem(null)}
+                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm font-medium transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setSalvandoValor(true);
+                      if (editValorItem._tipo === "pre_projeto") {
+                        await base44.entities.PreProjeto.update(editValorItem.item.id, { valor_projeto: novoValor });
+                        setPreProjetos(prev => prev.map(p => p.id === editValorItem.item.id ? { ...p, valor_projeto: novoValor } : p));
+                      } else {
+                        // Projeto: atualizar o pré-projeto vinculado
+                        const ppId = editValorItem.item.pre_projeto_id;
+                        if (ppId) {
+                          await base44.entities.PreProjeto.update(ppId, { valor_projeto: novoValor });
+                          setPreProjetos(prev => prev.map(p => p.id === ppId ? { ...p, valor_projeto: novoValor } : p));
+                        }
+                      }
+                      setSalvandoValor(false);
+                      setEditValorItem(null);
+                    }}
+                    disabled={!novoValor || salvandoValor}
+                    className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-white font-semibold py-2.5 rounded-xl transition-all text-sm"
+                  >
+                    {salvandoValor ? "Salvando..." : "Salvar"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Modal aviso sem permissão */}
       {avisoSemPermissao && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -300,7 +398,25 @@ export default function Projetos() {
                         : item;
                       return <>
                         {pp?.vendedor_nome && <p className="text-amber-400/70 text-xs">Vendedor: {pp.vendedor_nome}</p>}
-                        {pp?.valor_projeto && <p className="text-emerald-400/70 text-xs">R$ {pp.valor_projeto}</p>}
+                        {pp?.valor_projeto && (
+                          <span className="flex items-center gap-1 group/valor">
+                            <p className="text-emerald-400/70 text-xs">R$ {pp.valor_projeto}</p>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setEditValorItem({ item: pp, _tipo: item._tipo === "projeto" ? "projeto" : "pre_projeto" });
+                                setSenhaAdmin("");
+                                setSenhaErro(false);
+                                setNovoValor(pp.valor_projeto || "");
+                              }}
+                              className="opacity-0 group-hover/valor:opacity-100 text-slate-500 hover:text-amber-400 transition-all"
+                              title="Editar valor (senha admin)"
+                            >
+                              <Pencil size={11} />
+                            </button>
+                          </span>
+                        )}
                       </>;
                     })()}
                   </div>
