@@ -786,7 +786,7 @@ Retorne apenas o JSON.`;
             <button
               onClick={() => {
                 if (modoManual) { setExtraido({ ...dadosManuais }); setCpfMismatch(false); setStep(3); }
-                else if (contaEnergiaPendente && !contaEnergiaUrl) { setStep(3); }
+                else if (contaEnergiaPendente) { setStep(3); }
                 else { setStep(2); }
               }}
               disabled={modoManual ? !dadosManuais.numero_uc : (!contaEnergiaUrl && !docFotoUrl && !contaEnergiaPendente)}
