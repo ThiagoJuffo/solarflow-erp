@@ -508,6 +508,7 @@ export default function ProjetoDetalhe() {
               canEdit={canEdit} preProjeto={preProjeto} projeto={projeto}
               canConfirmarEquipamentos={canConfirmarEquipamentos}
               onConfirmarEquipamentos={confirmarEquipamentos}
+              updateProjeto={updateProjeto}
             />
           )}
 
@@ -545,7 +546,7 @@ export default function ProjetoDetalhe() {
 
 // ---- Sub-componentes inline para cada aba ----
 
-function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, projeto, canConfirmarEquipamentos, onConfirmarEquipamentos }) {
+function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, projeto, canConfirmarEquipamentos, onConfirmarEquipamentos, updateProjeto }) {
   const [produtos, setProdutos] = useState([]);
   const [editandoEq, setEditandoEq] = useState(false);
   const getInversoresIniciais = (pp) => {
@@ -617,6 +618,8 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
   const [emailForm, setEmailForm] = useState(preProjeto?.email || "");
   const [savingEmail, setSavingEmail] = useState(false);
   const [searchingCoords, setSearchingCoords] = useState(false);
+  const [nomeClienteForm, setNomeClienteForm] = useState(projeto?.nome_cliente || "");
+  const [savingNome, setSavingNome] = useState(false);
 
   const handleBuscarCoordenadas = async () => {
     const parts = [ucForm.endereco, ucForm.cidade, ucForm.estado, ucForm.cep].filter(Boolean);
@@ -651,6 +654,10 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
     await onConfirmarEquipamentos();
     setConfirmandoEq(false);
   };
+
+  useEffect(() => {
+    if (projeto?.nome_cliente !== undefined) setNomeClienteForm(projeto.nome_cliente);
+  }, [projeto?.nome_cliente]);
 
   const inversores = produtos.filter(p => ["inversor_string", "microinversor", "hibrido"].includes(p.tipo));
   const modulos = produtos.filter(p => p.tipo === "modulo_fv");
@@ -804,6 +811,34 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
       {preProjeto?.envio_creditos && (
         <UCsCreditoSection preProjeto={preProjeto} projeto={projeto} canEdit={canEdit} />
       )}
+
+      {/* Nome do Cliente — atualiza o Projeto */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+        <h3 className="text-white font-semibold flex items-center gap-2"><Sun size={16} className="text-amber-400" /> Dados do Contrato</h3>
+        <div>
+          <label className="text-slate-400 text-xs mb-1.5 block">Nome do Cliente</label>
+          <input
+            value={nomeClienteForm}
+            onChange={e => setNomeClienteForm(e.target.value)}
+            disabled={!canEdit}
+            placeholder="Nome completo do cliente"
+            className="w-full bg-slate-800 border border-slate-700 disabled:opacity-50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500 placeholder-slate-600"
+          />
+        </div>
+        {canEdit && (
+          <button
+            onClick={async () => {
+              setSavingNome(true);
+              await updateProjeto({ nome_cliente: nomeClienteForm });
+              setSavingNome(false);
+            }}
+            disabled={savingNome || !nomeClienteForm}
+            className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-white py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
+          >
+            {savingNome ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />} Salvar Nome
+          </button>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* UC */}
