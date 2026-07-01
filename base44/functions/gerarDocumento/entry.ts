@@ -107,6 +107,7 @@ Deno.serve(async (req) => {
 
 function gerarProcuracao({ projeto, uc, rt, RESP_TECNICO, RESP_CPF, RESP_RG, RESP_ENDERECO, dataExtenso, cidade, estado }) {
   const nomeCliente = uc.titular || projeto.nome_cliente;
+  const cpfCliente = uc.cpf || projeto.cpf;
   const endereco = uc.endereco || "—";
   const cep = uc.cep || "—";
   const cidadeUF = `${uc.cidade || cidade} – ${estado}`;
@@ -129,7 +130,7 @@ function gerarProcuracao({ projeto, uc, rt, RESP_TECNICO, RESP_CPF, RESP_RG, RES
 <h1>PROCURAÇÃO</h1>
 
 <p class="section-title">Outorgante</p>
-<p>${nomeCliente}, CPF: ${projeto.cpf}, estabelecido na ${endereco}, ${cidadeUF}. CEP: ${cep}</p>
+<p>${nomeCliente}, CPF: ${cpfCliente}, estabelecido na ${endereco}, ${cidadeUF}. CEP: ${cep}</p>
 
 <p class="section-title">Outorgado</p>
 <p>${RESP_TECNICO}, brasileiro, Casado(a), engenheiro eletricista, portador do RG nº ${RESP_RG}, expedido pelo SPTC - ES, inscrito no CPF sob o nº ${RESP_CPF}, residente e domiciliado(a) na ${RESP_ENDERECO}.</p>
@@ -145,7 +146,7 @@ function gerarProcuracao({ projeto, uc, rt, RESP_TECNICO, RESP_CPF, RESP_RG, RES
 <div class="signature-area">
   <div class="sig-line">
     <hr />
-    <p>${nomeCliente}<br>CPF: ${projeto.cpf}</p>
+    <p>${nomeCliente}<br>CPF: ${cpfCliente}</p>
   </div>
   <div class="sig-line">
     <hr />
@@ -223,14 +224,14 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
 
   // Usar o titular da UC como nome do proprietário nos documentos (pode ser diferente do nome do contrato)
   const nomeCliente = uc.titular || projeto.nome_cliente;
-  const cpfCliente = projeto.cpf;
+  const cpfCliente = uc.cpf || projeto.cpf;
   const numeroUC = uc.numero_uc || "—";
   const endereco = uc.endereco || "—";
   const cep = uc.cep || "—";
   const cidadeEstado = `${uc.cidade || cidade} - ${uc.estado || estado}`;
   const tipoLigacao = uc.tipo_ligacao === "monofasico" ? "Monofásico" : uc.tipo_ligacao === "bifasico" ? "Bifásico (220V/127V)" : uc.tipo_ligacao === "trifasico" ? "Trifásico" : "—";
-  const telefone = projeto.telefone || "—";
-  const email = projeto.email || "—";
+  const telefone = uc.telefone || projeto.telefone || "—";
+  const email = uc.email || projeto.email || "—";
 
   // Tabelas de specs por inversor
   const tabelasInversores = inversoresArr.map(inv => {
@@ -509,11 +510,11 @@ function gerarSolicitacaoART({ projeto, uc, rt, preProjeto, moduloProduto, inver
 <h1>SOLICITAÇÃO DE ART – MICROGERAÇÃO DISTRIBUÍDA</h1>
 
 <div class="field"><span class="label">NOME:</span> ${uc.titular || projeto.nome_cliente}</div>
-<div class="field"><span class="label">CPF:</span> ${projeto.cpf}</div>
+<div class="field"><span class="label">CPF:</span> ${uc.cpf || projeto.cpf}</div>
 <div class="field"><span class="label">INSTALAÇÃO (UC):</span> ${uc.numero_uc || "—"}</div>
 <div class="field"><span class="label">ENDEREÇO:</span> ${uc.endereco || "—"}${uc.cidade ? ` - ${uc.cidade}` : ""}${uc.estado ? ` / ${uc.cidade} - ${uc.estado}` : ""}${uc.cep ? ` CEP: ${uc.cep}` : ""}</div>
-<div class="field"><span class="label">TELEFONE:</span> ${projeto.telefone || "—"}</div>
-<div class="field"><span class="label">EMAIL:</span> ${projeto.email || "—"}</div>
+<div class="field"><span class="label">TELEFONE:</span> ${uc.telefone || projeto.telefone || "—"}</div>
+<div class="field"><span class="label">EMAIL:</span> ${uc.email || projeto.email || "—"}</div>
 <br/>
 <div class="field"><span class="label">KIT:</span> ${kit}</div>
 <div class="field"><span class="label">Potência Placas kWp:</span> ${potKwp}</div>

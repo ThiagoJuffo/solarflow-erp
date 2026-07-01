@@ -13,7 +13,20 @@
       "description": "N\u00famero da Unidade Consumidora / Instala\u00e7\u00e3o"
     },
     "titular": {
-      "type": "string"
+      "type": "string",
+      "description": "Nome do titular na conta de energia (usado na documenta\u00e7\u00e3o do projeto)"
+    },
+    "cpf": {
+      "type": "string",
+      "description": "CPF/CNPJ do titular da UC (usado na documenta\u00e7\u00e3o do projeto)"
+    },
+    "telefone": {
+      "type": "string",
+      "description": "Telefone de contato do titular da UC"
+    },
+    "email": {
+      "type": "string",
+      "description": "E-mail de contato do titular da UC"
     },
     "concessionaria": {
       "type": "string",
