@@ -425,15 +425,6 @@ ${kwhMedio ? `
 <p>O presente sistema de microgeração distribuída utiliza a tecnologia dos sistemas fotovoltaicos para a geração de energia em montante necessário para a compensação do consumo médio mensal da unidade consumidora onde está instalado.</p>
 <p>O sistema fotovoltaico conectado à rede possui sistema de proteção contra <strong><em>ilhamento</em></strong>, relês e temporizadores para sincronismo, e controle de frequência, tensão e fator de potência.</p>
 
-<h3>5.1 Arranjo dos Painéis</h3>
-<table>
-  <tr><th colspan="2">Arranjo do Gerador Fotovoltaico</th></tr>
-  <tr><td>Módulo Utilizado</td><td>${modDescricao}</td></tr>
-  <tr><td>Módulos por String</td><td>${modPorString}</td></tr>
-  <tr><td>Número de Strings</td><td>${numStrings}</td></tr>
-  <tr><td>Total de Módulos</td><td>${qtdModulos}</td></tr>
-  <tr><td>Potência Total (kWp)</td><td>${potKwp} kWp</td></tr>
-</table>
 
 <h3>5.2 Cabos e Conexões</h3>
 <p>Serão utilizados cabos solares com proteção UV de 4,0mm². As conexões serão feitas por conectores MC4 com proteção UV e resistência a amoníaco.</p>
@@ -516,7 +507,7 @@ function gerarSolicitacaoART({ projeto, uc, rt, preProjeto, moduloProduto, inver
 <div class="field"><span class="label">Potência Placas kWp:</span> ${potKwp}</div>
 <div class="field"><span class="label">Potência Inversor kW:</span> ${potInversor}</div>
 <div class="field"><span class="label">Potência de Geração (Menor entre os 2 acima):</span> ${potGeracao}</div>
-<div class="field"><span class="label">ART:</span> ${rt.art_numero || "A definir"}</div>
+<div class="field"><span class="label">ART:</span> ${rt.art_numero || "Definir"}</div>
 
 <br/><br/>
 <p>${dataExtenso}</p>
