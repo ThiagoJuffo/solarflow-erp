@@ -1029,11 +1029,7 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
     const DOC_TYPES = ["procuracao", "solicitacao_art"];
     if (DOC_TYPES.includes(tipo)) {
       // Baixar como arquivo Word (.doc) editável
-      const wordHtml = html.replace(
-        '<html lang="pt-BR">',
-        '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
-      );
-      const blob = new Blob(['\ufeff', wordHtml], { type: 'application/msword' });
+      const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
