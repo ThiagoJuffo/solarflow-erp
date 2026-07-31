@@ -1026,10 +1026,30 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
     const response = await base44.functions.invoke('gerarDocumento', { tipo, projeto_id: projetoId });
     const { html } = response.data;
 
-    // Abrir HTML em nova aba para visualizar/imprimir
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    const DOC_TYPES = ["procuracao", "solicitacao_art"];
+    if (DOC_TYPES.includes(tipo)) {
+      // Baixar como arquivo Word (.doc) editável
+      const wordHtml = html.replace(
+        '<html lang="pt-BR">',
+        '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
+      );
+      const blob = new Blob(['\ufeff', wordHtml], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const labels = { procuracao: "Procuracao", solicitacao_art: "Solicitacao_ART" };
+      const cliente = (projeto?.nome_cliente || "cliente").replace(/[^a-zA-Z0-9]/g, '_');
+      a.download = `${labels[tipo] || tipo}_${cliente}.doc`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } else {
+      // Memorial técnico: abrir HTML em nova aba para visualizar/imprimir
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    }
 
     // Salvar como gerado
     const existing = getDoc(tipo);
