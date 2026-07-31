@@ -148,10 +148,6 @@ function gerarProcuracao({ projeto, uc, rt, RESP_TECNICO, RESP_CPF, RESP_RG, RES
     <hr />
     <p>${nomeCliente}<br>CPF: ${cpfCliente}</p>
   </div>
-  <div class="sig-line">
-    <hr />
-    <p>${RESP_TECNICO}<br>CPF: ${RESP_CPF}</p>
-  </div>
 </div>
 </body>
 </html>`;
