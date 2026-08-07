@@ -113,30 +113,17 @@ function gerarProcuracao({ projeto, uc, rt, RESP_TECNICO, RESP_CPF, RESP_RG, RES
   const cidadeUF = `${uc.cidade || cidade} – ${estado}`;
 
   return `<!DOCTYPE html>
-<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<html lang="pt-BR">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="ProgId" content="Word.Document">
-<meta name="Generator" content="Microsoft Word 15">
-<meta name="Originator" content="Microsoft Word 15">
-<!--[if gte mso 9]>
-<xml>
-<w:WordDocument>
-<w:View>Print</w:View>
-<w:Zoom>100</w:Zoom>
-<w:DoNotOptimizeForBrowser/>
-</w:WordDocument>
-</xml>
-<![endif]-->
+<meta charset="UTF-8">
 <style>
-@page { size: A4; margin: 3cm 3cm 2cm 3cm; }
-body { font-family: Arial, sans-serif; font-size: 12pt; color: #000; line-height: 1.6; }
-h1 { text-align: center; font-size: 16pt; margin-bottom: 2em; font-weight: bold; }
-.section-title { font-weight: bold; font-size: 13pt; margin-top: 1.5em; }
-p { margin-bottom: 0.8em; text-align: justify; }
-table.signature { width: 100%; margin-top: 4em; border-collapse: collapse; }
-table.signature td { text-align: center; vertical-align: top; width: 100%; }
-.sig-line { border-top: 1px solid #000; padding-top: 0.3em; }
+  body { font-family: Arial, sans-serif; font-size: 12pt; margin: 3cm 3cm 2cm 3cm; color: #000; line-height: 1.6; }
+  h1 { text-align: center; font-size: 16pt; margin-bottom: 2em; }
+  .section-title { font-weight: bold; font-size: 13pt; margin-top: 1.5em; }
+  .signature-area { margin-top: 4em; display: flex; justify-content: space-between; }
+  .sig-line { text-align: center; width: 45%; }
+  .sig-line hr { border: none; border-top: 1px solid #000; margin-bottom: 0.3em; }
+  p { margin-bottom: 0.8em; text-align: justify; }
 </style>
 </head>
 <body>
@@ -156,9 +143,12 @@ table.signature td { text-align: center; vertical-align: top; width: 100%; }
 
 <p>${cidade} / ${estado}, ${dataExtenso}.</p>
 
-<table class="signature"><tr><td>
-<div class="sig-line">${nomeCliente}<br>CPF: ${cpfCliente}</div>
-</td></tr></table>
+<div class="signature-area">
+  <div class="sig-line">
+    <hr />
+    <p>${nomeCliente}<br>CPF: ${cpfCliente}</p>
+  </div>
+</div>
 </body>
 </html>`;
 }
@@ -493,27 +483,14 @@ function gerarSolicitacaoART({ projeto, uc, rt, preProjeto, moduloProduto, inver
   const kit = rt.arranjo_descricao || `${qtdModulos || "?"} módulos ${modDesc} + ${invDesc}`;
 
   return `<!DOCTYPE html>
-<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<html lang="pt-BR">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="ProgId" content="Word.Document">
-<meta name="Generator" content="Microsoft Word 15">
-<meta name="Originator" content="Microsoft Word 15">
-<!--[if gte mso 9]>
-<xml>
-<w:WordDocument>
-<w:View>Print</w:View>
-<w:Zoom>100</w:Zoom>
-<w:DoNotOptimizeForBrowser/>
-</w:WordDocument>
-</xml>
-<![endif]-->
+<meta charset="UTF-8">
 <style>
-@page { size: A4; margin: 3cm; }
-body { font-family: Arial, sans-serif; font-size: 12pt; color: #000; line-height: 1.8; }
-h1 { text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 2em; }
-.field { margin-bottom: 0.5em; }
-.label { font-weight: bold; }
+  body { font-family: Arial, sans-serif; font-size: 12pt; margin: 3cm; color: #000; line-height: 1.8; }
+  h1 { text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 2em; }
+  .field { margin-bottom: 0.5em; }
+  .label { font-weight: bold; }
 </style>
 </head>
 <body>
