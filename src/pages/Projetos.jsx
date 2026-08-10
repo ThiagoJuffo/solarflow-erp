@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Sun, ChevronRight, Search, CheckCircle, Clock, Zap, X, Lock, Package, Trash2, AlertTriangle, Pencil } from "lucide-react";
+import { Sun, ChevronRight, Search, CheckCircle, Clock, Zap, X, Lock, Package, Trash2, AlertTriangle, Pencil, MapPin } from "lucide-react";
 import PrazoDocumentacao from "../components/projeto/PrazoDocumentacao";
 
 const CHECKLIST_OBRIGATORIOS = [
@@ -73,6 +73,7 @@ export default function Projetos() {
   const [avisoSemPermissao, setAvisoSemPermissao] = useState(false);
   const [documentosPorProjeto, setDocumentosPorProjeto] = useState({});
   const [inmetroPorProjeto, setInmetroPorProjeto] = useState({});
+  const [cidadePorItem, setCidadePorItem] = useState({});
   const [editValorItem, setEditValorItem] = useState(null);
   const [senhaAdmin, setSenhaAdmin] = useState("");
   const [senhaVerificada, setSenhaVerificada] = useState(false);
@@ -86,11 +87,21 @@ export default function Projetos() {
       base44.entities.PreProjeto.list("-created_date", 100),
       base44.entities.Documento.list("-created_date", 1000),
       base44.entities.Produto.filter({ ativo: true }),
+      base44.entities.UC.list("-created_date", 500),
       base44.auth.me()
-    ]).then(([p, pp, docs, produtos, u]) => {
+    ]).then(([p, pp, docs, produtos, ucs, u]) => {
       setProjetos(p);
       setPreProjetos(pp);
       setUser(u);
+      // Mapear cidade por projeto_id e pre_projeto_id
+      const cidadeMap = {};
+      ucs.forEach(uc => {
+        if (uc.cidade) {
+          if (uc.projeto_id) cidadeMap[uc.projeto_id] = uc.cidade;
+          if (uc.pre_projeto_id) cidadeMap[uc.pre_projeto_id] = uc.cidade;
+        }
+      });
+      setCidadePorItem(cidadeMap);
       // Agrupar documentos por projeto_id
       const grouped = {};
       docs.forEach(d => {
@@ -394,6 +405,11 @@ export default function Projetos() {
                   </div>
                   <div className="flex items-center gap-3 mt-0.5">
                     <p className="text-slate-500 text-xs">CPF: {item.cpf}</p>
+                    {cidadePorItem[item.id] && (
+                      <p className="text-sky-400/70 text-xs flex items-center gap-1">
+                        <MapPin size={11} /> {cidadePorItem[item.id]}
+                      </p>
+                    )}
                     {(() => {
                       const pp = item._tipo === "projeto"
                         ? preProjetos.find(p => p.id === item.pre_projeto_id)
