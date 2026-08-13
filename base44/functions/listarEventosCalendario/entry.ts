@@ -16,9 +16,8 @@ export default async function(req) {
     const timeMin = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString();
     const timeMax = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Calendário compartilhado pela proprietária (Gabriela) com a conta projetos@ecomareng.com
-    // Calendário compartilhado pela proprietária (Gabriela) + primário da conta
-    const calendarIds = ['gabriela@ecomareng.com', 'primary'];
+    // Apenas o calendário primário da conta conectada (projetos@ecomareng.com)
+    const calendarIds = ['primary'];
     const allEvents = [];
 
     for (const calIdRaw of calendarIds) {
