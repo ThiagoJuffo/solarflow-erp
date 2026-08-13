@@ -262,20 +262,28 @@ export default function Agenda() {
                   <button
                     key={i}
                     onClick={() => setSelectedDay(date)}
-                    className={`aspect-square rounded-lg border p-1 flex flex-col items-center justify-start transition-all relative
+                    className={`min-h-[64px] rounded-lg border p-1 flex flex-col items-stretch justify-start transition-all relative text-left
                       ${isSel ? "border-amber-500 bg-amber-500/10" : "border-slate-800 hover:border-slate-700 hover:bg-slate-800/50"}
                       ${isToday(date) ? "ring-1 ring-amber-500/40" : ""}`}
                   >
-                    <span className={`text-xs font-medium mt-0.5 ${isToday(date) ? "text-amber-400" : "text-slate-300"}`}>
+                    <span className={`text-xs font-medium mb-1 ${isToday(date) ? "text-amber-400" : "text-slate-300"}`}>
                       {date.getDate()}
                     </span>
-                    {evs.length > 0 && (
-                      <div className="flex gap-0.5 mt-auto mb-0.5">
-                        {hasInst && <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />}
-                        {hasManut && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
-                        {hasGoogle && <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />}
-                      </div>
-                    )}
+                    <div className="flex flex-col gap-0.5 overflow-hidden">
+                      {evs.slice(0, 2).map((ev, idx) => {
+                        const isManut = ev.tipo === "manutencao";
+                        const isGoogle = ev.tipo === "google";
+                        const chip = isManut ? "bg-amber-500/15 text-amber-300" : isGoogle ? "bg-violet-500/15 text-violet-300" : "bg-sky-500/15 text-sky-300";
+                        return (
+                          <span key={idx} className={`text-[9px] leading-tight px-1 py-0.5 rounded truncate ${chip}`} title={ev.titulo}>
+                            {ev.titulo}
+                          </span>
+                        );
+                      })}
+                      {evs.length > 2 && (
+                        <span className="text-[9px] text-slate-500 px-1">+{evs.length - 2} mais</span>
+                      )}
+                    </div>
                   </button>
                 );
               })}
