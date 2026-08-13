@@ -16,7 +16,7 @@ export default async function(req) {
     const timeMax = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
 
     // Busca eventos nos calendários relevantes
-    const calendarIds = ['atendimento@ecomareng.com', 'primary'];
+    const calendarIds = ['projetos@ecomareng.com', 'primary'];
     const allEvents = [];
 
     for (const calIdRaw of calendarIds) {
