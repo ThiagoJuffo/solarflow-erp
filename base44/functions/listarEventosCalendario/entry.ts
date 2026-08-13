@@ -12,28 +12,34 @@ export default async function(req) {
       'Content-Type': 'application/json'
     };
 
-    const calendarId = encodeURIComponent('atendimento@ecomareng.com');
     const timeMin = new Date().toISOString();
     const timeMax = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
 
-    const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMin=${timeMin}&timeMax=${timeMax}&maxResults=250&singleEvents=true&orderBy=startTime`;
+    // Busca eventos nos calendários relevantes
+    const calendarIds = ['atendimento@ecomareng.com', 'primary'];
+    const allEvents = [];
 
-    const res = await fetch(url, { headers });
-    const data = await res.json();
+    for (const calIdRaw of calendarIds) {
+      const calId = encodeURIComponent(calIdRaw);
+      const url = `https://www.googleapis.com/calendar/v3/calendars/${calId}/events?timeMin=${timeMin}&timeMax=${timeMax}&maxResults=250&singleEvents=true&orderBy=startTime`;
+      const res = await fetch(url, { headers });
+      if (!res.ok) continue;
+      const data = await res.json();
+      (data.items || []).forEach(e => {
+        allEvents.push({
+          id: e.id,
+          summary: e.summary || '',
+          start: e.start?.dateTime || e.start?.date,
+          end: e.end?.dateTime || e.end?.date,
+          location: e.location || '',
+          description: e.description || '',
+          colorId: e.colorId || '',
+          calendar_id: calIdRaw,
+        });
+      });
+    }
 
-    if (!res.ok) return Response.json({ error: data }, { status: res.status });
-
-    const events = (data.items || []).map(e => ({
-      id: e.id,
-      summary: e.summary || '',
-      start: e.start?.dateTime || e.start?.date,
-      end: e.end?.dateTime || e.end?.date,
-      location: e.location || '',
-      description: e.description || '',
-      colorId: e.colorId || '',
-    }));
-
-    return Response.json({ events, calendar: 'atendimento@ecomareng.com' });
+    return Response.json({ events: allEvents });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

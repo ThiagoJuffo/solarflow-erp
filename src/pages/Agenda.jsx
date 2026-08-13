@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   Calendar, ChevronLeft, ChevronRight, Wrench, Sun,
-  MapPin, Clock, Phone, Link2, AlertCircle
+  MapPin, Clock, Phone, Link2, AlertCircle, CalendarClock
 } from "lucide-react";
 
 const MONTH_NAMES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -21,6 +21,7 @@ const MANUTENCAO_STATUS = {
 export default function Agenda() {
   const [manutencoes, setManutencoes] = useState([]);
   const [projetos, setProjetos] = useState([]);
+  const [eventosGoogle, setEventosGoogle] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
@@ -30,9 +31,13 @@ export default function Agenda() {
     Promise.all([
       base44.entities.Manutencao.list("-created_date", 500),
       base44.entities.Projeto.list("-created_date", 500),
-    ]).then(([mans, projs]) => {
+      base44.functions.invoke('listarEventosCalendario', {}),
+    ]).then(([mans, projs, calRes]) => {
       setManutencoes(mans);
       setProjetos(projs);
+      setEventosGoogle(calRes?.data?.events || []);
+      setLoading(false);
+    }).catch(() => {
       setLoading(false);
     });
   }, []);
@@ -70,6 +75,17 @@ export default function Agenda() {
         projetoVinculado: p,
       });
     }
+  });
+  eventosGoogle.forEach(g => {
+    if (!g.start) return;
+    const dataEvt = g.start.includes("T") ? new Date(g.start) : new Date(g.start + "T12:00:00");
+    eventos.push({
+      tipo: "google",
+      data: dataEvt,
+      titulo: g.summary || "Evento Google",
+      detalhes: { endereco: g.location, descricao: g.description, telefone: null, status: null },
+      projetoVinculado: findProjetoByName(g.summary),
+    });
   });
 
   const eventosFiltrados = filtroTipo === "todos" ? eventos : eventos.filter(e => e.tipo === filtroTipo);
@@ -114,18 +130,23 @@ export default function Agenda() {
 
   const EventCard = ({ ev }) => {
     const isManut = ev.tipo === "manutencao";
+    const isGoogle = ev.tipo === "google";
     const st = isManut ? MANUTENCAO_STATUS[ev.detalhes.status] : null;
+    const bgClass = isManut ? "bg-amber-500/5 border-amber-500/20" : isGoogle ? "bg-violet-500/5 border-violet-500/20" : "bg-sky-500/5 border-sky-500/20";
+    const iconBg = isManut ? "bg-amber-500/15" : isGoogle ? "bg-violet-500/15" : "bg-sky-500/15";
+    const badgeClass = isManut ? st.color : isGoogle ? "bg-violet-500/10 text-violet-400 border-violet-500/20" : "bg-sky-500/10 text-sky-400 border-sky-500/20";
+    const badgeLabel = isManut ? st.label : isGoogle ? "Google Calendar" : "Instalação";
     return (
-      <div className={`rounded-xl border p-3 ${isManut ? "bg-amber-500/5 border-amber-500/20" : "bg-sky-500/5 border-sky-500/20"}`}>
+      <div className={`rounded-xl border p-3 ${bgClass}`}>
         <div className="flex items-start gap-2">
-          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isManut ? "bg-amber-500/15" : "bg-sky-500/15"}`}>
-            {isManut ? <Wrench size={13} className="text-amber-400" /> : <Sun size={13} className="text-sky-400" />}
+          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}>
+            {isManut ? <Wrench size={13} className="text-amber-400" /> : isGoogle ? <CalendarClock size={13} className="text-violet-400" /> : <Sun size={13} className="text-sky-400" />}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <p className="text-white text-sm font-medium truncate">{ev.titulo}</p>
-              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md border ${isManut ? st.color : "bg-sky-500/10 text-sky-400 border-sky-500/20"}`}>
-                {isManut ? st.label : "Instalação"}
+              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md border ${badgeClass}`}>
+                {badgeLabel}
               </span>
             </div>
             <div className="flex items-center gap-3 mt-1 flex-wrap">
@@ -143,7 +164,10 @@ export default function Agenda() {
                 </span>
               )}
             </div>
-            {isManut && !ev.projetoVinculado && (
+            {ev.detalhes.descricao && (
+              <p className="text-slate-500 text-xs mt-1">{ev.detalhes.descricao}</p>
+            )}
+            {!ev.projetoVinculado && (isManut || isGoogle) && (
               <p className="text-orange-400/80 text-xs mt-1 flex items-center gap-1">
                 <AlertCircle size={10} /> Sem projeto vinculado
               </p>
@@ -180,6 +204,7 @@ export default function Agenda() {
               { key: "todos", label: "Tudo" },
               { key: "instalacao", label: "Instalações" },
               { key: "manutencao", label: "Manutenções" },
+              { key: "google", label: "Google Calendar" },
             ].map(f => (
               <button
                 key={f.key}
@@ -231,6 +256,7 @@ export default function Agenda() {
                 const evs = eventosDoDia(date);
                 const hasManut = evs.some(e => e.tipo === "manutencao");
                 const hasInst = evs.some(e => e.tipo === "instalacao");
+                const hasGoogle = evs.some(e => e.tipo === "google");
                 const isSel = selectedDay && date.toDateString() === selectedDay.toDateString();
                 return (
                   <button
@@ -247,6 +273,7 @@ export default function Agenda() {
                       <div className="flex gap-0.5 mt-auto mb-0.5">
                         {hasInst && <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />}
                         {hasManut && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+                        {hasGoogle && <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />}
                       </div>
                     )}
                   </button>
@@ -261,6 +288,9 @@ export default function Agenda() {
               </span>
               <span className="flex items-center gap-1.5 text-slate-400 text-xs">
                 <span className="w-2 h-2 rounded-full bg-amber-400" /> Manutenção
+              </span>
+              <span className="flex items-center gap-1.5 text-slate-400 text-xs">
+                <span className="w-2 h-2 rounded-full bg-violet-400" /> Google Calendar
               </span>
             </div>
           </div>
@@ -292,8 +322,8 @@ export default function Agenda() {
                 <div className="space-y-2">
                   {proximosEventos.map((ev, i) => (
                     <div key={i} className="flex items-center gap-2.5 py-1.5 border-b border-slate-800 last:border-0">
-                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${ev.tipo === "manutencao" ? "bg-amber-500/15" : "bg-sky-500/15"}`}>
-                        {ev.tipo === "manutencao" ? <Wrench size={12} className="text-amber-400" /> : <Sun size={12} className="text-sky-400" />}
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${ev.tipo === "manutencao" ? "bg-amber-500/15" : ev.tipo === "google" ? "bg-violet-500/15" : "bg-sky-500/15"}`}>
+                        {ev.tipo === "manutencao" ? <Wrench size={12} className="text-amber-400" /> : ev.tipo === "google" ? <CalendarClock size={12} className="text-violet-400" /> : <Sun size={12} className="text-sky-400" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-white text-xs font-medium truncate">{ev.titulo}</p>
