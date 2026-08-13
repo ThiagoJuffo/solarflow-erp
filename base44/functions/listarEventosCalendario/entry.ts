@@ -16,8 +16,8 @@ export default async function(req) {
     const timeMin = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString();
     const timeMax = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Apenas o calendário primário da conta conectada (projetos@ecomareng.com)
-    const calendarIds = ['primary'];
+    // Calendário primário + calendário compartilhado (Ecomar Engenharia)
+    const calendarIds = ['primary', 'c_pqve749ida09u4nnpb1ts1ivkg@group.calendar.google.com'];
     const allEvents = [];
 
     for (const calIdRaw of calendarIds) {
