@@ -12,11 +12,13 @@ export default async function(req) {
       'Content-Type': 'application/json'
     };
 
-    const timeMin = new Date().toISOString();
+    // Janela ampliada: 6 meses atrás até 6 meses à frente
+    const timeMin = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString();
     const timeMax = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Busca eventos nos calendários relevantes
-    const calendarIds = ['projetos@ecomareng.com', 'primary'];
+    // Calendário compartilhado pela proprietária (Gabriela) com a conta projetos@ecomareng.com
+    // Calendário compartilhado pela proprietária (Gabriela) + primário da conta
+    const calendarIds = ['gabriela@ecomareng.com', 'primary'];
     const allEvents = [];
 
     for (const calIdRaw of calendarIds) {
@@ -39,7 +41,7 @@ export default async function(req) {
       });
     }
 
-    // Deduplica por ID (projetos@ecomareng.com pode ser o primário)
+    // Deduplica por ID (mesmo evento pode aparecer em múltiplos calendários)
     const vistos = new Set();
     const eventos = allEvents.filter(e => {
       if (vistos.has(e.id)) return false;
