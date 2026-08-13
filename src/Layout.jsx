@@ -5,7 +5,7 @@ import { base44 } from "@/api/base44Client";
 import {
   Sun, LayoutDashboard, FolderKanban, Users, Package,
   FileText, ChevronLeft, ChevronRight, LogOut, Menu, X,
-  Zap, ShieldCheck, TrendingUp, UserCheck, DollarSign, BarChart2, Wrench
+  Zap, ShieldCheck, TrendingUp, UserCheck, DollarSign, BarChart2, Wrench, Calendar
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { label: "Fluxo de Caixa", page: "FluxoCaixa", icon: DollarSign, roles: ["admin","financeiro"] },
   { label: "DRE por Projeto", page: "DREProjeto", icon: BarChart2, roles: ["admin","financeiro","engenharia"] },
   { label: "Manutenções", page: "Manutencoes", icon: Wrench, roles: ["admin","financeiro","engenharia"] },
+  { label: "Agenda", page: "Agenda", icon: Calendar, roles: ["admin","engenharia","instalacao"] },
   { label: "Planej. Telhado", page: "PlanejamentoTelhado", icon: Sun, roles: ["admin","engenharia","instalacao"] },
   { label: "Usuários", page: "Usuarios", icon: Users, roles: ["admin"] },
 ];
