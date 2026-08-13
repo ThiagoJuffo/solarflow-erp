@@ -39,7 +39,15 @@ export default async function(req) {
       });
     }
 
-    return Response.json({ events: allEvents });
+    // Deduplica por ID (projetos@ecomareng.com pode ser o primário)
+    const vistos = new Set();
+    const eventos = allEvents.filter(e => {
+      if (vistos.has(e.id)) return false;
+      vistos.add(e.id);
+      return true;
+    });
+
+    return Response.json({ events: eventos });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
