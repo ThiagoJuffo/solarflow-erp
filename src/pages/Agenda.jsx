@@ -114,11 +114,14 @@ export default function Agenda() {
 
   const selectedDayEvents = selectedDay ? eventosDoDia(selectedDay) : [];
 
-  // Próximos eventos (hoje em diante)
+  // Próximos eventos (apenas da semana atual)
+  const endOfWeek = new Date(today);
+  endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
+  endOfWeek.setHours(23, 59, 59, 999);
+
   const proximosEventos = eventosFiltrados
-    .filter(e => new Date(e.data) >= today)
-    .sort((a, b) => a.data - b.data)
-    .slice(0, 8);
+    .filter(e => e.data >= today && e.data <= endOfWeek)
+    .sort((a, b) => a.data - b.data);
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
