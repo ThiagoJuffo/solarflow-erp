@@ -10,9 +10,13 @@ export default async function(req) {
     const body = await req.json();
     const manId = body.event?.entity_id || body.data?.id;
 
-    if (!manId) return Response.json({ error: 'No maintenance ID' }, { status: 400 });
+    if (typeof manId !== 'string' || manId.trim() === '' || manId.length > 200) {
+      return Response.json({ error: 'ID de manutenção inválido' }, { status: 400 });
+    }
 
-    const fresh = await base44.asServiceRole.entities.Manutencao.get(manId);
+    // Busca no escopo do usuário (respeita RLS) — verifica acesso antes de elevar privilégio
+    const fresh = await base44.entities.Manutencao.get(manId);
+    if (!fresh) return Response.json({ error: 'Manutenção não encontrada ou sem acesso' }, { status: 403 });
 
     // Segurança: não reagenda se já tem evento vinculado
     if (fresh.google_calendar_event_id) {
@@ -41,6 +45,7 @@ export default async function(req) {
 
     return Response.json({ success: true, event_id: eventId });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[agendarManutencaoAutomatica]', error);
+    return Response.json({ error: 'Erro interno ao agendar manutenção' }, { status: 500 });
   }
 }

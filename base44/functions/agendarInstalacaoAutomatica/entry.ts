@@ -10,9 +10,13 @@ export default async function(req) {
     const body = await req.json();
     const projetoId = body.event?.entity_id || body.data?.id;
 
-    if (!projetoId) return Response.json({ error: 'No project ID' }, { status: 400 });
+    if (typeof projetoId !== 'string' || projetoId.trim() === '' || projetoId.length > 200) {
+      return Response.json({ error: 'ID de projeto inválido' }, { status: 400 });
+    }
 
-    const fresh = await base44.asServiceRole.entities.Projeto.get(projetoId);
+    // Busca no escopo do usuário (respeita RLS) — verifica acesso antes de elevar privilégio
+    const fresh = await base44.entities.Projeto.get(projetoId);
+    if (!fresh) return Response.json({ error: 'Projeto não encontrado ou sem acesso' }, { status: 403 });
 
     // Segurança: só prossegue se kit confirmado, pagamento existe e sem evento já criado
     if (!fresh.equipamentos_confirmados || !fresh.data_pagamento) {
@@ -45,6 +49,7 @@ export default async function(req) {
 
     return Response.json({ success: true, event_id: eventId, data_instalacao: dataInstalacao });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[agendarInstalacaoAutomatica]', error);
+    return Response.json({ error: 'Erro interno ao agendar instalação' }, { status: 500 });
   }
 }

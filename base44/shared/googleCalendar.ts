@@ -18,6 +18,7 @@ export async function createCalendarEvent(accessToken, { summary, startDateTime,
     }
   );
   const data = await res.json();
-  if (!res.ok) throw new Error(`Calendar API error: ${JSON.stringify(data)}`);
+  if (!res.ok) throw new Error(`Falha ao criar evento no calendário (HTTP ${res.status})`);
+  if (!data.id) throw new Error('Resposta inválida do calendário: ID ausente');
   return data.id;
 }
