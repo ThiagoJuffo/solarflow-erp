@@ -124,6 +124,10 @@
       "type": "string",
       "format": "date"
     },
+    "google_calendar_event_id": {
+      "type": "string",
+      "description": "ID do evento de instala\u00e7\u00e3o no Google Calendar (agendamento autom\u00e1tico)"
+    },
     "evidencias_instalacao": {
       "type": "array",
       "items": {
