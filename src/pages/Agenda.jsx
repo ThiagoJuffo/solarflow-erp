@@ -197,25 +197,6 @@ export default function Agenda() {
           </h1>
           <p className="text-slate-400 text-sm mt-1">Instalações e manutenções agendadas</p>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Filtro de tipo */}
-          <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1">
-            {[
-              { key: "todos", label: "Tudo" },
-              { key: "instalacao", label: "Instalações" },
-              { key: "manutencao", label: "Manutenções" },
-              { key: "google", label: "Google Calendar" },
-            ].map(f => (
-              <button
-                key={f.key}
-                onClick={() => setFiltroTipo(f.key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filtroTipo === f.key ? "bg-amber-500 text-white" : "text-slate-400 hover:text-white"}`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
 
       {loading ? (
