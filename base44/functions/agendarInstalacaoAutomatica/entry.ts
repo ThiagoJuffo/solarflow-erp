@@ -34,7 +34,7 @@ export default async function(req) {
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlecalendar');
     const eventId = await createCalendarEvent(accessToken, {
-      summary: `Instalação ${fresh.nome_cliente}`,
+      summary: `Instalação ${fresh.nome_cliente} [${projetoId}]`,
       startDateTime,
       endDateTime,
       colorId: '5',

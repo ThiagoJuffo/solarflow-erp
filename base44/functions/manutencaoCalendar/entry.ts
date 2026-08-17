@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
       const end = new Date(start.getTime() + 60 * 60 * 1000); // +1h
 
       const event = {
-        summary: `Manutenção ${nome_cliente}`,
+        summary: `Manutenção ${nome_cliente}${manutencao_id ? ` [${manutencao_id}]` : ""}`,
         colorId: '3', // grape/roxo no Google Calendar
         start: { dateTime: start.toISOString(), timeZone: 'America/Sao_Paulo' },
         end: { dateTime: end.toISOString(), timeZone: 'America/Sao_Paulo' }

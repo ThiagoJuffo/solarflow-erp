@@ -91,6 +91,7 @@ export default function ManutencaoDetalhe() {
       // Criar evento no Google Calendar
       const res = await base44.functions.invoke('manutencaoCalendar', {
         action: 'create',
+        manutencao_id: id,
         nome_cliente: manutencao.nome_cliente,
         data_agendamento: dataHora.toISOString()
       });
@@ -121,6 +122,7 @@ export default function ManutencaoDetalhe() {
       // Criar novo evento
       const res = await base44.functions.invoke('manutencaoCalendar', {
         action: 'create',
+        manutencao_id: id,
         nome_cliente: manutencao.nome_cliente,
         data_agendamento: dataHora.toISOString()
       });

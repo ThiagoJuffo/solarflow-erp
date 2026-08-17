@@ -21,6 +21,8 @@ const MANUTENCAO_STATUS = {
 export default function Agenda() {
   const [manutencoes, setManutencoes] = useState([]);
   const [projetos, setProjetos] = useState([]);
+  const [ucs, setUCs] = useState([]);
+  const [preProjetos, setPreProjetos] = useState([]);
   const [eventosGoogle, setEventosGoogle] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -31,10 +33,14 @@ export default function Agenda() {
     Promise.all([
       base44.entities.Manutencao.list("-created_date", 500),
       base44.entities.Projeto.list("-created_date", 500),
+      base44.entities.UC.list("-created_date", 500),
+      base44.entities.PreProjeto.list("-created_date", 500),
       base44.functions.invoke('listarEventosCalendario', {}),
-    ]).then(([mans, projs, calRes]) => {
+    ]).then(([mans, projs, ucList, ppList, calRes]) => {
       setManutencoes(mans);
       setProjetos(projs);
+      setUCs(ucList);
+      setPreProjetos(ppList);
       setEventosGoogle(calRes?.data?.events || []);
       setLoading(false);
     }).catch(() => {
@@ -52,6 +58,35 @@ export default function Agenda() {
     return projetos.find(p => norm(p.nome_cliente) === alvo) || null;
   };
 
+  // Extrai ID entre colchetes do título do evento (ex: "Nome [abc123]")
+  const parseIdFromTitle = (title) => {
+    const match = (title || "").match(/\[([^\]]+)\]/);
+    return match ? match[1] : null;
+  };
+
+  // Busca projeto pelo ID
+  const findProjetoById = (projId) => projetos.find(p => p.id === projId) || null;
+
+  // Busca UC pelo projeto_id
+  const findUCByProjeto = (projId) => ucs.find(u => u.projeto_id === projId) || null;
+
+  // Busca PreProjeto pelo projeto
+  const findPreProjetoByProjeto = (proj) => {
+    if (!proj) return null;
+    return preProjetos.find(pp => pp.id === proj.pre_projeto_id || pp.projeto_id === proj.id) || null;
+  };
+
+  // Retorna cidade e nº de placas do projeto
+  const getProjetoInfo = (proj) => {
+    if (!proj) return null;
+    const uc = findUCByProjeto(proj.id);
+    const pp = findPreProjetoByProjeto(proj);
+    return {
+      cidade: uc?.cidade || "",
+      placas: pp?.modulo_quantidade || "",
+    };
+  };
+
   // Monta lista de eventos
   const eventos = [];
   manutencoes.forEach(m => {
@@ -66,7 +101,8 @@ export default function Agenda() {
     }
   });
   projetos.forEach(p => {
-    if (p.data_instalacao) {
+    // Ignora instalações já vinculadas ao Google Calendar (aparecerão via eventosGoogle)
+    if (p.data_instalacao && !p.google_calendar_event_id) {
       eventos.push({
         tipo: "instalacao",
         data: new Date(p.data_instalacao + "T12:00:00"),
@@ -79,12 +115,14 @@ export default function Agenda() {
   eventosGoogle.forEach(g => {
     if (!g.start) return;
     const dataEvt = g.start.includes("T") ? new Date(g.start) : new Date(g.start + "T12:00:00");
+    const projId = parseIdFromTitle(g.summary);
+    const projetoVinculado = projId ? findProjetoById(projId) : findProjetoByName(g.summary);
     eventos.push({
       tipo: "google",
       data: dataEvt,
       titulo: g.summary || "Evento Google",
       detalhes: { endereco: g.location, descricao: g.description, telefone: null, status: null },
-      projetoVinculado: findProjetoByName(g.summary),
+      projetoVinculado,
     });
   });
 
@@ -170,6 +208,24 @@ export default function Agenda() {
             {ev.detalhes.descricao && (
               <p className="text-slate-500 text-xs mt-1">{ev.detalhes.descricao}</p>
             )}
+            {ev.projetoVinculado && (() => {
+              const info = getProjetoInfo(ev.projetoVinculado);
+              if (!info) return null;
+              return (
+                <div className="flex items-center gap-3 mt-1">
+                  {info.cidade && (
+                    <span className="text-slate-400 text-xs flex items-center gap-1">
+                      <MapPin size={10} /> {info.cidade}
+                    </span>
+                  )}
+                  {info.placas && (
+                    <span className="text-slate-400 text-xs flex items-center gap-1">
+                      <Sun size={10} /> {info.placas} placas
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
             {!ev.projetoVinculado && (isManut || isGoogle) && (
               <p className="text-orange-400/80 text-xs mt-1 flex items-center gap-1">
                 <AlertCircle size={10} /> Sem projeto vinculado
