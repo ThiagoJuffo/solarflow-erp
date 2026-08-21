@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import {
   Calendar, ChevronLeft, ChevronRight, Wrench, Sun,
   MapPin, Clock, Phone, Link2, AlertCircle, CalendarClock,
-  TrendingUp, Layers, BarChart2, RefreshCw, Scale, Target
+  TrendingUp, Layers, BarChart2, RefreshCw, Scale, Target, CheckCircle
 } from "lucide-react";
 import VincularProjetoButton from "../components/agenda/VincularProjetoButton";
 import NovoAgendamentoModal from "../components/agenda/NovoAgendamentoModal";
@@ -224,6 +224,11 @@ export default function Agenda() {
 
   const manutencoesAgendar = manutencoes.filter(m => m.status === "agendar").length;
 
+  const manutencoesConcluidasMes = manutencoes.filter(m => {
+    if (m.status !== "concluida" || !m.data_agendamento) return false;
+    return String(m.data_agendamento).slice(0, 7) === mesKey;
+  }).length;
+
   // Semana atual (domingo a sábado)
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() - today.getDay());
@@ -322,6 +327,7 @@ export default function Agenda() {
   const kpiCards = [
     { id: "concluidas", label: "Concluídas no mês", value: instalacoesConcluidasMes, color: "emerald", Icon: Sun },
     { id: "manut_agendar", label: "Manut. a agendar", value: manutencoesAgendar, color: "amber", Icon: Wrench },
+  { id: "manut_concluidas_mes", label: "Manut. concluídas (mês)", value: manutencoesConcluidasMes, color: "emerald", Icon: CheckCircle },
     { id: "taxa_conclusao", label: "Taxa de conclusão", value: `${taxaConclusao}%`, color: "violet", Icon: Target },
     { id: "atrasadas", label: "Atrasadas", value: instalacoesAtrasadas, color: "red", Icon: AlertCircle },
     { id: "reagendamentos", label: "Reagendamentos (mês)", value: reagendamentosMes, color: "rose", Icon: RefreshCw },
