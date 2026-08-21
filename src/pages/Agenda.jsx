@@ -585,7 +585,7 @@ export default function Agenda() {
             {/* Grid de dias */}
             <div className="grid grid-cols-7 gap-1">
               {days.map((date, i) => {
-                if (!date) return <div key={i} className="aspect-square" />;
+                if (!date) return <div key={i} className="min-h-[64px]" />;
                 const evs = eventosDoDia(date);
                 const hasManut = evs.some(e => e.tipo === "manutencao");
                 const hasInst = evs.some(e => e.tipo === "instalacao");
