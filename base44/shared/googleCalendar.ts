@@ -42,7 +42,7 @@ export async function updateCalendarEvent(accessToken, { eventId, summary, start
     }
   );
   const data = await res.json();
-  if (!res.ok) throw new Error(`Falha ao atualizar evento no calendário (HTTP ${res.status})`);
+  if (!res.ok) throw new Error(`Falha ao atualizar evento no calendário (HTTP ${res.status}): ${data.error?.message || JSON.stringify(data)}`);
   if (!data.id) throw new Error('Resposta inválida do calendário: ID ausente');
   return data.id;
 }
