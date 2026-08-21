@@ -6,6 +6,7 @@ import {
   Calendar, ChevronLeft, ChevronRight, Wrench, Sun,
   MapPin, Clock, Phone, Link2, AlertCircle, CalendarClock
 } from "lucide-react";
+import VincularProjetoButton from "../components/agenda/VincularProjetoButton";
 
 const MONTH_NAMES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -29,7 +30,8 @@ export default function Agenda() {
   const [selectedDay, setSelectedDay] = useState(null);
   const [filtroTipo, setFiltroTipo] = useState("todos");
 
-  useEffect(() => {
+  const loadData = () => {
+    setLoading(true);
     Promise.all([
       base44.entities.Manutencao.list("-created_date", 500),
       base44.entities.Projeto.list("-created_date", 500),
@@ -46,7 +48,9 @@ export default function Agenda() {
     }).catch(() => {
       setLoading(false);
     });
-  }, []);
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   // Normaliza nome para comparação
   const norm = (s) => (s || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -66,6 +70,9 @@ export default function Agenda() {
 
   // Busca projeto pelo ID
   const findProjetoById = (projId) => projetos.find(p => p.id === projId) || null;
+
+  // Busca projeto pelo google_calendar_event_id
+  const findProjetoByEventId = (eventId) => projetos.find(p => p.google_calendar_event_id === eventId) || null;
 
   // Busca UC pelo projeto_id
   const findUCByProjeto = (projId) => ucs.find(u => u.projeto_id === projId) || null;
@@ -116,12 +123,12 @@ export default function Agenda() {
     if (!g.start) return;
     const dataEvt = g.start.includes("T") ? new Date(g.start) : new Date(g.start + "T12:00:00");
     const projId = parseIdFromTitle(g.summary);
-    const projetoVinculado = projId ? findProjetoById(projId) : findProjetoByName(g.summary);
+    const projetoVinculado = projId ? findProjetoById(projId) : (findProjetoByEventId(g.id) || findProjetoByName(g.summary));
     eventos.push({
       tipo: "google",
       data: dataEvt,
       titulo: g.summary || "Evento Google",
-      detalhes: { endereco: g.location, descricao: g.description, telefone: null, status: null },
+      detalhes: { endereco: g.location, descricao: g.description, telefone: null, status: null, eventId: g.id },
       projetoVinculado,
     });
   });
@@ -226,7 +233,14 @@ export default function Agenda() {
                 </div>
               );
             })()}
-            {!ev.projetoVinculado && (isManut || isGoogle) && (
+            {!ev.projetoVinculado && isGoogle && (
+              <VincularProjetoButton
+                eventId={ev.detalhes.eventId}
+                projetos={projetos}
+                onLinked={loadData}
+              />
+            )}
+            {!ev.projetoVinculado && isManut && (
               <p className="text-orange-400/80 text-xs mt-1 flex items-center gap-1">
                 <AlertCircle size={10} /> Sem projeto vinculado
               </p>

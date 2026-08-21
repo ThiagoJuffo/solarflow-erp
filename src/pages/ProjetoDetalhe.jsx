@@ -8,7 +8,7 @@ import ProtocoloCard from "../components/projeto/ProtocoloCard";
 import {
   ChevronLeft, Sun, MapPin, Zap, FileText, Camera, Package,
   Settings, Eye, EyeOff, CheckCircle, AlertTriangle, Loader2,
-  Upload, Plus, Clock, ShieldCheck, Pencil, Trash2, X
+  Upload, Plus, Clock, ShieldCheck, Pencil, Trash2, X, Calendar
 } from "lucide-react";
 
 const TABS = ["Resumo", "UC & Técnico", "Documentos", "Visita", "Instalação", "Protocolos", "Monitoramento"];
@@ -1498,6 +1498,9 @@ function InstalacaoTab({ projeto, updateProjeto, canEdit }) {
     data_comissionamento: projeto.data_comissionamento || "",
   });
   const [saving, setSaving] = useState(false);
+  const [dataInst, setDataInst] = useState("");
+  const [horaInst, setHoraInst] = useState("08:00");
+  const [agendando, setAgendando] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
@@ -1505,11 +1508,85 @@ function InstalacaoTab({ projeto, updateProjeto, canEdit }) {
     setSaving(false);
   };
 
+  const handleAgendarGoogle = async () => {
+    if (!dataInst) return;
+    setAgendando(true);
+    try {
+      const dataHora = new Date(`${dataInst}T${horaInst || "08:00"}:00`);
+      const res = await base44.functions.invoke('agendarInstalacaoManual', {
+        projeto_id: projeto.id,
+        data_agendamento: dataHora.toISOString(),
+      });
+      if (res.data?.error) throw new Error(res.data.error);
+      if (res.data?.skipped) {
+        alert("Este projeto já tem uma instalação agendada no Google Calendar.");
+      } else {
+        await updateProjeto({
+          google_calendar_event_id: res.data?.event_id,
+          data_instalacao: res.data?.data_instalacao || dataInst,
+        });
+        setDataInst("");
+        setHoraInst("08:00");
+      }
+    } catch {
+      alert("Erro ao agendar no Google Calendar. Tente novamente.");
+    }
+    setAgendando(false);
+  };
+
   return (
     <div className="max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
       <h3 className="text-white font-semibold flex items-center gap-2">
         <Clock size={16} className="text-amber-400" /> Agendamento de Instalação
       </h3>
+
+      {projeto.google_calendar_event_id ? (
+        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-start gap-2">
+          <CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-emerald-300 text-xs font-medium">Instalação agendada no Google Calendar</p>
+            {projeto.data_instalacao && (
+              <p className="text-emerald-400/70 text-xs mt-0.5">
+                {new Date(projeto.data_instalacao + "T12:00:00").toLocaleDateString("pt-BR")}
+              </p>
+            )}
+          </div>
+        </div>
+      ) : canEdit ? (
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-3 space-y-3">
+          <p className="text-slate-300 text-xs font-medium flex items-center gap-1.5">
+            <Calendar size={12} className="text-amber-400" /> Agendar no Google Calendar
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-slate-400 text-xs mb-1 block">Data</label>
+              <input
+                type="date"
+                value={dataInst}
+                onChange={e => setDataInst(e.target.value)}
+                className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-amber-500"
+              />
+            </div>
+            <div>
+              <label className="text-slate-400 text-xs mb-1 block">Hora</label>
+              <input
+                type="time"
+                value={horaInst}
+                onChange={e => setHoraInst(e.target.value)}
+                className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-amber-500"
+              />
+            </div>
+          </div>
+          <button
+            onClick={handleAgendarGoogle}
+            disabled={!dataInst || agendando}
+            className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-white py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
+          >
+            {agendando ? <Loader2 size={12} className="animate-spin" /> : <Calendar size={12} />}
+            Agendar instalação
+          </button>
+        </div>
+      ) : null}
 
       <div>
         <label className="text-slate-400 text-xs mb-1.5 block">Data de Instalação</label>
