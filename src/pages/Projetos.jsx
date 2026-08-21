@@ -75,6 +75,10 @@ export default function Projetos() {
   const [inmetroPorProjeto, setInmetroPorProjeto] = useState({});
   const [cidadePorItem, setCidadePorItem] = useState({});
   const [editValorItem, setEditValorItem] = useState(null);
+  const [editVendedorItem, setEditVendedorItem] = useState(null);
+  const [vendedores, setVendedores] = useState([]);
+  const [novoVendedorId, setNovoVendedorId] = useState("");
+  const [salvandoVendedor, setSalvandoVendedor] = useState(false);
   const [senhaAdmin, setSenhaAdmin] = useState("");
   const [senhaVerificada, setSenhaVerificada] = useState(false);
   const [senhaErro, setSenhaErro] = useState(false);
@@ -88,10 +92,12 @@ export default function Projetos() {
       base44.entities.Documento.list("-created_date", 1000),
       base44.entities.Produto.filter({ ativo: true }),
       base44.entities.UC.list("-created_date", 500),
+      base44.entities.Vendedor.list("-created_date", 100),
       base44.auth.me()
-    ]).then(([p, pp, docs, produtos, ucs, u]) => {
+    ]).then(([p, pp, docs, produtos, ucs, vends, u]) => {
       setProjetos(p);
       setPreProjetos(pp);
+      setVendedores(vends);
       setUser(u);
       // Mapear cidade por projeto_id e pre_projeto_id
       const cidadeMap = {};
@@ -317,6 +323,88 @@ export default function Projetos() {
         </div>
       )}
 
+      {/* Modal editar vendedor */}
+      {editVendedorItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center shrink-0">
+                <Lock size={18} className="text-amber-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-semibold text-sm">Editar Vendedor</p>
+                <p className="text-slate-400 text-xs mt-1">{editVendedorItem.item.nome_cliente}</p>
+              </div>
+              <button onClick={() => setEditVendedorItem(null)} className="text-slate-500 hover:text-white transition-colors shrink-0">
+                <X size={16} />
+              </button>
+            </div>
+            {!senhaVerificada ? (
+              <>
+                <p className="text-slate-400 text-xs mb-3">Digite a senha de administrador para continuar:</p>
+                <input
+                  type="password"
+                  value={senhaAdmin}
+                  onChange={e => { setSenhaAdmin(e.target.value); setSenhaErro(false); }}
+                  placeholder="Senha admin"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors mb-3"
+                  autoFocus
+                />
+                {senhaErro && <p className="text-red-400 text-xs mb-3">Senha incorreta.</p>}
+                <button
+                  onClick={() => {
+                    if (senhaAdmin === ADMIN_SENHA) { setSenhaVerificada(true); setSenhaErro(false); }
+                    else { setSenhaErro(true); }
+                  }}
+                  className="w-full bg-amber-500 hover:bg-amber-400 text-white font-semibold py-2.5 rounded-xl transition-all text-sm"
+                >
+                  Verificar
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-slate-400 text-xs mb-3">Vendedor atual: <span className="text-amber-400">{editVendedorItem.item.vendedor_nome || "—"}</span></p>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">Novo vendedor:</label>
+                <select
+                  value={novoVendedorId}
+                  onChange={e => setNovoVendedorId(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors mb-4"
+                  autoFocus
+                >
+                  <option value="">Selecione um vendedor...</option>
+                  {vendedores.filter(v => v.ativo !== false).map(v => (
+                    <option key={v.id} value={v.id}>{v.nome}</option>
+                  ))}
+                </select>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setEditVendedorItem(null)}
+                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm font-medium transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setSalvandoVendedor(true);
+                      const vend = vendedores.find(v => v.id === novoVendedorId);
+                      const ppId = editVendedorItem.item.id;
+                      await base44.entities.PreProjeto.update(ppId, { vendedor_id: novoVendedorId, vendedor_nome: vend?.nome || "" });
+                      setPreProjetos(prev => prev.map(p => p.id === ppId ? { ...p, vendedor_id: novoVendedorId, vendedor_nome: vend?.nome || "" } : p));
+                      setSalvandoVendedor(false);
+                      setEditVendedorItem(null);
+                    }}
+                    disabled={!novoVendedorId || salvandoVendedor}
+                    className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-white font-semibold py-2.5 rounded-xl transition-all text-sm"
+                  >
+                    {salvandoVendedor ? "Salvando..." : "Salvar"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Modal aviso sem permissão */}
       {avisoSemPermissao && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -415,7 +503,24 @@ export default function Projetos() {
                         ? preProjetos.find(p => p.id === item.pre_projeto_id)
                         : item;
                       return <>
-                        {pp?.vendedor_nome && <p className="text-amber-400/70 text-xs">Vendedor: {pp.vendedor_nome}</p>}
+                        <span className="flex items-center gap-1 group/vendedor">
+                          <p className="text-amber-400/70 text-xs">Vendedor: {pp?.vendedor_nome || "—"}</p>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setEditVendedorItem({ item: pp, _tipo: item._tipo === "projeto" ? "projeto" : "pre_projeto" });
+                              setSenhaAdmin("");
+                              setSenhaVerificada(false);
+                              setSenhaErro(false);
+                              setNovoVendedorId(pp?.vendedor_id || "");
+                            }}
+                            className="opacity-0 group-hover/vendedor:opacity-100 text-slate-500 hover:text-amber-400 transition-all"
+                            title="Editar vendedor (senha admin)"
+                          >
+                            <Pencil size={11} />
+                          </button>
+                        </span>
                         {pp?.valor_projeto && (
                           <span className="flex items-center gap-1 group/valor">
                             <p className="text-emerald-400/70 text-xs">R$ {pp.valor_projeto}</p>
