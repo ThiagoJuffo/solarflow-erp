@@ -516,16 +516,6 @@ export default function Agenda() {
 
       {/* KPIs - linha 3 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
-            <BarChart2 size={18} className="text-sky-400" />
-          </div>
-          <div>
-            <p className="text-sky-400 text-[11px] font-medium uppercase tracking-wide">Carga p/ dia (semana)</p>
-            <p className="text-white text-lg font-bold leading-tight truncate">{diaMaisCarregadoCount > 0 ? `${diaMaisCarregadoLabel} (${diaMaisCarregadoCount})` : "—"}</p>
-          </div>
-        </div>
-
         <div className="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-rose-500/15 flex items-center justify-center shrink-0">
             <RefreshCw size={18} className="text-rose-400" />
