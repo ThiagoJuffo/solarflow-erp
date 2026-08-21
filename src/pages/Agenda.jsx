@@ -7,6 +7,8 @@ import {
   MapPin, Clock, Phone, Link2, AlertCircle, CalendarClock
 } from "lucide-react";
 import VincularProjetoButton from "../components/agenda/VincularProjetoButton";
+import NovoAgendamentoModal from "../components/agenda/NovoAgendamentoModal";
+import { Plus } from "lucide-react";
 
 const MONTH_NAMES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -29,6 +31,7 @@ export default function Agenda() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
   const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [showNovoAgendamento, setShowNovoAgendamento] = useState(false);
 
   const loadData = () => {
     setLoading(true);
@@ -270,7 +273,23 @@ export default function Agenda() {
           </h1>
           <p className="text-slate-400 text-sm mt-1">Instalações e manutenções agendadas</p>
         </div>
+        <button
+          onClick={() => setShowNovoAgendamento(true)}
+          className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-amber-500/20"
+        >
+          <Plus size={16} /> Novo agendamento
+        </button>
       </div>
+
+      {showNovoAgendamento && (
+        <NovoAgendamentoModal
+          projetos={projetos}
+          ucs={ucs}
+          preProjetos={preProjetos}
+          onClose={() => setShowNovoAgendamento(false)}
+          onCreated={loadData}
+        />
+      )}
 
       {loading ? (
         <div className="h-96 bg-slate-900 rounded-2xl animate-pulse" />
