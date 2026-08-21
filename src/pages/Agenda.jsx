@@ -183,11 +183,26 @@ export default function Agenda() {
 
   const selectedDayEvents = selectedDay ? eventosDoDia(selectedDay) : [];
 
-  // KPI: instalações agendadas para hoje
-  const instalacoesHoje = eventos.filter(ev =>
-    (ev.tipo === "instalacao" || (ev.tipo === "google" && ev.projetoVinculado)) &&
-    ev.data.toDateString() === today.toDateString()
+  // KPIs
+  const isInstalacao = (ev) => ev.tipo === "instalacao" || (ev.tipo === "google" && ev.projetoVinculado);
+  const instalacoesHoje = eventos.filter(ev => isInstalacao(ev) && ev.data.toDateString() === today.toDateString()).length;
+
+  const instalacoesAtrasadas = eventos.filter(ev =>
+    isInstalacao(ev) && ev.data < today &&
+    !(ev.projetoVinculado?.sistema_instalado || ev.projetoVinculado?.status === "sistema_instalado")
   ).length;
+
+  const now = new Date();
+  const mesAtual = now.getMonth();
+  const anoAtual = now.getFullYear();
+  const instalacoesConcluidasMes = projetos.filter(p =>
+    (p.sistema_instalado || p.status === "sistema_instalado") &&
+    p.data_instalacao &&
+    new Date(p.data_instalacao + "T12:00:00").getMonth() === mesAtual &&
+    new Date(p.data_instalacao + "T12:00:00").getFullYear() === anoAtual
+  ).length;
+
+  const manutencoesAgendar = manutencoes.filter(m => m.status === "agendar").length;
 
   // Próximos eventos (apenas da semana atual)
   const endOfWeek = new Date(today);
@@ -350,14 +365,46 @@ export default function Agenda() {
         />
       )}
 
-      {/* KPI Instalações hoje */}
-      <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-4 flex items-center gap-4">
-        <div className="w-11 h-11 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
-          <Sun size={20} className="text-sky-400" />
+      {/* KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
+            <Sun size={18} className="text-sky-400" />
+          </div>
+          <div>
+            <p className="text-sky-400 text-[11px] font-medium uppercase tracking-wide">Instalações hoje</p>
+            <p className="text-white text-2xl font-bold leading-tight">{instalacoesHoje}</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sky-400 text-xs font-medium uppercase tracking-wide">Instalações hoje</p>
-          <p className="text-white text-2xl font-bold leading-tight">{instalacoesHoje}</p>
+
+        <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center shrink-0">
+            <AlertCircle size={18} className="text-red-400" />
+          </div>
+          <div>
+            <p className="text-red-400 text-[11px] font-medium uppercase tracking-wide">Atrasadas</p>
+            <p className="text-white text-2xl font-bold leading-tight">{instalacoesAtrasadas}</p>
+          </div>
+        </div>
+
+        <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
+            <Sun size={18} className="text-emerald-400" />
+          </div>
+          <div>
+            <p className="text-emerald-400 text-[11px] font-medium uppercase tracking-wide">Concluídas no mês</p>
+            <p className="text-white text-2xl font-bold leading-tight">{instalacoesConcluidasMes}</p>
+          </div>
+        </div>
+
+        <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center shrink-0">
+            <Wrench size={18} className="text-amber-400" />
+          </div>
+          <div>
+            <p className="text-amber-400 text-[11px] font-medium uppercase tracking-wide">Manut. a agendar</p>
+            <p className="text-white text-2xl font-bold leading-tight">{manutencoesAgendar}</p>
+          </div>
         </div>
       </div>
 
