@@ -179,6 +179,33 @@ export default function Agenda() {
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
   const goToday = () => { setCurrentDate(new Date()); setSelectedDay(new Date()); };
 
+  const [dragOverDay, setDragOverDay] = useState(null);
+
+  const canDragEv = (ev) => ev.tipo !== "manutencao" && !!ev.projetoVinculado?.google_calendar_event_id;
+
+  const handleDrop = async (e, targetDate) => {
+    e.preventDefault();
+    setDragOverDay(null);
+    try {
+      const dragData = JSON.parse(e.dataTransfer.getData('text/plain') || '{}');
+      if (!dragData.projetoId) return;
+      const origEv = eventos.find(ev => ev.projetoVinculado?.id === dragData.projetoId);
+      const newDate = new Date(targetDate);
+      if (origEv?.data) {
+        newDate.setHours(origEv.data.getHours(), origEv.data.getMinutes(), 0, 0);
+      } else {
+        newDate.setHours(8, 0, 0, 0);
+      }
+      await base44.functions.invoke('reagendarInstalacao', {
+        projeto_id: dragData.projetoId,
+        nova_data: newDate.toISOString(),
+      });
+      loadData();
+    } catch {
+      alert('Erro ao reagendar instalação.');
+    }
+  };
+
   const fmtData = (d) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
   const fmtHora = (d) => d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   const fmtDataHora = (d) => d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
@@ -342,9 +369,13 @@ export default function Agenda() {
                   <button
                     key={i}
                     onClick={() => setSelectedDay(date)}
+                    onDragOver={(e) => { e.preventDefault(); setDragOverDay(date); }}
+                    onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setDragOverDay(null); }}
+                    onDrop={(e) => handleDrop(e, date)}
                     className={`min-h-[64px] rounded-lg border p-1 flex flex-col items-stretch justify-start transition-all relative text-left
                       ${isSel ? "border-amber-500 bg-amber-500/10" : "border-slate-800 hover:border-slate-700 hover:bg-slate-800/50"}
-                      ${isToday(date) ? "ring-1 ring-amber-500/40" : ""}`}
+                      ${isToday(date) ? "ring-1 ring-amber-500/40" : ""}
+                      ${dragOverDay && date && dragOverDay.toDateString() === date.toDateString() ? "ring-2 ring-amber-500 bg-amber-500/15" : ""}`}
                   >
                     <span className={`text-xs font-medium mb-1 ${isToday(date) ? "text-amber-400" : "text-slate-300"}`}>
                       {date.getDate()}
@@ -354,8 +385,18 @@ export default function Agenda() {
                         const isManut = ev.tipo === "manutencao";
                         const isGoogle = ev.tipo === "google";
                         const chip = isManut ? "bg-amber-500/15 text-amber-300" : isGoogle ? "bg-violet-500/15 text-violet-300" : "bg-sky-500/15 text-sky-300";
+                        const draggable = canDragEv(ev);
                         return (
-                          <span key={idx} className={`text-[9px] leading-tight px-1 py-0.5 rounded truncate ${chip}`} title={ev.titulo}>
+                          <span
+                            key={idx}
+                            draggable={draggable}
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData('text/plain', JSON.stringify({ tipo: ev.tipo, projetoId: ev.projetoVinculado?.id }));
+                              e.dataTransfer.effectAllowed = 'move';
+                            }}
+                            className={`text-[9px] leading-tight px-1 py-0.5 rounded truncate ${chip} ${draggable ? "cursor-grab hover:ring-1 hover:ring-amber-500/50" : ""}`}
+                            title={ev.titulo}
+                          >
                             {ev.titulo}
                           </span>
                         );
