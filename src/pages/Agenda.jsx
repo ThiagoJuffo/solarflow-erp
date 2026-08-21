@@ -188,10 +188,20 @@ export default function Agenda() {
   const isInstalacao = (ev) => ev.tipo === "instalacao" || (ev.tipo === "google" && ev.projetoVinculado);
   const instalacoesHoje = eventos.filter(ev => isInstalacao(ev) && ev.data.toDateString() === today.toDateString()).length;
 
-  const instalacoesAtrasadas = eventos.filter(ev =>
-    isInstalacao(ev) && ev.data < today &&
-    !(ev.projetoVinculado?.sistema_instalado || ev.projetoVinculado?.status === "sistema_instalado")
-  ).length;
+  const instalacoesAtrasadas = (() => {
+    const seen = new Set();
+    let count = 0;
+    eventos.forEach(ev => {
+      if (!isInstalacao(ev) || !(ev.data < today)) return;
+      const proj = ev.projetoVinculado;
+      if (proj && (proj.sistema_instalado || proj.status === "sistema_instalado")) return;
+      const key = proj?.id || ev.detalhes?.eventId || (ev.titulo + ev.data.toISOString());
+      if (seen.has(key)) return;
+      seen.add(key);
+      count++;
+    });
+    return count;
+  })();
 
   const now = new Date();
   const mesAtual = now.getMonth();
