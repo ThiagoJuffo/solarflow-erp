@@ -480,16 +480,6 @@ export default function Agenda() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
-            <Sun size={18} className="text-sky-400" />
-          </div>
-          <div>
-            <p className="text-sky-400 text-[11px] font-medium uppercase tracking-wide">Instalações hoje</p>
-            <p className="text-white text-2xl font-bold leading-tight">{instalacoesHoje}</p>
-          </div>
-        </div>
-
         <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center shrink-0">
             <AlertCircle size={18} className="text-red-400" />
@@ -544,24 +534,34 @@ export default function Agenda() {
         </div>
       </div>
 
-      {/* Instalações semana e mês (empilhados) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 max-w-xs">
-        <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center shrink-0">
-            <Calendar size={18} className="text-indigo-400" />
+      {/* Instalações hoje / semana / mês (empilhados) */}
+      <div className="grid grid-cols-1 gap-4 max-w-xs">
+        <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
+            <Sun size={18} className="text-sky-400" />
           </div>
           <div>
-            <p className="text-indigo-400 text-[11px] font-medium uppercase tracking-wide">Instalações na semana</p>
+            <p className="text-sky-400 text-[11px] font-medium uppercase tracking-wide">Instalações hoje</p>
+            <p className="text-white text-2xl font-bold leading-tight">{instalacoesHoje}</p>
+          </div>
+        </div>
+
+        <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
+            <Sun size={18} className="text-sky-400" />
+          </div>
+          <div>
+            <p className="text-sky-400 text-[11px] font-medium uppercase tracking-wide">Instalações na semana</p>
             <p className="text-white text-2xl font-bold leading-tight">{instalacoesSemana}</p>
           </div>
         </div>
 
-        <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center shrink-0">
-            <Calendar size={18} className="text-indigo-400" />
+        <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
+            <Sun size={18} className="text-sky-400" />
           </div>
           <div>
-            <p className="text-indigo-400 text-[11px] font-medium uppercase tracking-wide">Instalações no mês</p>
+            <p className="text-sky-400 text-[11px] font-medium uppercase tracking-wide">Instalações no mês</p>
             <p className="text-white text-2xl font-bold leading-tight">{instalacoesMesUnicas}</p>
           </div>
         </div>
