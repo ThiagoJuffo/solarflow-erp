@@ -10,6 +10,7 @@ export default async function(req) {
     const body = await req.json();
     const projetoId = body.projeto_id;
     const dataAgendamento = body.data_agendamento;
+    const quantidadeDias = Math.max(1, Math.min(30, Number(body.quantidade_dias) || 1));
 
     if (typeof projetoId !== 'string' || projetoId.trim() === '' || projetoId.length > 200) {
       return Response.json({ error: 'ID de projeto inválido' }, { status: 400 });
@@ -31,7 +32,7 @@ export default async function(req) {
     if (isNaN(startDateTime.getTime())) {
       return Response.json({ error: 'Data de agendamento inválida' }, { status: 400 });
     }
-    const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000);
+    const endDateTime = new Date(startDateTime.getTime() + quantidadeDias * 24 * 60 * 60 * 1000);
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlecalendar');
     const eventId = await createCalendarEvent(accessToken, {

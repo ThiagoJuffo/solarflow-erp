@@ -7,6 +7,7 @@ export default function NovoAgendamentoModal({ projetos, ucs, preProjetos, onClo
   const [projetoSel, setProjetoSel] = useState(null);
   const [data, setData] = useState("");
   const [hora, setHora] = useState("08:00");
+  const [qtdDias, setQtdDias] = useState(1);
   const [criando, setCriando] = useState(false);
   const [erro, setErro] = useState("");
 
@@ -28,6 +29,7 @@ export default function NovoAgendamentoModal({ projetos, ucs, preProjetos, onClo
       const res = await base44.functions.invoke('agendarInstalacaoManual', {
         projeto_id: projetoSel.id,
         data_agendamento: dataHora.toISOString(),
+        quantidade_dias: qtdDias,
       });
       if (res.data?.error) throw new Error(res.data.error);
       if (res.data?.skipped) {
@@ -133,7 +135,7 @@ export default function NovoAgendamentoModal({ projetos, ucs, preProjetos, onClo
             {/* Data e hora */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-slate-400 text-xs mb-1.5 block">Data da instalação</label>
+                <label className="text-slate-400 text-xs mb-1.5 block">Data de início</label>
                 <input
                   type="date"
                   value={data}
@@ -150,6 +152,24 @@ export default function NovoAgendamentoModal({ projetos, ucs, preProjetos, onClo
                   className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="text-slate-400 text-xs mb-1.5 block">Quantidade de dias</label>
+              <input
+                type="number"
+                min={1}
+                max={30}
+                value={qtdDias}
+                onChange={e => setQtdDias(Math.max(1, Math.min(30, Number(e.target.value) || 1)))}
+                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500"
+              />
+              {qtdDias > 1 && (
+                <p className="text-slate-500 text-xs mt-1.5">
+                  Instalação prevista de {data ? new Date(data + "T00:00:00").toLocaleDateString("pt-BR") : "—"} até{" "}
+                  {data ? new Date(new Date(data + "T00:00:00").getTime() + (qtdDias - 1) * 24 * 60 * 60 * 1000).toLocaleDateString("pt-BR") : "—"}.
+                </p>
+              )}
             </div>
 
             {projetoSel.google_calendar_event_id && (
