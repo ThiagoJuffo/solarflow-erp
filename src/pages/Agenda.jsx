@@ -183,6 +183,12 @@ export default function Agenda() {
 
   const selectedDayEvents = selectedDay ? eventosDoDia(selectedDay) : [];
 
+  // KPI: instalações agendadas para hoje
+  const instalacoesHoje = eventos.filter(ev =>
+    (ev.tipo === "instalacao" || (ev.tipo === "google" && ev.projetoVinculado)) &&
+    ev.data.toDateString() === today.toDateString()
+  ).length;
+
   // Próximos eventos (apenas da semana atual)
   const endOfWeek = new Date(today);
   endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
@@ -343,6 +349,17 @@ export default function Agenda() {
           onCreated={loadData}
         />
       )}
+
+      {/* KPI Instalações hoje */}
+      <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-4 flex items-center gap-4">
+        <div className="w-11 h-11 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
+          <Sun size={20} className="text-sky-400" />
+        </div>
+        <div>
+          <p className="text-sky-400 text-xs font-medium uppercase tracking-wide">Instalações hoje</p>
+          <p className="text-white text-2xl font-bold leading-tight">{instalacoesHoje}</p>
+        </div>
+      </div>
 
       {loading ? (
         <div className="h-96 bg-slate-900 rounded-2xl animate-pulse" />
