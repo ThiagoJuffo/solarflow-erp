@@ -1588,6 +1588,24 @@ function InstalacaoTab({ projeto, updateProjeto, canEdit }) {
         </div>
       ) : null}
 
+      {/* Sinalização de instalado */}
+      {projeto.google_calendar_event_id && projeto.status === "sistema_instalado" && (
+        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-start gap-2">
+          <CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5" />
+          <p className="text-emerald-300 text-xs font-medium">Sistema instalado</p>
+        </div>
+      )}
+      {projeto.google_calendar_event_id && projeto.status !== "sistema_instalado" && !projeto.sistema_instalado && canEdit && (
+        <button
+          onClick={async () => {
+            await updateProjeto({ sistema_instalado: true, status: "sistema_instalado" });
+          }}
+          className="w-full bg-emerald-500 hover:bg-emerald-400 text-white py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
+        >
+          <CheckCircle size={14} /> Marcar como instalado
+        </button>
+      )}
+
       <div>
         <label className="text-slate-400 text-xs mb-1.5 block">Data de Instalação</label>
         <input

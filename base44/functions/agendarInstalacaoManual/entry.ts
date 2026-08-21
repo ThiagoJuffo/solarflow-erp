@@ -60,6 +60,11 @@ export default async function(req) {
     if (quantidadeDias > 1) {
       updateData.google_calendar_event_ids = eventIds;
     }
+    // Avança o status para "instalacao_agendada" se o projeto ainda está em fase anterior
+    const PRE_INSTALACAO = ['pago_projeto_iniciado','kit_confirmado','documentos_gerados','assinaturas_pendentes','assinaturas_concluidas','dossie_ok','protocolado_edp','aguardando_aprovacao','aprovado'];
+    if (PRE_INSTALACAO.includes(fresh.status)) {
+      updateData.status = 'instalacao_agendada';
+    }
     await base44.asServiceRole.entities.Projeto.update(projetoId, updateData);
 
     return Response.json({ success: true, event_id: eventIds[0], event_ids: eventIds, data_instalacao: dataInstalacao });

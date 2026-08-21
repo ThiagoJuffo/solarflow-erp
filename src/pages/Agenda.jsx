@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import VincularProjetoButton from "../components/agenda/VincularProjetoButton";
 import NovoAgendamentoModal from "../components/agenda/NovoAgendamentoModal";
+import MarcarInstaladoButton from "../components/agenda/MarcarInstaladoButton";
 import { Plus } from "lucide-react";
 
 const MONTH_NAMES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -239,6 +240,9 @@ export default function Agenda() {
                 </div>
               );
             })()}
+            {ev.projetoVinculado && (isGoogle || ev.tipo === "instalacao") && !ev.projetoVinculado.sistema_instalado && ev.projetoVinculado.status !== "sistema_instalado" && (
+              <MarcarInstaladoButton projeto={ev.projetoVinculado} onDone={loadData} />
+            )}
             {!ev.projetoVinculado && isGoogle && (
               <VincularProjetoButton
                 eventId={ev.detalhes.eventId}
