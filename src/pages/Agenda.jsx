@@ -521,15 +521,6 @@ export default function Agenda() {
           </div>
         </div>
 
-        <div className="bg-slate-500/5 border border-slate-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-500/15 flex items-center justify-center shrink-0">
-            <Layers size={18} className="text-slate-300" />
-          </div>
-          <div>
-            <p className="text-slate-300 text-[11px] font-medium uppercase tracking-wide">Eventos totais hoje</p>
-            <p className="text-white text-2xl font-bold leading-tight">{eventosTotaisDia}</p>
-          </div>
-        </div>
       </div>
 
       {/* KPIs - linha 3 */}
