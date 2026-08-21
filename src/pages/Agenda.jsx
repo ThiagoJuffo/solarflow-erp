@@ -295,6 +295,21 @@ export default function Agenda() {
   ).length;
   const relacaoManutInst = instalacoesMes > 0 ? (manutencoesMes / instalacoesMes).toFixed(1) + ":1" : "—";
 
+  // Instalações no mês (deduplicado por projeto)
+  const instalacoesMesUnicas = (() => {
+    const seen = new Set();
+    let count = 0;
+    eventos.forEach(ev => {
+      if (!isInstalacao(ev)) return;
+      if (ev.data.getMonth() !== mesAtual || ev.data.getFullYear() !== anoAtual) return;
+      const key = ev.projetoVinculado?.id || ev.detalhes?.eventId || (ev.titulo + ev.data.toISOString());
+      if (seen.has(key)) return;
+      seen.add(key);
+      count++;
+    });
+    return count;
+  })();
+
   // Próximos eventos (apenas da semana atual)
   const endOfWeek = new Date(today);
   endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
@@ -528,6 +543,16 @@ export default function Agenda() {
           <div>
             <p className="text-cyan-400 text-[11px] font-medium uppercase tracking-wide">Relação manut/inst</p>
             <p className="text-white text-2xl font-bold leading-tight">{relacaoManutInst}</p>
+          </div>
+        </div>
+
+        <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center shrink-0">
+            <Calendar size={18} className="text-indigo-400" />
+          </div>
+          <div>
+            <p className="text-indigo-400 text-[11px] font-medium uppercase tracking-wide">Instalações no mês</p>
+            <p className="text-white text-2xl font-bold leading-tight">{instalacoesMesUnicas}</p>
           </div>
         </div>
       </div>
