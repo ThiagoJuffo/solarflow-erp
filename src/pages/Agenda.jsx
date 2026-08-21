@@ -213,12 +213,13 @@ export default function Agenda() {
   const now = new Date();
   const mesAtual = now.getMonth();
   const anoAtual = now.getFullYear();
-  const instalacoesConcluidasMes = projetos.filter(p =>
-    (p.sistema_instalado || p.status === "sistema_instalado") &&
-    p.data_instalacao &&
-    new Date(p.data_instalacao + "T12:00:00").getMonth() === mesAtual &&
-    new Date(p.data_instalacao + "T12:00:00").getFullYear() === anoAtual
-  ).length;
+  const instalacoesConcluidasMes = projetos.filter(p => {
+    if (!p.sistema_instalado) return false;
+    const dataRef = p.data_instalacao || p.updated_date;
+    if (!dataRef) return false;
+    const d = new Date(dataRef);
+    return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+  }).length;
 
   const manutencoesAgendar = manutencoes.filter(m => m.status === "agendar").length;
 
