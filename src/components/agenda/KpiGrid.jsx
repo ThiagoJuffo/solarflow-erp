@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { useState, useEffect, useRef } from "react";
 import { GripVertical } from "lucide-react";
 
 const STORAGE_KEY = "agenda_kpi_order";
@@ -32,57 +31,75 @@ export default function KpiGrid({ cards }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(order));
   }, [order]);
 
-  const onDragEnd = (result) => {
-    if (!result.destination || result.destination.index === result.source.index) return;
+  const dragIndex = useRef(null);
+  const [overIndex, setOverIndex] = useState(null);
+
+  const handleDragStart = (index) => (e) => {
+    dragIndex.current = index;
+    e.dataTransfer.effectAllowed = "move";
+    // transparent ghost so the lib doesn't show a shifting preview
+    const img = new Image();
+    img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+    e.dataTransfer.setDragImage(img, 0, 0);
+  };
+
+  const handleDragOver = (index) => (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (overIndex !== index) setOverIndex(index);
+  };
+
+  const handleDragLeave = () => {};
+
+  const handleDrop = (index) => (e) => {
+    e.preventDefault();
+    const from = dragIndex.current;
+    setOverIndex(null);
+    dragIndex.current = null;
+    if (from === null || from === index) return;
+    // pure swap: only the two exchange places, rest stay fixed
     setOrder(prev => {
       const next = Array.from(prev);
-      const from = result.source.index;
-      const to = result.destination.index;
-      [next[from], next[to]] = [next[to], next[from]];
+      [next[from], next[index]] = [next[index], next[from]];
       return next;
     });
+  };
+
+  const handleDragEnd = () => {
+    setOverIndex(null);
+    dragIndex.current = null;
   };
 
   const cardMap = Object.fromEntries(cards.map(c => [c.id, c]));
   const orderedCards = order.map(id => cardMap[id]).filter(Boolean);
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <Droppable droppableId="kpi-grid" direction="horizontal">
-        {(provided) => (
+    <div className="flex flex-wrap gap-4">
+      {orderedCards.map((card, index) => {
+        const s = COLOR_STYLES[card.color] || COLOR_STYLES.emerald;
+        const isOver = overIndex === index && dragIndex.current !== null && dragIndex.current !== index;
+        return (
           <div
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-            className="flex flex-wrap gap-4"
+            key={card.id}
+            draggable
+            onDragStart={handleDragStart(index)}
+            onDragOver={handleDragOver(index)}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop(index)}
+            onDragEnd={handleDragEnd}
+            className={`w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)] rounded-2xl border p-4 flex items-center gap-3 cursor-grab active:cursor-grabbing select-none transition-colors ${s.card} ${isOver ? "ring-2 ring-amber-400/60" : ""}`}
           >
-            {orderedCards.map((card, index) => {
-              const s = COLOR_STYLES[card.color] || COLOR_STYLES.emerald;
-              return (
-                <Draggable key={card.id} draggableId={card.id} index={index}>
-                  {(prov, snapshot) => (
-                    <div
-                      ref={prov.innerRef}
-                      {...prov.draggableProps}
-                      {...prov.dragHandleProps}
-                      className={`w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)] rounded-2xl border p-4 flex items-center gap-3 cursor-grab active:cursor-grabbing select-none transition-shadow ${s.card} ${snapshot.isDragging ? "shadow-2xl ring-2 ring-amber-400/50 opacity-90" : ""}`}
-                    >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${s.iconBg}`}>
-                        <card.Icon size={18} className={s.iconColor} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`${s.label} text-[11px] font-medium uppercase tracking-wide`}>{card.label}</p>
-                        <p className="text-white text-2xl font-bold leading-tight">{card.value}</p>
-                      </div>
-                      <GripVertical size={14} className="text-slate-600 shrink-0" />
-                    </div>
-                  )}
-                </Draggable>
-              );
-            })}
-            {provided.placeholder}
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${s.iconBg}`}>
+              <card.Icon size={18} className={s.iconColor} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={`${s.label} text-[11px] font-medium uppercase tracking-wide`}>{card.label}</p>
+              <p className="text-white text-2xl font-bold leading-tight">{card.value}</p>
+            </div>
+            <GripVertical size={14} className="text-slate-600 shrink-0" />
           </div>
-        )}
-      </Droppable>
-    </DragDropContext>
+        );
+      })}
+    </div>
   );
 }
