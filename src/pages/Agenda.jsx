@@ -481,16 +481,6 @@ export default function Agenda() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center shrink-0">
-            <AlertCircle size={18} className="text-red-400" />
-          </div>
-          <div>
-            <p className="text-red-400 text-[11px] font-medium uppercase tracking-wide">Atrasadas</p>
-            <p className="text-white text-2xl font-bold leading-tight">{instalacoesAtrasadas}</p>
-          </div>
-        </div>
-
         <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
             <Sun size={18} className="text-emerald-400" />
@@ -510,19 +500,6 @@ export default function Agenda() {
             <p className="text-white text-2xl font-bold leading-tight">{manutencoesAgendar}</p>
           </div>
         </div>
-      </div>
-
-      {/* KPIs - linha 3 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-rose-500/15 flex items-center justify-center shrink-0">
-            <RefreshCw size={18} className="text-rose-400" />
-          </div>
-          <div>
-            <p className="text-rose-400 text-[11px] font-medium uppercase tracking-wide">Reagendamentos (mês)</p>
-            <p className="text-white text-2xl font-bold leading-tight">{reagendamentosMes}</p>
-          </div>
-        </div>
 
         <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-2xl p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center shrink-0">
@@ -531,6 +508,29 @@ export default function Agenda() {
           <div>
             <p className="text-cyan-400 text-[11px] font-medium uppercase tracking-wide">Relação manut/inst</p>
             <p className="text-white text-2xl font-bold leading-tight">{relacaoManutInst}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Atrasadas e Reagendamentos (empilhados) */}
+      <div className="grid grid-cols-1 gap-4 max-w-xs">
+        <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center shrink-0">
+            <AlertCircle size={18} className="text-red-400" />
+          </div>
+          <div>
+            <p className="text-red-400 text-[11px] font-medium uppercase tracking-wide">Atrasadas</p>
+            <p className="text-white text-2xl font-bold leading-tight">{instalacoesAtrasadas}</p>
+          </div>
+        </div>
+
+        <div className="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-rose-500/15 flex items-center justify-center shrink-0">
+            <RefreshCw size={18} className="text-rose-400" />
+          </div>
+          <div>
+            <p className="text-rose-400 text-[11px] font-medium uppercase tracking-wide">Reagendamentos (mês)</p>
+            <p className="text-white text-2xl font-bold leading-tight">{reagendamentosMes}</p>
           </div>
         </div>
       </div>
