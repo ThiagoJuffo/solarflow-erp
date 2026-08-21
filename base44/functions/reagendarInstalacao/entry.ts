@@ -36,19 +36,37 @@ export default async function(req) {
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlecalendar');
 
+    // Tenta o calendário primário e o compartilhado (evento pode estar em qualquer um)
+    const calendarIds = ['primary', 'c_pqve749ida09u4nnpb1ts1ivkg@group.calendar.google.com'];
+
+    const updateWithFallback = async (eventId, summary, dayStart, dayEnd) => {
+      let lastErr;
+      for (const calId of calendarIds) {
+        for (const allDay of [false, true]) {
+          try {
+            return await updateCalendarEvent(accessToken, {
+              eventId, summary, startDateTime: dayStart, endDateTime: dayEnd, calendarId: calId, allDay,
+            });
+          } catch (err) {
+            lastErr = err;
+            const msg = String(err.message || err);
+            // Tenta próximo calendário apenas em 404; tenta all-day em "Invalid start time"
+            if (msg.includes('HTTP 404')) break;
+            if (msg.includes('Invalid start time')) continue;
+            throw err;
+          }
+        }
+      }
+      throw lastErr;
+    };
+
     for (let i = 0; i < eventIds.length; i++) {
       const dayStart = new Date(newStart.getTime() + i * 24 * 60 * 60 * 1000);
       const dayEnd = new Date(dayStart.getTime() + 60 * 60 * 1000);
       const daySummary = eventIds.length > 1
         ? `Instalação ${fresh.nome_cliente} [${projetoId}] (Dia ${i + 1}/${eventIds.length})`
         : `Instalação ${fresh.nome_cliente} [${projetoId}]`;
-      await updateCalendarEvent(accessToken, {
-        eventId: eventIds[i],
-        summary: daySummary,
-        startDateTime: dayStart,
-        endDateTime: dayEnd,
-        calendarId: 'primary',
-      });
+      await updateWithFallback(eventIds[i], daySummary, dayStart, dayEnd);
     }
 
     const dataInstalacao = newStart.toISOString().split('T')[0];

@@ -23,11 +23,15 @@ export async function createCalendarEvent(accessToken, { summary, startDateTime,
   return data.id;
 }
 
-export async function updateCalendarEvent(accessToken, { eventId, summary, startDateTime, endDateTime, calendarId = 'primary' }) {
+export async function updateCalendarEvent(accessToken, { eventId, summary, startDateTime, endDateTime, calendarId = 'primary', allDay = false }) {
   const event = {
     summary,
-    start: { dateTime: startDateTime.toISOString(), timeZone: 'America/Sao_Paulo' },
-    end: { dateTime: endDateTime.toISOString(), timeZone: 'America/Sao_Paulo' }
+    start: allDay
+      ? { date: startDateTime.toISOString().split('T')[0] }
+      : { dateTime: startDateTime.toISOString(), timeZone: 'America/Sao_Paulo' },
+    end: allDay
+      ? { date: endDateTime.toISOString().split('T')[0] }
+      : { dateTime: endDateTime.toISOString(), timeZone: 'America/Sao_Paulo' }
   };
   const calId = encodeURIComponent(calendarId);
   const res = await fetch(
