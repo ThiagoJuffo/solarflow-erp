@@ -132,12 +132,19 @@ export default function Agenda() {
       });
     }
   });
+  // Status que indicam que a instalação já aconteceu (não conta como atrasada)
+  const STATUS_POS_INSTALACAO = ["sistema_instalado", "vistoria_solicitada", "aguardando_vistoria", "vistoria_aprovada", "monitoramento_cadastrado", "concluido"];
+  // Data de instalação válida (descarta valores como "0001-01-01")
+  const isDataValida = (d) => d && !isNaN(d.getTime()) && d.getFullYear() > 2000;
+
   projetos.forEach(p => {
     // Ignora instalações já vinculadas ao Google Calendar (aparecerão via eventosGoogle)
     if (p.data_instalacao && !p.google_calendar_event_id) {
+      const d = new Date(p.data_instalacao + "T12:00:00");
+      if (!isDataValida(d)) return;
       eventos.push({
         tipo: "instalacao",
-        data: new Date(p.data_instalacao + "T12:00:00"),
+        data: d,
         titulo: p.nome_cliente,
         detalhes: p,
         projetoVinculado: p,
@@ -192,9 +199,9 @@ export default function Agenda() {
     const seen = new Set();
     let count = 0;
     eventos.forEach(ev => {
-      if (!isInstalacao(ev) || !(ev.data < today)) return;
+      if (!isInstalacao(ev) || !isDataValida(ev.data) || !(ev.data < today)) return;
       const proj = ev.projetoVinculado;
-      if (proj && (proj.sistema_instalado || proj.status === "sistema_instalado")) return;
+      if (proj && (proj.sistema_instalado || STATUS_POS_INSTALACAO.includes(proj.status))) return;
       const key = proj?.id || ev.detalhes?.eventId || (ev.titulo + ev.data.toISOString());
       if (seen.has(key)) return;
       seen.add(key);
