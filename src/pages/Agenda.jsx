@@ -214,12 +214,12 @@ export default function Agenda() {
   const now = new Date();
   const mesAtual = now.getMonth();
   const anoAtual = now.getFullYear();
+  const mesKey = `${anoAtual}-${String(mesAtual + 1).padStart(2, "0")}`;
   const instalacoesConcluidasMes = projetos.filter(p => {
     if (!p.sistema_instalado) return false;
     const dataRef = p.data_instalacao || p.updated_date;
     if (!dataRef) return false;
-    const d = new Date(dataRef);
-    return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+    return String(dataRef).slice(0, 7) === mesKey;
   }).length;
 
   const manutencoesAgendar = manutencoes.filter(m => m.status === "agendar").length;
