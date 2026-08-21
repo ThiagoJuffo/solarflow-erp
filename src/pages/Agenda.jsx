@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   Calendar, ChevronLeft, ChevronRight, Wrench, Sun,
-  MapPin, Clock, Phone, Link2, AlertCircle, CalendarClock
+  MapPin, Clock, Phone, Link2, AlertCircle, CalendarClock,
+  TrendingUp, Layers, BarChart2, RefreshCw, Scale
 } from "lucide-react";
 import VincularProjetoButton from "../components/agenda/VincularProjetoButton";
 import NovoAgendamentoModal from "../components/agenda/NovoAgendamentoModal";
@@ -203,6 +204,86 @@ export default function Agenda() {
   ).length;
 
   const manutencoesAgendar = manutencoes.filter(m => m.status === "agendar").length;
+
+  // Semana atual (domingo a sábado)
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay());
+  startOfWeek.setHours(0, 0, 0, 0);
+  const endOfWeekFull = new Date(startOfWeek);
+  endOfWeekFull.setDate(startOfWeek.getDate() + 6);
+  endOfWeekFull.setHours(23, 59, 59, 999);
+
+  const instalacoesSemana = eventos.filter(ev =>
+    isInstalacao(ev) && ev.data >= startOfWeek && ev.data <= endOfWeekFull
+  ).length;
+
+  // Próximos 7 dias
+  const fimProximos7 = new Date(today);
+  fimProximos7.setDate(today.getDate() + 7);
+  fimProximos7.setHours(23, 59, 59, 999);
+  const instalacoesProximos7 = eventos.filter(ev =>
+    isInstalacao(ev) && ev.data >= today && ev.data <= fimProximos7
+  ).length;
+
+  // Taxa de conclusão (% de agendadas que viraram instalado)
+  const instalacoesComData = projetos.filter(p => p.data_instalacao);
+  const instalacoesConcluidasTotal = projetos.filter(p => p.sistema_instalado || p.status === "sistema_instalado").length;
+  const taxaConclusao = instalacoesComData.length > 0
+    ? Math.round((instalacoesConcluidasTotal / instalacoesComData.length) * 100)
+    : 0;
+
+  // Eventos totais do dia (instalações + manutenções)
+  const eventosTotaisDia = eventos.filter(ev => ev.data.toDateString() === today.toDateString()).length;
+
+  // Carga por dia - dia mais carregado da semana
+  const cargaPorDia = {};
+  eventos.filter(ev => isInstalacao(ev) && ev.data >= startOfWeek && ev.data <= endOfWeekFull).forEach(ev => {
+    const key = ev.data.toDateString();
+    cargaPorDia[key] = (cargaPorDia[key] || 0) + 1;
+  });
+  let diaMaisCarregadoLabel = "—";
+  let diaMaisCarregadoCount = 0;
+  Object.entries(cargaPorDia).forEach(([key, count]) => {
+    if (count > diaMaisCarregadoCount) {
+      diaMaisCarregadoCount = count;
+      diaMaisCarregadoLabel = new Date(key).toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit" });
+    }
+  });
+
+  // Tempo médio de espera (proxy: dias entre created_date e data_instalacao)
+  const instaladosComData = projetos.filter(p =>
+    (p.sistema_instalado || p.status === "sistema_instalado") && p.data_instalacao && p.created_date
+  );
+  let tempoMedioEspera = 0;
+  if (instaladosComData.length > 0) {
+    const totalDias = instaladosComData.reduce((sum, p) => {
+      const criacao = new Date(p.created_date);
+      const inst = new Date(p.data_instalacao + "T12:00:00");
+      return sum + Math.max(0, Math.round((inst - criacao) / 86400000));
+    }, 0);
+    tempoMedioEspera = Math.round(totalDias / instaladosComData.length);
+  }
+
+  // Reagendamentos no mês
+  const reagendamentosMes = projetos.reduce((sum, p) => {
+    if (!Array.isArray(p.reagendamentos)) return sum;
+    return sum + p.reagendamentos.filter(r => {
+      if (!r.data) return false;
+      const d = new Date(r.data);
+      return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+    }).length;
+  }, 0);
+
+  // Relação manutenção/instalação (mês)
+  const manutencoesMes = manutencoes.filter(m => {
+    if (!m.data_agendamento) return false;
+    const d = new Date(m.data_agendamento);
+    return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+  }).length;
+  const instalacoesMes = eventos.filter(ev =>
+    isInstalacao(ev) && ev.data.getMonth() === mesAtual && ev.data.getFullYear() === anoAtual
+  ).length;
+  const relacaoManutInst = instalacoesMes > 0 ? (manutencoesMes / instalacoesMes).toFixed(1) + ":1" : "—";
 
   // Próximos eventos (apenas da semana atual)
   const endOfWeek = new Date(today);
@@ -404,6 +485,92 @@ export default function Agenda() {
           <div>
             <p className="text-amber-400 text-[11px] font-medium uppercase tracking-wide">Manut. a agendar</p>
             <p className="text-white text-2xl font-bold leading-tight">{manutencoesAgendar}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* KPIs - linha 2 */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center shrink-0">
+            <Calendar size={18} className="text-indigo-400" />
+          </div>
+          <div>
+            <p className="text-indigo-400 text-[11px] font-medium uppercase tracking-wide">Instalações na semana</p>
+            <p className="text-white text-2xl font-bold leading-tight">{instalacoesSemana}</p>
+          </div>
+        </div>
+
+        <div className="bg-violet-500/5 border border-violet-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center shrink-0">
+            <CalendarClock size={18} className="text-violet-400" />
+          </div>
+          <div>
+            <p className="text-violet-400 text-[11px] font-medium uppercase tracking-wide">Próximos 7 dias</p>
+            <p className="text-white text-2xl font-bold leading-tight">{instalacoesProximos7}</p>
+          </div>
+        </div>
+
+        <div className="bg-teal-500/5 border border-teal-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-teal-500/15 flex items-center justify-center shrink-0">
+            <TrendingUp size={18} className="text-teal-400" />
+          </div>
+          <div>
+            <p className="text-teal-400 text-[11px] font-medium uppercase tracking-wide">Taxa de conclusão</p>
+            <p className="text-white text-2xl font-bold leading-tight">{taxaConclusao}%</p>
+          </div>
+        </div>
+
+        <div className="bg-slate-500/5 border border-slate-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-slate-500/15 flex items-center justify-center shrink-0">
+            <Layers size={18} className="text-slate-300" />
+          </div>
+          <div>
+            <p className="text-slate-300 text-[11px] font-medium uppercase tracking-wide">Eventos totais hoje</p>
+            <p className="text-white text-2xl font-bold leading-tight">{eventosTotaisDia}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* KPIs - linha 3 */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
+            <BarChart2 size={18} className="text-sky-400" />
+          </div>
+          <div>
+            <p className="text-sky-400 text-[11px] font-medium uppercase tracking-wide">Carga p/ dia (semana)</p>
+            <p className="text-white text-lg font-bold leading-tight truncate">{diaMaisCarregadoCount > 0 ? `${diaMaisCarregadoLabel} (${diaMaisCarregadoCount})` : "—"}</p>
+          </div>
+        </div>
+
+        <div className="bg-orange-500/5 border border-orange-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-orange-500/15 flex items-center justify-center shrink-0">
+            <Clock size={18} className="text-orange-400" />
+          </div>
+          <div>
+            <p className="text-orange-400 text-[11px] font-medium uppercase tracking-wide">Tempo médio espera</p>
+            <p className="text-white text-2xl font-bold leading-tight">{tempoMedioEspera}d</p>
+          </div>
+        </div>
+
+        <div className="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-rose-500/15 flex items-center justify-center shrink-0">
+            <RefreshCw size={18} className="text-rose-400" />
+          </div>
+          <div>
+            <p className="text-rose-400 text-[11px] font-medium uppercase tracking-wide">Reagendamentos (mês)</p>
+            <p className="text-white text-2xl font-bold leading-tight">{reagendamentosMes}</p>
+          </div>
+        </div>
+
+        <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center shrink-0">
+            <Scale size={18} className="text-cyan-400" />
+          </div>
+          <div>
+            <p className="text-cyan-400 text-[11px] font-medium uppercase tracking-wide">Relação manut/inst</p>
+            <p className="text-white text-2xl font-bold leading-tight">{relacaoManutInst}</p>
           </div>
         </div>
       </div>

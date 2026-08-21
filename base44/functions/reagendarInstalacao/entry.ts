@@ -70,7 +70,9 @@ export default async function(req) {
     }
 
     const dataInstalacao = newStart.toISOString().split('T')[0];
-    await base44.asServiceRole.entities.Projeto.update(projetoId, { data_instalacao: dataInstalacao });
+    const historico = Array.isArray(fresh.reagendamentos) ? fresh.reagendamentos : [];
+    historico.push({ data: new Date().toISOString() });
+    await base44.asServiceRole.entities.Projeto.update(projetoId, { data_instalacao: dataInstalacao, reagendamentos: historico });
 
     return Response.json({ success: true, data_instalacao: dataInstalacao });
   } catch (error) {
