@@ -374,8 +374,8 @@ export default function Agenda() {
 
   const kpiCards = [
     { id: "modulos_semana", label: "Módulos agendados (semana)", value: modulosAgendadosSemana, color: "cyan", Icon: Layers },
-    { id: "modulos_mes", label: "Módulos agendados (mês)", value: modulosAgendadosMes, color: "amber", Icon: Layers },
-    { id: "modulos_dia", label: "Módulos instalados/dia", value: modulosInstaladosPorDia, color: "emerald", Icon: Layers },
+    { id: "modulos_mes", label: "Módulos agendados (mês)", value: modulosAgendadosMes, color: "cyan", Icon: Layers },
+    { id: "modulos_dia", label: "Módulos instalados/dia", value: modulosInstaladosPorDia, color: "cyan", Icon: Layers },
     { id: "concluidas", label: "Instalações concluídas (mês)", value: instalacoesConcluidasMes, color: "emerald", Icon: Sun },
     { id: "manut_agendar", label: "Manut. a agendar", value: manutencoesAgendar, color: "amber", Icon: Wrench },
   { id: "manut_concluidas_mes", label: "Manut. concluídas (mês)", value: manutencoesConcluidasMes, color: "emerald", Icon: CheckCircle },
