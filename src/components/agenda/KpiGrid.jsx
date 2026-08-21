@@ -36,8 +36,9 @@ export default function KpiGrid({ cards }) {
     if (!result.destination || result.destination.index === result.source.index) return;
     setOrder(prev => {
       const next = Array.from(prev);
-      const [moved] = next.splice(result.source.index, 1);
-      next.splice(result.destination.index, 0, moved);
+      const from = result.source.index;
+      const to = result.destination.index;
+      [next[from], next[to]] = [next[to], next[from]];
       return next;
     });
   };
