@@ -324,7 +324,58 @@ export default function Agenda() {
     return count;
   })();
 
+  // Módulos (placas) agendados na semana (deduplicado por projeto)
+  const modulosAgendadosSemana = (() => {
+    const seen = new Set();
+    let total = 0;
+    eventos.forEach(ev => {
+      if (!isInstalacao(ev)) return;
+      if (ev.data < startOfWeek || ev.data > endOfWeekFull) return;
+      const proj = ev.projetoVinculado;
+      if (!proj || seen.has(proj.id)) return;
+      seen.add(proj.id);
+      const pp = findPreProjetoByProjeto(proj);
+      total += pp?.modulo_quantidade || 0;
+    });
+    return total;
+  })();
+
+  // Módulos (placas) agendados no mês (deduplicado por projeto)
+  const modulosAgendadosMes = (() => {
+    const seen = new Set();
+    let total = 0;
+    eventos.forEach(ev => {
+      if (!isInstalacao(ev)) return;
+      if (ev.data.getMonth() !== mesAtual || ev.data.getFullYear() !== anoAtual) return;
+      const proj = ev.projetoVinculado;
+      if (!proj || seen.has(proj.id)) return;
+      seen.add(proj.id);
+      const pp = findPreProjetoByProjeto(proj);
+      total += pp?.modulo_quantidade || 0;
+    });
+    return total;
+  })();
+
+  // Módulos instalados por dia (média de placas por dia com instalação executada)
+  const modulosInstaladosPorDia = (() => {
+    const dias = new Set();
+    let total = 0;
+    projetos.forEach(p => {
+      if (!p.sistema_instalado && p.status !== "sistema_instalado") return;
+      const pp = findPreProjetoByProjeto(p);
+      total += pp?.modulo_quantidade || 0;
+      if (p.data_instalacao) {
+        const d = new Date(p.data_instalacao + "T12:00:00");
+        if (isDataValida(d)) dias.add(d.toDateString());
+      }
+    });
+    return dias.size > 0 ? Math.round(total / dias.size) : 0;
+  })();
+
   const kpiCards = [
+    { id: "modulos_semana", label: "Módulos agendados (semana)", value: modulosAgendadosSemana, color: "cyan", Icon: Layers },
+    { id: "modulos_mes", label: "Módulos agendados (mês)", value: modulosAgendadosMes, color: "amber", Icon: Layers },
+    { id: "modulos_dia", label: "Módulos instalados/dia", value: modulosInstaladosPorDia, color: "emerald", Icon: Layers },
     { id: "concluidas", label: "Instalações concluídas (mês)", value: instalacoesConcluidasMes, color: "emerald", Icon: Sun },
     { id: "manut_agendar", label: "Manut. a agendar", value: manutencoesAgendar, color: "amber", Icon: Wrench },
   { id: "manut_concluidas_mes", label: "Manut. concluídas (mês)", value: manutencoesConcluidasMes, color: "emerald", Icon: CheckCircle },
