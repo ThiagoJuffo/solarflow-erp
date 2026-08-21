@@ -32,24 +32,37 @@ export default async function(req) {
     if (isNaN(startDateTime.getTime())) {
       return Response.json({ error: 'Data de agendamento inválida' }, { status: 400 });
     }
-    const endDateTime = new Date(startDateTime.getTime() + quantidadeDias * 24 * 60 * 60 * 1000);
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlecalendar');
-    const eventId = await createCalendarEvent(accessToken, {
-      summary: `Instalação ${fresh.nome_cliente} [${projetoId}]`,
-      startDateTime,
-      endDateTime,
-      colorId: '5',
-      calendarId: 'primary'
-    });
+    const summary = `Instalação ${fresh.nome_cliente} [${projetoId}]`;
+
+    // Cria um evento por dia quando a instalação dura mais de 1 dia
+    const eventIds = [];
+    for (let i = 0; i < quantidadeDias; i++) {
+      const dayStart = new Date(startDateTime.getTime() + i * 24 * 60 * 60 * 1000);
+      const dayEnd = new Date(dayStart.getTime() + 60 * 60 * 1000);
+      const daySummary = quantidadeDias > 1 ? `${summary} (Dia ${i + 1}/${quantidadeDias})` : summary;
+      const eventId = await createCalendarEvent(accessToken, {
+        summary: daySummary,
+        startDateTime: dayStart,
+        endDateTime: dayEnd,
+        colorId: '5',
+        calendarId: 'primary'
+      });
+      eventIds.push(eventId);
+    }
 
     const dataInstalacao = startDateTime.toISOString().split('T')[0];
-    await base44.asServiceRole.entities.Projeto.update(projetoId, {
-      google_calendar_event_id: eventId,
+    const updateData = {
+      google_calendar_event_id: eventIds[0],
       data_instalacao: dataInstalacao,
-    });
+    };
+    if (quantidadeDias > 1) {
+      updateData.google_calendar_event_ids = eventIds;
+    }
+    await base44.asServiceRole.entities.Projeto.update(projetoId, updateData);
 
-    return Response.json({ success: true, event_id: eventId, data_instalacao: dataInstalacao });
+    return Response.json({ success: true, event_id: eventIds[0], event_ids: eventIds, data_instalacao: dataInstalacao });
   } catch (error) {
     console.error('[agendarInstalacaoManual]', error);
     return Response.json({ error: 'Erro interno ao agendar instalação' }, { status: 500 });

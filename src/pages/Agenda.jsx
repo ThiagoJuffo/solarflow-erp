@@ -74,8 +74,11 @@ export default function Agenda() {
   // Busca projeto pelo ID
   const findProjetoById = (projId) => projetos.find(p => p.id === projId) || null;
 
-  // Busca projeto pelo google_calendar_event_id
-  const findProjetoByEventId = (eventId) => projetos.find(p => p.google_calendar_event_id === eventId) || null;
+  // Busca projeto pelo google_calendar_event_id (individual ou array multi-dia)
+  const findProjetoByEventId = (eventId) => projetos.find(p =>
+    p.google_calendar_event_id === eventId ||
+    (Array.isArray(p.google_calendar_event_ids) && p.google_calendar_event_ids.includes(eventId))
+  ) || null;
 
   // Busca UC pelo projeto_id
   const findUCByProjeto = (projId) => ucs.find(u => u.projeto_id === projId) || null;
