@@ -10,6 +10,7 @@ import {
 import VincularProjetoButton from "../components/agenda/VincularProjetoButton";
 import NovoAgendamentoModal from "../components/agenda/NovoAgendamentoModal";
 import MarcarInstaladoButton from "../components/agenda/MarcarInstaladoButton";
+import KpiGrid from "../components/agenda/KpiGrid";
 import { Plus } from "lucide-react";
 
 const MONTH_NAMES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -318,6 +319,17 @@ export default function Agenda() {
     return count;
   })();
 
+  const kpiCards = [
+    { id: "concluidas", label: "Concluídas no mês", value: instalacoesConcluidasMes, color: "emerald", Icon: Sun },
+    { id: "manut_agendar", label: "Manut. a agendar", value: manutencoesAgendar, color: "amber", Icon: Wrench },
+    { id: "relacao", label: "Relação manut/inst", value: relacaoManutInst, color: "cyan", Icon: Scale },
+    { id: "atrasadas", label: "Atrasadas", value: instalacoesAtrasadas, color: "red", Icon: AlertCircle },
+    { id: "reagendamentos", label: "Reagendamentos (mês)", value: reagendamentosMes, color: "rose", Icon: RefreshCw },
+    { id: "inst_hoje", label: "Instalações hoje", value: instalacoesHoje, color: "sky", Icon: Sun },
+    { id: "inst_semana", label: "Instalações na semana", value: instalacoesSemana, color: "sky", Icon: Sun },
+    { id: "inst_mes", label: "Instalações no mês", value: instalacoesMesUnicas, color: "sky", Icon: Sun },
+  ];
+
   // Próximos eventos (apenas da semana atual)
   const endOfWeek = new Date(today);
   endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
@@ -479,94 +491,8 @@ export default function Agenda() {
         />
       )}
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
-            <Sun size={18} className="text-emerald-400" />
-          </div>
-          <div>
-            <p className="text-emerald-400 text-[11px] font-medium uppercase tracking-wide">Concluídas no mês</p>
-            <p className="text-white text-2xl font-bold leading-tight">{instalacoesConcluidasMes}</p>
-          </div>
-        </div>
-
-        <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center shrink-0">
-            <Wrench size={18} className="text-amber-400" />
-          </div>
-          <div>
-            <p className="text-amber-400 text-[11px] font-medium uppercase tracking-wide">Manut. a agendar</p>
-            <p className="text-white text-2xl font-bold leading-tight">{manutencoesAgendar}</p>
-          </div>
-        </div>
-
-        <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center shrink-0">
-            <Scale size={18} className="text-cyan-400" />
-          </div>
-          <div>
-            <p className="text-cyan-400 text-[11px] font-medium uppercase tracking-wide">Relação manut/inst</p>
-            <p className="text-white text-2xl font-bold leading-tight">{relacaoManutInst}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Atrasadas e Reagendamentos (empilhados) */}
-      <div className="grid grid-cols-1 gap-4 max-w-xs">
-        <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center shrink-0">
-            <AlertCircle size={18} className="text-red-400" />
-          </div>
-          <div>
-            <p className="text-red-400 text-[11px] font-medium uppercase tracking-wide">Atrasadas</p>
-            <p className="text-white text-2xl font-bold leading-tight">{instalacoesAtrasadas}</p>
-          </div>
-        </div>
-
-        <div className="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-rose-500/15 flex items-center justify-center shrink-0">
-            <RefreshCw size={18} className="text-rose-400" />
-          </div>
-          <div>
-            <p className="text-rose-400 text-[11px] font-medium uppercase tracking-wide">Reagendamentos (mês)</p>
-            <p className="text-white text-2xl font-bold leading-tight">{reagendamentosMes}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Instalações hoje / semana / mês (empilhados) */}
-      <div className="grid grid-cols-1 gap-4 max-w-xs">
-        <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
-            <Sun size={18} className="text-sky-400" />
-          </div>
-          <div>
-            <p className="text-sky-400 text-[11px] font-medium uppercase tracking-wide">Instalações hoje</p>
-            <p className="text-white text-2xl font-bold leading-tight">{instalacoesHoje}</p>
-          </div>
-        </div>
-
-        <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
-            <Sun size={18} className="text-sky-400" />
-          </div>
-          <div>
-            <p className="text-sky-400 text-[11px] font-medium uppercase tracking-wide">Instalações na semana</p>
-            <p className="text-white text-2xl font-bold leading-tight">{instalacoesSemana}</p>
-          </div>
-        </div>
-
-        <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
-            <Sun size={18} className="text-sky-400" />
-          </div>
-          <div>
-            <p className="text-sky-400 text-[11px] font-medium uppercase tracking-wide">Instalações no mês</p>
-            <p className="text-white text-2xl font-bold leading-tight">{instalacoesMesUnicas}</p>
-          </div>
-        </div>
-      </div>
+      {/* KPIs arrastáveis */}
+      <KpiGrid cards={kpiCards} />
 
       {loading ? (
         <div className="h-96 bg-slate-900 rounded-2xl animate-pulse" />
