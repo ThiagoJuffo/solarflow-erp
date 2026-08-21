@@ -22,6 +22,12 @@ const MANUTENCAO_STATUS = {
   cancelada: { label: "Cancelada", color: "bg-red-500/10 text-red-400 border-red-500/20" },
 };
 
+const INSTALACAO_STATUS = {
+  agendada: { label: "Agendada", bg: "bg-sky-500/5 border-sky-500/20", iconBg: "bg-sky-500/15", iconColor: "text-sky-400", badge: "bg-sky-500/10 text-sky-400 border-sky-500/20", chip: "bg-sky-500/15 text-sky-300", dot: "bg-sky-400" },
+  instalada: { label: "Instalada", bg: "bg-emerald-500/5 border-emerald-500/20", iconBg: "bg-emerald-500/15", iconColor: "text-emerald-400", badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", chip: "bg-emerald-500/15 text-emerald-300", dot: "bg-emerald-400" },
+  atrasada: { label: "Atrasada", bg: "bg-red-500/5 border-red-500/20", iconBg: "bg-red-500/15", iconColor: "text-red-400", badge: "bg-red-500/10 text-red-400 border-red-500/20", chip: "bg-red-500/15 text-red-300", dot: "bg-red-400" },
+};
+
 export default function Agenda() {
   const [manutencoes, setManutencoes] = useState([]);
   const [projetos, setProjetos] = useState([]);
@@ -99,6 +105,17 @@ export default function Agenda() {
       cidade: uc?.cidade || "",
       placas: pp?.modulo_quantidade || "",
     };
+  };
+
+  // Determina o status da instalação (agendada / instalada / atrasada)
+  const getInstalacaoStatus = (ev) => {
+    const proj = ev.projetoVinculado;
+    if (!proj) return "agendada";
+    if (proj.sistema_instalado || proj.status === "sistema_instalado") return "instalada";
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    if (ev.data < hoje) return "atrasada";
+    return "agendada";
   };
 
   // Monta lista de eventos
@@ -214,15 +231,17 @@ export default function Agenda() {
     const isManut = ev.tipo === "manutencao";
     const isGoogle = ev.tipo === "google";
     const st = isManut ? MANUTENCAO_STATUS[ev.detalhes.status] : null;
-    const bgClass = isManut ? "bg-amber-500/5 border-amber-500/20" : isGoogle ? "bg-violet-500/5 border-violet-500/20" : "bg-sky-500/5 border-sky-500/20";
-    const iconBg = isManut ? "bg-amber-500/15" : isGoogle ? "bg-violet-500/15" : "bg-sky-500/15";
-    const badgeClass = isManut ? st.color : isGoogle ? "bg-violet-500/10 text-violet-400 border-violet-500/20" : "bg-sky-500/10 text-sky-400 border-sky-500/20";
-    const badgeLabel = isManut ? st.label : isGoogle ? "Google Calendar" : "Instalação";
+    const isInstalacao = !isManut && (ev.tipo === "instalacao" || (isGoogle && ev.projetoVinculado));
+    const instStatus = isInstalacao ? INSTALACAO_STATUS[getInstalacaoStatus(ev)] : null;
+    const bgClass = isManut ? "bg-amber-500/5 border-amber-500/20" : isInstalacao ? instStatus.bg : "bg-violet-500/5 border-violet-500/20";
+    const iconBg = isManut ? "bg-amber-500/15" : isInstalacao ? instStatus.iconBg : "bg-violet-500/15";
+    const badgeClass = isManut ? st.color : isInstalacao ? instStatus.badge : "bg-violet-500/10 text-violet-400 border-violet-500/20";
+    const badgeLabel = isManut ? st.label : isInstalacao ? instStatus.label : "Google Calendar";
     return (
       <div className={`rounded-xl border p-3 ${bgClass}`}>
         <div className="flex items-start gap-2">
           <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}>
-            {isManut ? <Wrench size={13} className="text-amber-400" /> : isGoogle ? <CalendarClock size={13} className="text-violet-400" /> : <Sun size={13} className="text-sky-400" />}
+            {isManut ? <Wrench size={13} className="text-amber-400" /> : isInstalacao ? <Sun size={13} className={instStatus.iconColor} /> : <CalendarClock size={13} className="text-violet-400" />}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -384,7 +403,8 @@ export default function Agenda() {
                       {evs.slice(0, 2).map((ev, idx) => {
                         const isManut = ev.tipo === "manutencao";
                         const isGoogle = ev.tipo === "google";
-                        const chip = isManut ? "bg-amber-500/15 text-amber-300" : isGoogle ? "bg-violet-500/15 text-violet-300" : "bg-sky-500/15 text-sky-300";
+                        const isInst = !isManut && (ev.tipo === "instalacao" || (isGoogle && ev.projetoVinculado));
+                        const chip = isManut ? "bg-amber-500/15 text-amber-300" : isInst ? INSTALACAO_STATUS[getInstalacaoStatus(ev)].chip : "bg-violet-500/15 text-violet-300";
                         const draggable = canDragEv(ev);
                         return (
                           <span
@@ -411,9 +431,15 @@ export default function Agenda() {
             </div>
 
             {/* Legenda */}
-            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-800">
+            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-800 flex-wrap">
               <span className="flex items-center gap-1.5 text-slate-400 text-xs">
-                <span className="w-2 h-2 rounded-full bg-sky-400" /> Instalação
+                <span className="w-2 h-2 rounded-full bg-sky-400" /> Instalação Agendada
+              </span>
+              <span className="flex items-center gap-1.5 text-slate-400 text-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" /> Instalada
+              </span>
+              <span className="flex items-center gap-1.5 text-slate-400 text-xs">
+                <span className="w-2 h-2 rounded-full bg-red-400" /> Atrasada
               </span>
               <span className="flex items-center gap-1.5 text-slate-400 text-xs">
                 <span className="w-2 h-2 rounded-full bg-amber-400" /> Manutenção
@@ -449,10 +475,15 @@ export default function Agenda() {
                 <p className="text-slate-500 text-xs">Nenhum evento futuro.</p>
               ) : (
                 <div className="space-y-2">
-                  {proximosEventos.map((ev, i) => (
+                  {proximosEventos.map((ev, i) => {
+                    const isManut = ev.tipo === "manutencao";
+                    const isGoogle = ev.tipo === "google";
+                    const isInst = !isManut && (ev.tipo === "instalacao" || (isGoogle && ev.projetoVinculado));
+                    const instCfg = isInst ? INSTALACAO_STATUS[getInstalacaoStatus(ev)] : null;
+                    return (
                     <div key={i} className="flex items-center gap-2.5 py-1.5 border-b border-slate-800 last:border-0">
-                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${ev.tipo === "manutencao" ? "bg-amber-500/15" : ev.tipo === "google" ? "bg-violet-500/15" : "bg-sky-500/15"}`}>
-                        {ev.tipo === "manutencao" ? <Wrench size={12} className="text-amber-400" /> : ev.tipo === "google" ? <CalendarClock size={12} className="text-violet-400" /> : <Sun size={12} className="text-sky-400" />}
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isManut ? "bg-amber-500/15" : isInst ? instCfg.iconBg : "bg-violet-500/15"}`}>
+                        {isManut ? <Wrench size={12} className="text-amber-400" /> : isInst ? <Sun size={12} className={instCfg.iconColor} /> : <CalendarClock size={12} className="text-violet-400" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-white text-xs font-medium truncate">{ev.titulo}</p>
@@ -464,7 +495,8 @@ export default function Agenda() {
                         </Link>
                       )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
