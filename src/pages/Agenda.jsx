@@ -364,8 +364,9 @@ export default function Agenda() {
       if (!p.sistema_instalado && p.status !== "sistema_instalado") return;
       const pp = findPreProjetoByProjeto(p);
       total += pp?.modulo_quantidade || 0;
-      if (p.data_instalacao) {
-        const d = new Date(p.data_instalacao + "T12:00:00");
+      const ref = p.data_instalacao || p.updated_date;
+      if (ref) {
+        const d = new Date(ref);
         if (isDataValida(d)) dias.add(d.toDateString());
       }
     });
