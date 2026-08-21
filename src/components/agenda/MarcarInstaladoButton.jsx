@@ -11,6 +11,7 @@ export default function MarcarInstaladoButton({ projeto, onDone }) {
       await base44.entities.Projeto.update(projeto.id, {
         sistema_instalado: true,
         status: "sistema_instalado",
+        data_instalacao: new Date().toISOString().slice(0, 10),
       });
       onDone?.();
     } catch {
