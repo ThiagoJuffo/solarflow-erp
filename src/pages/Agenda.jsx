@@ -362,12 +362,12 @@ export default function Agenda() {
     let total = 0;
     projetos.forEach(p => {
       if (!p.sistema_instalado && p.status !== "sistema_instalado") return;
+      if (!p.data_instalacao) return;
+      const d = new Date(p.data_instalacao + "T12:00:00");
+      if (!isDataValida(d)) return;
+      dias.add(d.toDateString());
       const pp = findPreProjetoByProjeto(p);
       total += pp?.modulo_quantidade || 0;
-      if (p.data_instalacao) {
-        const d = new Date(p.data_instalacao + "T12:00:00");
-        if (isDataValida(d)) dias.add(d.toDateString());
-      }
     });
     return dias.size > 0 ? Math.round(total / dias.size) : 0;
   })();
