@@ -11,6 +11,7 @@ const COLOR_STYLES = {
   red: { card: "bg-red-500/5 border-red-500/20", iconBg: "bg-red-500/15", iconColor: "text-red-400", label: "text-red-400" },
   rose: { card: "bg-rose-500/5 border-rose-500/20", iconBg: "bg-rose-500/15", iconColor: "text-rose-400", label: "text-rose-400" },
   sky: { card: "bg-sky-500/5 border-sky-500/20", iconBg: "bg-sky-500/15", iconColor: "text-sky-400", label: "text-sky-400" },
+  violet: { card: "bg-violet-500/5 border-violet-500/20", iconBg: "bg-violet-500/15", iconColor: "text-violet-400", label: "text-violet-400" },
 };
 
 export default function KpiGrid({ cards }) {

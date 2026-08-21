@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import {
   Calendar, ChevronLeft, ChevronRight, Wrench, Sun,
   MapPin, Clock, Phone, Link2, AlertCircle, CalendarClock,
-  TrendingUp, Layers, BarChart2, RefreshCw, Scale
+  TrendingUp, Layers, BarChart2, RefreshCw, Scale, Target
 } from "lucide-react";
 import VincularProjetoButton from "../components/agenda/VincularProjetoButton";
 import NovoAgendamentoModal from "../components/agenda/NovoAgendamentoModal";
@@ -323,6 +323,7 @@ export default function Agenda() {
     { id: "concluidas", label: "Concluídas no mês", value: instalacoesConcluidasMes, color: "emerald", Icon: Sun },
     { id: "manut_agendar", label: "Manut. a agendar", value: manutencoesAgendar, color: "amber", Icon: Wrench },
     { id: "relacao", label: "Relação manut/inst", value: relacaoManutInst, color: "cyan", Icon: Scale },
+  { id: "taxa_conclusao", label: "Taxa de conclusão", value: `${taxaConclusao}%`, color: "violet", Icon: Target },
     { id: "atrasadas", label: "Atrasadas", value: instalacoesAtrasadas, color: "red", Icon: AlertCircle },
     { id: "reagendamentos", label: "Reagendamentos (mês)", value: reagendamentosMes, color: "rose", Icon: RefreshCw },
     { id: "inst_hoje", label: "Instalações hoje", value: instalacoesHoje, color: "sky", Icon: Sun },
