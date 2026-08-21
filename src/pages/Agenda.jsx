@@ -358,18 +358,18 @@ export default function Agenda() {
 
   // Módulos instalados por dia (média de placas por dia com instalação executada)
   const modulosInstaladosPorDia = (() => {
-    const dias = new Set();
+    let count = 0;
     let total = 0;
     projetos.forEach(p => {
       if (!p.sistema_instalado && p.status !== "sistema_instalado") return;
       if (!p.data_instalacao) return;
       const d = new Date(p.data_instalacao + "T12:00:00");
       if (!isDataValida(d)) return;
-      dias.add(d.toDateString());
+      count++;
       const pp = findPreProjetoByProjeto(p);
       total += pp?.modulo_quantidade || 0;
     });
-    return dias.size > 0 ? Math.round(total / dias.size) : 0;
+    return count > 0 ? Math.round(total / count) : 0;
   })();
 
   const kpiCards = [
