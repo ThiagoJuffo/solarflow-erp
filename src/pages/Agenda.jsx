@@ -535,16 +535,6 @@ export default function Agenda() {
           </div>
         </div>
 
-        <div className="bg-orange-500/5 border border-orange-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-orange-500/15 flex items-center justify-center shrink-0">
-            <Clock size={18} className="text-orange-400" />
-          </div>
-          <div>
-            <p className="text-orange-400 text-[11px] font-medium uppercase tracking-wide">Tempo médio espera</p>
-            <p className="text-white text-2xl font-bold leading-tight">{tempoMedioEspera}d</p>
-          </div>
-        </div>
-
         <div className="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-rose-500/15 flex items-center justify-center shrink-0">
             <RefreshCw size={18} className="text-rose-400" />
