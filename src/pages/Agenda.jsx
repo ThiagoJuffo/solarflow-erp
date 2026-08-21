@@ -501,16 +501,6 @@ export default function Agenda() {
           </div>
         </div>
 
-        <div className="bg-violet-500/5 border border-violet-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center shrink-0">
-            <CalendarClock size={18} className="text-violet-400" />
-          </div>
-          <div>
-            <p className="text-violet-400 text-[11px] font-medium uppercase tracking-wide">Próximos 7 dias</p>
-            <p className="text-white text-2xl font-bold leading-tight">{instalacoesProximos7}</p>
-          </div>
-        </div>
-
         <div className="bg-teal-500/5 border border-teal-500/20 rounded-2xl p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-teal-500/15 flex items-center justify-center shrink-0">
             <TrendingUp size={18} className="text-teal-400" />
