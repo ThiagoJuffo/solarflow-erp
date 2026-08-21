@@ -8,10 +8,11 @@ export default function MarcarInstaladoButton({ projeto, onDone }) {
   const handleMarcar = async () => {
     setMarcando(true);
     try {
+      const hoje = new Date().toISOString().slice(0, 10);
       await base44.entities.Projeto.update(projeto.id, {
         sistema_instalado: true,
         status: "sistema_instalado",
-        data_instalacao: new Date().toISOString().slice(0, 10),
+        data_instalacao: projeto.data_instalacao || hoje,
       });
       onDone?.();
     } catch {
