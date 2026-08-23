@@ -8,7 +8,7 @@
         "receita",
         "despesa"
       ],
-      "description": "Tipo do lan\u00e7amento"
+      "description": "Tipo do lan\u00e7amento financeiro"
     },
     "categoria": {
       "type": "string",
@@ -33,6 +33,10 @@
     "valor": {
       "type": "number"
     },
+    "data_competencia": {
+      "type": "string",
+      "format": "date"
+    },
     "data_vencimento": {
       "type": "string",
       "format": "date"
@@ -55,7 +59,32 @@
       "type": "string",
       "description": "Vincula\u00e7\u00e3o opcional ao projeto"
     },
+    "conta_financeira_id": {
+      "type": "string",
+      "description": "Conta banc\u00e1ria ou caixa usado na liquida\u00e7\u00e3o"
+    },
+    "centro_custo": {
+      "type": "string",
+      "enum": [
+        "projetos",
+        "administrativo",
+        "comercial",
+        "marketing",
+        "operacional",
+        "tributos",
+        "pessoal",
+        "investimentos",
+        "outros"
+      ],
+      "default": "operacional"
+    },
     "nome_cliente_fornecedor": {
+      "type": "string"
+    },
+    "documento_cliente_fornecedor": {
+      "type": "string"
+    },
+    "numero_documento": {
       "type": "string"
     },
     "forma_pagamento": {
@@ -66,13 +95,26 @@
         "cartao",
         "transferencia",
         "dinheiro",
-        "financiamento"
+        "financiamento",
+        "debito_automatico"
       ]
     },
     "comprovante_url": {
       "type": "string"
     },
     "recorrente": {
+      "type": "boolean",
+      "default": false
+    },
+    "parcela_atual": {
+      "type": "integer",
+      "default": 1
+    },
+    "total_parcelas": {
+      "type": "integer",
+      "default": 1
+    },
+    "conciliado": {
       "type": "boolean",
       "default": false
     },
