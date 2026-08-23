@@ -20,6 +20,7 @@ import CentrosCusto from "../components/financeiro/CentrosCusto";
 import ConciliacaoBancaria from "../components/financeiro/ConciliacaoBancaria";
 import BaixaFinanceiraModal from "../components/financeiro/BaixaFinanceiraModal";
 import AssistenteComercial from "../components/financeiro/AssistenteComercial";
+import DreProjeto from "../components/financeiro/DreProjeto";
 
 const ABAS = [
   { id: "visao-geral", label: "Visão geral", icon: BarChart3 },
@@ -27,6 +28,7 @@ const ABAS = [
   { id: "contas", label: "Contas", icon: Landmark },
   { id: "centros", label: "Centros de custo", icon: Layers3 },
   { id: "conciliacao", label: "Conciliação", icon: GitCompareArrows },
+  { id: "dre-projeto", label: "DRE por projeto", icon: WalletCards },
   { id: "assistente", label: "Assistente IA", icon: Bot },
   { id: "relatorios", label: "Relatórios", icon: FileBarChart },
 ];
@@ -103,6 +105,8 @@ export default function FluxoCaixa() {
   const [projetos, setProjetos] = useState([]);
   const [contas, setContas] = useState([]);
   const [centros, setCentros] = useState([]);
+  const [custosProjeto, setCustosProjeto] = useState([]);
+  const [preProjetos, setPreProjetos] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [aba, setAba] = useState("visao-geral");
@@ -122,12 +126,16 @@ export default function FluxoCaixa() {
       base44.entities.Projeto.list("-created_date", 250),
       base44.entities.ContaFinanceira.list("-created_date", 100),
       base44.entities.CentroCusto.list("-created_date", 250),
+      base44.entities.CustoProjeto.list("-data", 1000),
+      base44.entities.PreProjeto.list("-created_date", 500),
       base44.auth.me(),
-    ]).then(([listaLancamentos, listaProjetos, listaContas, listaCentros, usuario]) => {
+    ]).then(([listaLancamentos, listaProjetos, listaContas, listaCentros, listaCustos, listaPreProjetos, usuario]) => {
       setLancamentos(listaLancamentos);
       setProjetos(listaProjetos);
       setContas(listaContas);
       setCentros(listaCentros);
+      setCustosProjeto(listaCustos);
+      setPreProjetos(listaPreProjetos);
       setUser(usuario);
     }).finally(() => setLoading(false));
   }, []);
@@ -685,6 +693,15 @@ export default function FluxoCaixa() {
           canEdit={canEdit}
           onLancamentoAtualizado={registrarLancamentoAtualizado}
           onLancamentosCriados={registrarLancamentosCriados}
+        />
+      )}
+
+      {aba === "dre-projeto" && (
+        <DreProjeto
+          projetos={projetos}
+          lancamentos={lancamentos}
+          custos={custosProjeto}
+          preProjetos={preProjetos}
         />
       )}
 
