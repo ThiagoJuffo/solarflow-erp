@@ -34,7 +34,7 @@ const CENTROS_CUSTO = [
 
 const campoClass = "w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-white outline-none transition-colors focus:border-amber-500";
 
-export default function LancamentoModal({ lancamento, projetos, contas, onSalvar, onFechar }) {
+export default function LancamentoModal({ lancamento, projetos, contas, centros = [], onSalvar, onFechar }) {
   const hoje = new Date().toISOString().split("T")[0];
   const [form, setForm] = useState(lancamento || {
     tipo: "despesa",
@@ -48,6 +48,7 @@ export default function LancamentoModal({ lancamento, projetos, contas, onSalvar
     forma_pagamento: "",
     projeto_id: "",
     conta_financeira_id: "",
+    centro_custo_id: "",
     centro_custo: "operacional",
     nome_cliente_fornecedor: "",
     documento_cliente_fornecedor: "",
@@ -191,6 +192,17 @@ export default function LancamentoModal({ lancamento, projetos, contas, onSalvar
                 <input value={form.numero_documento || ""} onChange={(e) => set("numero_documento", e.target.value)}
                   placeholder="NF, boleto ou referência" className={campoClass} />
               </div>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs text-slate-400">Centro / subcentro de custo</label>
+              <select value={form.centro_custo_id || ""} onChange={(e) => set("centro_custo_id", e.target.value)} className={campoClass}>
+                <option value="">Não informado</option>
+                {centros.filter((centro) => centro.ativo !== false).map((centro) => {
+                  const pai = centros.find((item) => item.id === centro.centro_pai_id);
+                  return <option key={centro.id} value={centro.id}>{pai ? `${pai.nome} → ${centro.nome}` : centro.nome}</option>;
+                })}
+              </select>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
