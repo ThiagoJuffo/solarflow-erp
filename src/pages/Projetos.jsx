@@ -148,7 +148,7 @@ export default function Projetos() {
       pagamento_confirmado_por: user?.email,
       timeline_eventos: [{ tipo: "pagamento_confirmado", data: new Date().toISOString(), usuario: user?.email }]
     });
-    await base44.entities.CentroCusto.create({
+    const centroProjeto = await base44.entities.CentroCusto.create({
       nome: `Projeto — ${pp.nome_cliente}`,
       codigo: `PRJ-${String(projeto.id).slice(-6).toUpperCase()}`,
       tipo: "projeto_cliente",
@@ -158,6 +158,29 @@ export default function Projetos() {
       ativo: true,
       observacoes: "Centro principal criado automaticamente com o projeto.",
     });
+    const subcentrosPadrao = [
+      ["Equipamentos / Kit", "KIT"],
+      ["Mão de obra", "MO"],
+      ["Frete / Logística", "FRETE"],
+      ["Comissão comercial", "COM"],
+      ["ART / Taxas", "TAXAS"],
+      ["Materiais extras", "MAT"],
+      ["Deslocamento / Hospedagem", "DESL"],
+      ["Pós-venda / Manutenção", "POS"],
+    ];
+    await Promise.all(subcentrosPadrao.map(([nome, sufixo]) =>
+      base44.entities.CentroCusto.create({
+        nome,
+        codigo: `${centroProjeto.codigo}-${sufixo}`,
+        tipo: "subcentro",
+        centro_pai_id: centroProjeto.id,
+        projeto_id: projeto.id,
+        cliente_nome: pp.nome_cliente,
+        orcamento: 0,
+        ativo: true,
+        observacoes: "Subcentro padrão criado automaticamente com o projeto.",
+      })
+    ));
     await base44.entities.PreProjeto.update(pp.id, { status: "pago_projeto_iniciado", projeto_id: projeto.id });
 
     // Vincular a UC do pré-projeto ao projeto recém criado
