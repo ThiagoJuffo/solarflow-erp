@@ -1,0 +1,32 @@
+{
+  "name": "RateioConciliacao",
+  "type": "object",
+  "properties": {
+    "movimento_extrato_id": {
+      "type": "string"
+    },
+    "lancamento_id": {
+      "type": "string"
+    },
+    "centro_custo_id": {
+      "type": "string"
+    },
+    "projeto_id": {
+      "type": "string"
+    },
+    "valor": {
+      "type": "number"
+    },
+    "percentual": {
+      "type": "number"
+    },
+    "descricao": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "movimento_extrato_id",
+    "centro_custo_id",
+    "valor"
+  ]
+}
