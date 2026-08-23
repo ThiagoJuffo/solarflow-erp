@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { X, CheckCircle, Loader2, ReceiptText } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { X, CheckCircle, FileUp, Loader2, ReceiptText } from "lucide-react";
 
 const CATEGORIAS_RECEITA = [
   { value: "venda_projeto", label: "Venda de projeto" },
@@ -57,15 +58,40 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
     total_parcelas: 1,
     observacoes: "",
     recorrente: false,
+    frequencia_recorrencia: "mensal",
+    quantidade_recorrencias: 1,
+    anexos: [],
     conciliado: false,
   });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const set = (campo, valor) => setForm((atual) => ({ ...atual, [campo]: valor }));
 
   const categorias = useMemo(
     () => form.tipo === "receita" ? CATEGORIAS_RECEITA : CATEGORIAS_DESPESA,
     [form.tipo]
   );
+
+  const enviarAnexo = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setUploading(true);
+    try {
+      const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
+      setForm((atual) => ({
+        ...atual,
+        anexos: [...(atual.anexos || []), {
+          nome: file.name,
+          tipo: file.type || "documento",
+          file_uri,
+          data_upload: new Date().toISOString(),
+        }],
+      }));
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -76,6 +102,8 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
         valor: Number(form.valor),
         parcela_atual: Number(form.parcela_atual || 1),
         total_parcelas: Number(form.total_parcelas || 1),
+        quantidade_recorrencias: Number(form.quantidade_recorrencias || 1),
+        valor_pago: form.status === "pago" ? Number(form.valor) : Number(form.valor_pago || 0),
       };
       if (dados.status === "pago" && !dados.data_pagamento) dados.data_pagamento = hoje;
       await onSalvar(dados);
@@ -207,21 +235,42 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs text-slate-400">Parcela</label>
-                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-                  <input type="number" min="1" value={form.parcela_atual || 1}
-                    onChange={(e) => set("parcela_atual", e.target.value)} className={campoClass} />
-                  <span className="text-slate-500">de</span>
-                  <input type="number" min="1" value={form.total_parcelas || 1}
-                    onChange={(e) => set("total_parcelas", e.target.value)} className={campoClass} />
-                </div>
+                <label className="mb-1.5 block text-xs text-slate-400">Parcelamento</label>
+                <input type="number" min="1" max="120" value={form.total_parcelas || 1}
+                  onChange={(e) => set("total_parcelas", e.target.value)} className={campoClass} />
+                {!lancamento && Number(form.total_parcelas || 1) > 1 && (
+                  <p className="mt-1 text-[11px] text-slate-500">O valor total será dividido e os vencimentos serão mensais.</p>
+                )}
               </div>
               <label className="mt-6 flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-950/50 p-3">
                 <input type="checkbox" checked={Boolean(form.recorrente)}
-                  onChange={(e) => set("recorrente", e.target.checked)} className="h-4 w-4 accent-amber-500" />
+                  onChange={(e) => {
+                    set("recorrente", e.target.checked);
+                    if (e.target.checked) set("total_parcelas", 1);
+                  }} className="h-4 w-4 accent-amber-500" />
                 <span className="text-sm text-slate-300">Lançamento recorrente</span>
               </label>
             </div>
+
+            {form.recorrente && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-xs text-slate-400">Frequência</label>
+                  <select value={form.frequencia_recorrencia || "mensal"}
+                    onChange={(e) => set("frequencia_recorrencia", e.target.value)} className={campoClass}>
+                    <option value="semanal">Semanal</option>
+                    <option value="mensal">Mensal</option>
+                    <option value="trimestral">Trimestral</option>
+                    <option value="anual">Anual</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs text-slate-400">Quantidade de lançamentos</label>
+                  <input type="number" min="1" max="120" value={form.quantidade_recorrencias || 1}
+                    onChange={(e) => set("quantidade_recorrencias", e.target.value)} className={campoClass} />
+                </div>
+              </div>
+            )}
           </section>
 
           <section className="space-y-4 border-t border-slate-800 pt-5">
@@ -231,6 +280,7 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
                 <label className="mb-1.5 block text-xs text-slate-400">Status</label>
                 <select value={form.status} onChange={(e) => set("status", e.target.value)} className={campoClass}>
                   <option value="pendente">Pendente</option>
+                  <option value="parcial">Parcialmente liquidado</option>
                   <option value="pago">{form.tipo === "receita" ? "Recebido" : "Pago"}</option>
                   <option value="cancelado">Cancelado</option>
                 </select>
@@ -278,6 +328,29 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
           </section>
 
           <div>
+            <label className="mb-1.5 block text-xs text-slate-400">Notas, boletos e documentos</label>
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-slate-700 bg-slate-950/50 p-4 hover:border-amber-500/50">
+              {uploading ? <Loader2 size={18} className="animate-spin text-amber-400" /> : <FileUp size={18} className="text-amber-400" />}
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-slate-300">Adicionar arquivo privado</p>
+                <p className="text-xs text-slate-500">{(form.anexos || []).length} arquivo(s) anexado(s)</p>
+              </div>
+              <input type="file" className="hidden" onChange={enviarAnexo} />
+            </label>
+            {(form.anexos || []).length > 0 && (
+              <div className="mt-2 space-y-1">
+                {form.anexos.map((anexo, indice) => (
+                  <div key={`${anexo.file_uri}-${indice}`} className="flex items-center justify-between rounded-lg bg-slate-800 px-3 py-2 text-xs text-slate-300">
+                    <span className="truncate">{anexo.nome || `Arquivo ${indice + 1}`}</span>
+                    <button type="button" onClick={() => set("anexos", form.anexos.filter((_, i) => i !== indice))}
+                      className="ml-3 text-slate-500 hover:text-red-400">Remover</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
             <label className="mb-1.5 block text-xs text-slate-400">Observações</label>
             <textarea rows={3} value={form.observacoes || ""} onChange={(e) => set("observacoes", e.target.value)}
               className={`${campoClass} resize-none`} />
@@ -288,7 +361,7 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
               className="flex-1 rounded-xl bg-slate-800 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-700">
               Cancelar
             </button>
-            <button type="submit" disabled={saving}
+            <button type="submit" disabled={saving || uploading}
               className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amber-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-400 disabled:opacity-60">
               {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
               {saving ? "Salvando..." : "Salvar lançamento"}
