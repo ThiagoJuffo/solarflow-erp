@@ -148,6 +148,16 @@ export default function Projetos() {
       pagamento_confirmado_por: user?.email,
       timeline_eventos: [{ tipo: "pagamento_confirmado", data: new Date().toISOString(), usuario: user?.email }]
     });
+    await base44.entities.CentroCusto.create({
+      nome: `Projeto — ${pp.nome_cliente}`,
+      codigo: `PRJ-${String(projeto.id).slice(-6).toUpperCase()}`,
+      tipo: "projeto_cliente",
+      projeto_id: projeto.id,
+      cliente_nome: pp.nome_cliente,
+      orcamento: 0,
+      ativo: true,
+      observacoes: "Centro principal criado automaticamente com o projeto.",
+    });
     await base44.entities.PreProjeto.update(pp.id, { status: "pago_projeto_iniciado", projeto_id: projeto.id });
 
     // Vincular a UC do pré-projeto ao projeto recém criado
