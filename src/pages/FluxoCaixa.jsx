@@ -148,10 +148,11 @@ export default function FluxoCaixa() {
       .reduce((total, l) => total + Number(l.valor || 0), 0);
     const despesasPrevistas = lancamentosMes.filter((l) => l.tipo === "despesa")
       .reduce((total, l) => total + Number(l.valor || 0), 0);
-    const receitasRealizadas = lancamentosMes.filter((l) => l.tipo === "receita" && l.status_calculado === "pago")
-      .reduce((total, l) => total + Number(l.valor || 0), 0);
-    const despesasRealizadas = lancamentosMes.filter((l) => l.tipo === "despesa" && l.status_calculado === "pago")
-      .reduce((total, l) => total + Number(l.valor || 0), 0);
+    const valorRealizado = (l) => Number(l.valor_pago || (l.status_calculado === "pago" ? l.valor : 0));
+    const receitasRealizadas = lancamentosMes.filter((l) => l.tipo === "receita")
+      .reduce((total, l) => total + valorRealizado(l), 0);
+    const despesasRealizadas = lancamentosMes.filter((l) => l.tipo === "despesa")
+      .reduce((total, l) => total + valorRealizado(l), 0);
     const atrasados = ativos.filter((l) => l.status_calculado === "atrasado");
     return {
       receitasPrevistas,
@@ -188,12 +189,12 @@ export default function FluxoCaixa() {
 
   const contasComSaldo = useMemo(() => contas.map((conta) => {
     const movimentos = ativos.filter((l) =>
-      l.conta_financeira_id === conta.id && l.status_calculado === "pago"
+      l.conta_financeira_id === conta.id && ["pago", "parcial"].includes(l.status_calculado)
     );
-    const saldoMovimentos = movimentos.reduce(
-      (total, l) => total + (l.tipo === "receita" ? Number(l.valor || 0) : -Number(l.valor || 0)),
-      0
-    );
+    const saldoMovimentos = movimentos.reduce((total, l) => {
+      const realizado = Number(l.valor_pago || (l.status_calculado === "pago" ? l.valor : 0));
+      return total + (l.tipo === "receita" ? realizado : -realizado);
+    }, 0);
     return { ...conta, saldo_atual: Number(conta.saldo_inicial || 0) + saldoMovimentos };
   }), [ativos, contas]);
 
@@ -375,6 +376,9 @@ export default function FluxoCaixa() {
             <span className="flex items-center gap-1"><CalendarDays size={11} /> {format(parseISO(lancamento.data_vencimento), "dd/MM/yyyy")}</span>
             {Number(lancamento.total_parcelas || 1) > 1 && (
               <span>{lancamento.parcela_atual || 1}/{lancamento.total_parcelas}</span>
+            )}
+            {Number(lancamento.valor_pago || 0) > 0 && lancamento.status_calculado !== "pago" && (
+              <span className="text-blue-400">Baixado {moeda(lancamento.valor_pago)}</span>
             )}
           </div>
         </div>
