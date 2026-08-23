@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
 import {
   AlertCircle, ArrowDownRight, ArrowUpRight, CheckCircle2, FileLock2,
-  Landmark, Layers3, Link2, Loader2, Plus, RefreshCw, ShieldCheck,
+  Landmark, Link2, Loader2, Plus, RefreshCw, ShieldCheck,
   Sparkles, Split, UploadCloud, X
 } from "lucide-react";
 
