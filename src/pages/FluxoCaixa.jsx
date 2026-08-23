@@ -6,7 +6,7 @@ import {
 import { ptBR } from "date-fns/locale";
 import {
   AlertTriangle, ArrowDownRight, ArrowUpRight, BarChart3, CalendarDays,
-  CheckCircle2, ChevronLeft, ChevronRight, CircleDollarSign, Clock3,
+  CheckCircle2, ChevronLeft, ChevronRight, CircleDollarSign,
   Download, Edit3, FileBarChart, Filter, GitCompareArrows, Landmark,
   Layers3, Plus, ReceiptText, Search, TrendingDown, TrendingUp, WalletCards, X
 } from "lucide-react";
