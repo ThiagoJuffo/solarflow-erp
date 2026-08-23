@@ -7,8 +7,8 @@ import { ptBR } from "date-fns/locale";
 import {
   AlertTriangle, ArrowDownRight, ArrowUpRight, BarChart3, CalendarDays,
   CheckCircle2, ChevronLeft, ChevronRight, CircleDollarSign, Clock3,
-  Download, Edit3, FileBarChart, Filter, Landmark, Plus, ReceiptText,
-  Search, TrendingDown, TrendingUp, WalletCards, X
+  Download, Edit3, FileBarChart, Filter, GitCompareArrows, Landmark,
+  Layers3, Plus, ReceiptText, Search, TrendingDown, TrendingUp, WalletCards, X
 } from "lucide-react";
 import {
   Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart,
@@ -16,11 +16,15 @@ import {
 } from "recharts";
 import LancamentoModal from "../components/financeiro/LancamentoModal";
 import ContaFinanceiraModal from "../components/financeiro/ContaFinanceiraModal";
+import CentrosCusto from "../components/financeiro/CentrosCusto";
+import ConciliacaoBancaria from "../components/financeiro/ConciliacaoBancaria";
 
 const ABAS = [
   { id: "visao-geral", label: "Visão geral", icon: BarChart3 },
   { id: "lancamentos", label: "Lançamentos", icon: ReceiptText },
   { id: "contas", label: "Contas", icon: Landmark },
+  { id: "centros", label: "Centros de custo", icon: Layers3 },
+  { id: "conciliacao", label: "Conciliação", icon: GitCompareArrows },
   { id: "relatorios", label: "Relatórios", icon: FileBarChart },
 ];
 
@@ -94,6 +98,7 @@ export default function FluxoCaixa() {
   const [lancamentos, setLancamentos] = useState([]);
   const [projetos, setProjetos] = useState([]);
   const [contas, setContas] = useState([]);
+  const [centros, setCentros] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [aba, setAba] = useState("visao-geral");
@@ -111,11 +116,13 @@ export default function FluxoCaixa() {
       base44.entities.Lancamento.list("-data_vencimento", 500),
       base44.entities.Projeto.list("-created_date", 250),
       base44.entities.ContaFinanceira.list("-created_date", 100),
+      base44.entities.CentroCusto.list("-created_date", 250),
       base44.auth.me(),
-    ]).then(([listaLancamentos, listaProjetos, listaContas, usuario]) => {
+    ]).then(([listaLancamentos, listaProjetos, listaContas, listaCentros, usuario]) => {
       setLancamentos(listaLancamentos);
       setProjetos(listaProjetos);
       setContas(listaContas);
+      setCentros(listaCentros);
       setUser(usuario);
     }).finally(() => setLoading(false));
   }, []);
@@ -222,6 +229,27 @@ export default function FluxoCaixa() {
     setModalConta(false);
     setEditandoConta(null);
   };
+
+  const salvarCentro = async (dados, centroEditando) => {
+    if (centroEditando) {
+      const atualizado = await base44.entities.CentroCusto.update(centroEditando.id, dados);
+      setCentros((lista) => lista.map((c) => c.id === atualizado.id ? atualizado : c));
+    } else {
+      const novo = await base44.entities.CentroCusto.create(dados);
+      setCentros((lista) => [novo, ...lista]);
+    }
+  };
+
+  const alternarCentro = async (centro) => {
+    const atualizado = await base44.entities.CentroCusto.update(centro.id, { ativo: centro.ativo === false });
+    setCentros((lista) => lista.map((c) => c.id === atualizado.id ? atualizado : c));
+  };
+
+  const registrarLancamentoAtualizado = (atualizado) =>
+    setLancamentos((lista) => lista.map((l) => l.id === atualizado.id ? atualizado : l));
+
+  const registrarLancamentosCriados = (novos) =>
+    setLancamentos((lista) => [...novos, ...lista]);
 
   const baixarLancamento = async (lancamento) => {
     const atualizado = await base44.entities.Lancamento.update(lancamento.id, {
@@ -573,6 +601,28 @@ export default function FluxoCaixa() {
         </div>
       )}
 
+      {aba === "centros" && (
+        <CentrosCusto
+          centros={centros}
+          projetos={projetos}
+          lancamentos={lancamentos}
+          canEdit={canEdit}
+          onSalvar={salvarCentro}
+          onAlternar={alternarCentro}
+        />
+      )}
+
+      {aba === "conciliacao" && (
+        <ConciliacaoBancaria
+          contas={contas}
+          centros={centros}
+          lancamentos={lancamentos}
+          canEdit={canEdit}
+          onLancamentoAtualizado={registrarLancamentoAtualizado}
+          onLancamentosCriados={registrarLancamentosCriados}
+        />
+      )}
+
       {aba === "relatorios" && (
         <div className="space-y-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -650,6 +700,7 @@ export default function FluxoCaixa() {
           lancamento={editandoLancamento}
           projetos={projetos}
           contas={contas}
+          centros={centros}
           onSalvar={salvarLancamento}
           onFechar={() => { setModalLancamento(false); setEditandoLancamento(null); }}
         />
