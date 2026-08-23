@@ -1,0 +1,47 @@
+{
+  "name": "ContaFinanceira",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "caixa",
+        "conta_corrente",
+        "poupanca",
+        "investimento"
+      ],
+      "default": "conta_corrente"
+    },
+    "banco": {
+      "type": "string"
+    },
+    "agencia": {
+      "type": "string"
+    },
+    "numero_conta": {
+      "type": "string"
+    },
+    "saldo_inicial": {
+      "type": "number",
+      "default": 0
+    },
+    "cor": {
+      "type": "string",
+      "default": "#f59e0b"
+    },
+    "ativa": {
+      "type": "boolean",
+      "default": true
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "nome",
+    "tipo"
+  ]
+}
