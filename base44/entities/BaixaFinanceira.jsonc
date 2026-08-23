@@ -1,0 +1,42 @@
+{
+  "name": "BaixaFinanceira",
+  "type": "object",
+  "properties": {
+    "lancamento_id": {
+      "type": "string"
+    },
+    "conta_financeira_id": {
+      "type": "string"
+    },
+    "valor": {
+      "type": "number"
+    },
+    "data": {
+      "type": "string",
+      "format": "date"
+    },
+    "forma_pagamento": {
+      "type": "string",
+      "enum": [
+        "pix",
+        "boleto",
+        "cartao",
+        "transferencia",
+        "dinheiro",
+        "financiamento",
+        "debito_automatico"
+      ]
+    },
+    "comprovante_uri": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "lancamento_id",
+    "valor",
+    "data"
+  ]
+}
