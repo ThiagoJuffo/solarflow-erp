@@ -1,0 +1,56 @@
+{
+  "name": "ImportacaoExtrato",
+  "type": "object",
+  "properties": {
+    "conta_financeira_id": {
+      "type": "string"
+    },
+    "nome_arquivo": {
+      "type": "string"
+    },
+    "arquivo_uri": {
+      "type": "string",
+      "description": "Arquivo privado do extrato banc\u00e1rio"
+    },
+    "banco": {
+      "type": "string"
+    },
+    "periodo_inicio": {
+      "type": "string",
+      "format": "date"
+    },
+    "periodo_fim": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "processando",
+        "processado",
+        "revisado",
+        "erro"
+      ],
+      "default": "processando"
+    },
+    "total_movimentos": {
+      "type": "integer",
+      "default": 0
+    },
+    "total_creditos": {
+      "type": "number",
+      "default": 0
+    },
+    "total_debitos": {
+      "type": "number",
+      "default": 0
+    },
+    "mensagem_erro": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "conta_financeira_id",
+    "nome_arquivo"
+  ]
+}
