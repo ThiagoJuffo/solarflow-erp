@@ -63,6 +63,10 @@
       "type": "string",
       "description": "Conta banc\u00e1ria ou caixa usado na liquida\u00e7\u00e3o"
     },
+    "centro_custo_id": {
+      "type": "string",
+      "description": "Centro de custo vinculado ao projeto, cliente ou departamento"
+    },
     "centro_custo": {
       "type": "string",
       "enum": [
