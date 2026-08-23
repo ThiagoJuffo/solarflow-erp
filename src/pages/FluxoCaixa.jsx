@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import {
-  addMonths, endOfMonth, format, isPast, isToday, parseISO, startOfMonth
+  addMonths, addWeeks, addYears, endOfMonth, format, isPast, isToday, parseISO, startOfMonth
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  AlertTriangle, ArrowDownRight, ArrowUpRight, BarChart3, CalendarDays,
+  AlertTriangle, ArrowDownRight, ArrowUpRight, BarChart3, Bot, CalendarDays,
   CheckCircle2, ChevronLeft, ChevronRight, CircleDollarSign,
   Download, Edit3, FileBarChart, Filter, GitCompareArrows, Landmark,
   Layers3, Plus, ReceiptText, Search, TrendingDown, TrendingUp, WalletCards, X
@@ -18,6 +18,8 @@ import LancamentoModal from "../components/financeiro/LancamentoModal";
 import ContaFinanceiraModal from "../components/financeiro/ContaFinanceiraModal";
 import CentrosCusto from "../components/financeiro/CentrosCusto";
 import ConciliacaoBancaria from "../components/financeiro/ConciliacaoBancaria";
+import BaixaFinanceiraModal from "../components/financeiro/BaixaFinanceiraModal";
+import AssistenteComercial from "../components/financeiro/AssistenteComercial";
 
 const ABAS = [
   { id: "visao-geral", label: "Visão geral", icon: BarChart3 },
@@ -25,6 +27,7 @@ const ABAS = [
   { id: "contas", label: "Contas", icon: Landmark },
   { id: "centros", label: "Centros de custo", icon: Layers3 },
   { id: "conciliacao", label: "Conciliação", icon: GitCompareArrows },
+  { id: "assistente", label: "Assistente IA", icon: Bot },
   { id: "relatorios", label: "Relatórios", icon: FileBarChart },
 ];
 
@@ -45,6 +48,7 @@ const CATEGORIA_LABELS = {
 
 const STATUS_CONFIG = {
   pendente: { label: "Pendente", classes: "border-amber-400/20 bg-amber-400/10 text-amber-300" },
+  parcial: { label: "Parcial", classes: "border-blue-400/20 bg-blue-400/10 text-blue-300" },
   pago: { label: "Liquidado", classes: "border-emerald-400/20 bg-emerald-400/10 text-emerald-300" },
   atrasado: { label: "Atrasado", classes: "border-red-400/20 bg-red-400/10 text-red-300" },
   cancelado: { label: "Cancelado", classes: "border-slate-600 bg-slate-800 text-slate-400" },
@@ -105,6 +109,7 @@ export default function FluxoCaixa() {
   const [mesAtual, setMesAtual] = useState(new Date());
   const [modalLancamento, setModalLancamento] = useState(false);
   const [modalConta, setModalConta] = useState(false);
+  const [lancamentoBaixa, setLancamentoBaixa] = useState(null);
   const [editandoLancamento, setEditandoLancamento] = useState(null);
   const [editandoConta, setEditandoConta] = useState(null);
   const [busca, setBusca] = useState("");
@@ -211,8 +216,36 @@ export default function FluxoCaixa() {
       const atualizado = await base44.entities.Lancamento.update(editandoLancamento.id, dados);
       setLancamentos((lista) => lista.map((l) => l.id === atualizado.id ? atualizado : l));
     } else {
-      const novo = await base44.entities.Lancamento.create(dados);
-      setLancamentos((lista) => [novo, ...lista]);
+      const totalParcelas = Math.max(Number(dados.total_parcelas || 1), 1);
+      const repeticoes = dados.recorrente
+        ? Math.max(Number(dados.quantidade_recorrencias || 1), 1)
+        : totalParcelas;
+      const valorBase = Number(dados.valor || 0);
+      const valorParcela = totalParcelas > 1 ? Math.floor((valorBase / totalParcelas) * 100) / 100 : valorBase;
+      const inicio = parseISO(dados.data_vencimento);
+      const avancar = (data, indice) => {
+        if (!dados.recorrente || dados.frequencia_recorrencia === "mensal") return addMonths(data, indice);
+        if (dados.frequencia_recorrencia === "semanal") return addWeeks(data, indice);
+        if (dados.frequencia_recorrencia === "trimestral") return addMonths(data, indice * 3);
+        return addYears(data, indice);
+      };
+      const registros = Array.from({ length: repeticoes }, (_, indice) => {
+        const valorRegistro = totalParcelas > 1 && indice === totalParcelas - 1
+          ? Math.round((valorBase - valorParcela * (totalParcelas - 1)) * 100) / 100
+          : valorParcela;
+        return {
+          ...dados,
+          descricao: repeticoes > 1 ? `${dados.descricao} (${indice + 1}/${repeticoes})` : dados.descricao,
+          valor: valorRegistro,
+          data_vencimento: format(avancar(inicio, indice), "yyyy-MM-dd"),
+          parcela_atual: totalParcelas > 1 ? indice + 1 : 1,
+          total_parcelas: totalParcelas,
+          valor_pago: dados.status === "pago" ? valorRegistro : 0,
+        };
+      });
+      const novos = [];
+      for (const registro of registros) novos.push(await base44.entities.Lancamento.create(registro));
+      setLancamentos((lista) => [...novos, ...lista]);
     }
     setModalLancamento(false);
     setEditandoLancamento(null);
@@ -251,12 +284,40 @@ export default function FluxoCaixa() {
   const registrarLancamentosCriados = (novos) =>
     setLancamentos((lista) => [...novos, ...lista]);
 
-  const baixarLancamento = async (lancamento) => {
-    const atualizado = await base44.entities.Lancamento.update(lancamento.id, {
-      status: "pago",
-      data_pagamento: new Date().toISOString().split("T")[0],
+  const baixarLancamento = (lancamento) => setLancamentoBaixa(lancamento);
+
+  const salvarBaixa = async (dados) => {
+    const baixa = await base44.entities.BaixaFinanceira.create({
+      lancamento_id: lancamentoBaixa.id,
+      conta_financeira_id: dados.conta_financeira_id || "",
+      valor: Number(dados.valor),
+      data: dados.data,
+      forma_pagamento: dados.forma_pagamento || undefined,
+      comprovante_uri: dados.comprovante_uri || "",
+      observacoes: dados.observacoes || "",
+    });
+    const valorPago = Math.min(
+      Number(lancamentoBaixa.valor || 0),
+      Number(lancamentoBaixa.valor_pago || 0) + Number(baixa.valor || 0)
+    );
+    const liquidado = valorPago >= Number(lancamentoBaixa.valor || 0) - 0.01;
+    const anexos = [...(lancamentoBaixa.anexos || [])];
+    if (dados.comprovante_uri) anexos.push({
+      nome: dados.comprovante_nome || "Comprovante",
+      tipo: "comprovante",
+      file_uri: dados.comprovante_uri,
+      data_upload: new Date().toISOString(),
+    });
+    const atualizado = await base44.entities.Lancamento.update(lancamentoBaixa.id, {
+      valor_pago: valorPago,
+      status: liquidado ? "pago" : "parcial",
+      data_pagamento: liquidado ? dados.data : "",
+      conta_financeira_id: dados.conta_financeira_id || lancamentoBaixa.conta_financeira_id || "",
+      forma_pagamento: dados.forma_pagamento || lancamentoBaixa.forma_pagamento || undefined,
+      anexos,
     });
     setLancamentos((lista) => lista.map((l) => l.id === atualizado.id ? atualizado : l));
+    setLancamentoBaixa(null);
   };
 
   const excluirLancamento = async (lancamento) => {
@@ -512,7 +573,7 @@ export default function FluxoCaixa() {
               ))}
             </div>
             <div className="flex flex-wrap gap-1">
-              {["todos", "pendente", "pago", "atrasado"].map((status) => (
+              {["todos", "pendente", "parcial", "pago", "atrasado"].map((status) => (
                 <button key={status} onClick={() => setFiltroStatus(status)}
                   className={`rounded-lg px-3 py-2 text-xs font-medium ${
                     filtroStatus === status ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"
@@ -623,6 +684,14 @@ export default function FluxoCaixa() {
         />
       )}
 
+      {aba === "assistente" && (
+        <AssistenteComercial
+          canEdit={canEdit}
+          user={user}
+          onLancamentoCriado={(novo) => setLancamentos((lista) => [novo, ...lista])}
+        />
+      )}
+
       {aba === "relatorios" && (
         <div className="space-y-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -710,6 +779,14 @@ export default function FluxoCaixa() {
           conta={editandoConta}
           onSalvar={salvarConta}
           onFechar={() => { setModalConta(false); setEditandoConta(null); }}
+        />
+      )}
+      {lancamentoBaixa && (
+        <BaixaFinanceiraModal
+          lancamento={lancamentoBaixa}
+          contas={contas}
+          onSalvar={salvarBaixa}
+          onFechar={() => setLancamentoBaixa(null)}
         />
       )}
     </div>
