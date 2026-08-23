@@ -1,0 +1,101 @@
+{
+  "name": "SolicitacaoLancamento",
+  "type": "object",
+  "properties": {
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "receita",
+        "despesa"
+      ]
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "valor": {
+      "type": "number"
+    },
+    "data_vencimento": {
+      "type": "string",
+      "format": "date"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "venda_projeto",
+        "comissao",
+        "kit_equipamentos",
+        "mao_de_obra",
+        "despesa_operacional",
+        "despesa_marketing",
+        "despesa_financeira",
+        "imposto",
+        "pro_labore",
+        "distribuicao_lucro",
+        "capex",
+        "outros"
+      ]
+    },
+    "projeto_id": {
+      "type": "string"
+    },
+    "centro_custo_id": {
+      "type": "string"
+    },
+    "nome_cliente_fornecedor": {
+      "type": "string"
+    },
+    "numero_documento": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
+    },
+    "solicitante_nome": {
+      "type": "string"
+    },
+    "solicitante_telefone": {
+      "type": "string"
+    },
+    "origem": {
+      "type": "string",
+      "enum": [
+        "whatsapp",
+        "erp"
+      ],
+      "default": "whatsapp"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "aprovada",
+        "rejeitada"
+      ],
+      "default": "pendente"
+    },
+    "mensagem_original": {
+      "type": "string"
+    },
+    "lancamento_id": {
+      "type": "string"
+    },
+    "decidido_por": {
+      "type": "string"
+    },
+    "decidido_em": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "motivo_rejeicao": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "tipo",
+    "descricao",
+    "valor",
+    "data_vencimento",
+    "status"
+  ]
+}
