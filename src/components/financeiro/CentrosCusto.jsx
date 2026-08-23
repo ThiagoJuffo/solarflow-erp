@@ -4,12 +4,13 @@ import { BriefcaseBusiness, CheckCircle2, Edit3, Loader2, Plus, Target, X } from
 const moeda = (valor) => Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const campoClass = "w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-white outline-none focus:border-amber-500";
 
-function CentroModal({ centro, projetos, onSalvar, onFechar }) {
+function CentroModal({ centro, centros, projetos, onSalvar, onFechar }) {
   const [form, setForm] = useState(centro || {
     nome: "",
     codigo: "",
     tipo: "projeto_cliente",
     projeto_id: "",
+    centro_pai_id: "",
     cliente_nome: "",
     orcamento: "",
     ativo: true,
@@ -69,6 +70,7 @@ function CentroModal({ centro, projetos, onSalvar, onFechar }) {
                 <option value="projeto_cliente">Projeto / Cliente</option>
                 <option value="departamento">Departamento</option>
                 <option value="administrativo">Administrativo</option>
+                <option value="subcentro">Subcentro</option>
                 <option value="outros">Outros</option>
               </select>
             </div>
@@ -78,6 +80,18 @@ function CentroModal({ centro, projetos, onSalvar, onFechar }) {
                 onChange={(e) => set("orcamento", e.target.value)} placeholder="0,00" className={campoClass} />
             </div>
           </div>
+
+          {form.tipo === "subcentro" && (
+            <div>
+              <label className="mb-1.5 block text-xs text-slate-400">Centro principal *</label>
+              <select required value={form.centro_pai_id || ""} onChange={(e) => set("centro_pai_id", e.target.value)} className={campoClass}>
+                <option value="">Selecionar centro principal...</option>
+                {centros.filter((item) => item.id !== centro?.id && item.tipo !== "subcentro").map((item) => (
+                  <option key={item.id} value={item.id}>{item.nome}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {form.tipo === "projeto_cliente" && (
             <>
@@ -236,7 +250,7 @@ export default function CentrosCusto({ centros, projetos, lancamentos, canEdit, 
       )}
 
       {modalOpen && (
-        <CentroModal centro={editando} projetos={projetos} onSalvar={salvar}
+        <CentroModal centro={editando} centros={centros} projetos={projetos} onSalvar={salvar}
           onFechar={() => { setModalOpen(false); setEditando(null); }} />
       )}
     </div>
