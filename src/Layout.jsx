@@ -15,7 +15,7 @@ const NAV_ITEMS = [
   { label: "Biblioteca Produtos", page: "Produtos", icon: Package, roles: ["admin","engenharia","suprimentos"] },
   { label: "Vendedores", page: "Vendedores", icon: UserCheck, roles: ["admin"] },
   { label: "Dashboard de Vendas", page: "DashboardVendas", icon: TrendingUp, roles: ["admin","financeiro"] },
-  { label: "Fluxo de Caixa", page: "FluxoCaixa", icon: DollarSign, roles: ["admin","financeiro"] },
+  { label: "Financeiro", page: "FluxoCaixa", icon: DollarSign, roles: ["admin","financeiro"] },
   { label: "DRE por Projeto", page: "DREProjeto", icon: BarChart2, roles: ["admin","financeiro","engenharia"] },
   { label: "Manutenções", page: "Manutencoes", icon: Wrench, roles: ["admin","financeiro","engenharia"] },
   { label: "Agenda", page: "Agenda", icon: Calendar, roles: ["admin","engenharia","instalacao"] },
