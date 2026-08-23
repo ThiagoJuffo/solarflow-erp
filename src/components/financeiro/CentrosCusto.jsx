@@ -44,8 +44,8 @@ function CentroModal({ centro, centros, projetos, onSalvar, onFechar }) {
       <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
         <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
           <div>
-            <h3 className="font-bold text-white">{centro ? "Editar centro de custo" : "Novo centro de custo"}</h3>
-            <p className="text-xs text-slate-500">Separe resultados por projeto, cliente ou área.</p>
+            <h3 className="font-bold text-white">{centro ? "Editar centro de custo" : "Novo centro principal"}</h3>
+            <p className="text-xs text-slate-500">Centro principal = projeto ou área. Subcentro = divisão interna opcional.</p>
           </div>
           <button onClick={onFechar} className="text-slate-400 hover:text-white"><X size={18} /></button>
         </div>
@@ -146,13 +146,23 @@ export default function CentrosCusto({ centros, projetos, lancamentos, canEdit, 
   const [editando, setEditando] = useState(null);
 
   const cards = useMemo(() => centros.map((centro) => {
+    const filhosIds = centro.tipo === "subcentro"
+      ? []
+      : centros.filter((item) => item.centro_pai_id === centro.id).map((item) => item.id);
+    const idsDoCentro = [centro.id, ...filhosIds];
     const vinculados = lancamentos.filter((l) =>
-      l.centro_custo_id === centro.id ||
+      idsDoCentro.includes(l.centro_custo_id) ||
       (!l.centro_custo_id && centro.projeto_id && l.projeto_id === centro.projeto_id)
     ).filter((l) => l.status !== "cancelado");
     const receitas = vinculados.filter((l) => l.tipo === "receita").reduce((s, l) => s + Number(l.valor || 0), 0);
     const despesas = vinculados.filter((l) => l.tipo === "despesa").reduce((s, l) => s + Number(l.valor || 0), 0);
-    return { ...centro, receitas, despesas, resultado: receitas - despesas, quantidade: vinculados.length };
+    const centroPai = centros.find((item) => item.id === centro.centro_pai_id);
+    return { ...centro, centroPai, receitas, despesas, resultado: receitas - despesas, quantidade: vinculados.length };
+  }).sort((a, b) => {
+    const grupoA = a.tipo === "subcentro" ? a.centro_pai_id : a.id;
+    const grupoB = b.tipo === "subcentro" ? b.centro_pai_id : b.id;
+    if (grupoA === grupoB) return a.tipo === "subcentro" ? 1 : -1;
+    return a.nome.localeCompare(b.nome, "pt-BR");
   }), [centros, lancamentos]);
 
   const salvar = async (dados) => {
@@ -165,15 +175,26 @@ export default function CentrosCusto({ centros, projetos, lancamentos, canEdit, 
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-white">Centros de custo</h2>
-          <p className="text-sm text-slate-500">Resultado separado por projeto, cliente ou departamento.</p>
+          <h2 className="text-lg font-semibold text-white">Centros e subcentros de custo</h2>
+          <p className="text-sm text-slate-500">Veja o resultado por projeto ou por área da empresa.</p>
         </div>
         {canEdit && (
           <button onClick={() => { setEditando(null); setModalOpen(true); }}
             className="flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-400">
-            <Plus size={16} /> Novo centro
+            <Plus size={16} /> Novo centro principal
           </button>
         )}
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-4">
+          <p className="text-sm font-semibold text-sky-300">Centro principal</p>
+          <p className="mt-1 text-xs leading-5 text-slate-400">É o destino maior do gasto ou receita: um projeto de cliente ou uma área da Ecomar, como Escritório e Comercial.</p>
+        </div>
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+          <p className="text-sm font-semibold text-amber-300">Subcentro (opcional)</p>
+          <p className="mt-1 text-xs leading-5 text-slate-400">Detalha o custo dentro do centro principal. Exemplo: Projeto João → Mão de obra, Equipamentos ou Frete.</p>
+        </div>
       </div>
 
       {cards.length ? (
@@ -189,7 +210,11 @@ export default function CentrosCusto({ centros, projetos, lancamentos, canEdit, 
                     </div>
                     <div>
                       <p className="font-semibold text-white">{centro.nome}</p>
-                      <p className="text-xs text-slate-500">{centro.codigo || centro.cliente_nome || centro.tipo.replaceAll("_", " ")}</p>
+                      <p className="text-xs text-slate-500">
+                        {centro.tipo === "subcentro"
+                          ? `Subcentro de ${centro.centroPai?.nome || "centro principal"}`
+                          : `Centro principal · ${centro.codigo || centro.cliente_nome || centro.tipo.replaceAll("_", " ")}`}
+                      </p>
                     </div>
                   </div>
                   <span className={`rounded-lg px-2 py-1 text-[11px] ${centro.ativo === false ? "bg-slate-800 text-slate-500" : "bg-emerald-500/10 text-emerald-400"}`}>
