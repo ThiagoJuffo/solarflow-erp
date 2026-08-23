@@ -21,18 +21,6 @@ const CATEGORIAS_DESPESA = [
   { value: "outros", label: "Outras despesas" },
 ];
 
-const CENTROS_CUSTO = [
-  ["projetos", "Projetos"],
-  ["administrativo", "Administrativo"],
-  ["comercial", "Comercial"],
-  ["marketing", "Marketing"],
-  ["operacional", "Operacional"],
-  ["tributos", "Tributos"],
-  ["pessoal", "Pessoal"],
-  ["investimentos", "Investimentos"],
-  ["outros", "Outros"],
-];
-
 const campoClass = "w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-white outline-none transition-colors focus:border-amber-500";
 
 export default function LancamentoModal({ lancamento, projetos, contas, centros = [], onSalvar, onFechar }) {
@@ -50,7 +38,6 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
     projeto_id: "",
     conta_financeira_id: "",
     centro_custo_id: "",
-    centro_custo: "operacional",
     nome_cliente_fornecedor: "",
     documento_cliente_fornecedor: "",
     numero_documento: "",
@@ -71,6 +58,39 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
     () => form.tipo === "receita" ? CATEGORIAS_RECEITA : CATEGORIAS_DESPESA,
     [form.tipo]
   );
+  const centrosPrincipais = useMemo(
+    () => centros.filter((centro) => centro.ativo !== false && centro.tipo !== "subcentro"),
+    [centros]
+  );
+  const centroSelecionado = centros.find((centro) => centro.id === form.centro_custo_id);
+  const centroPrincipalId = centroSelecionado?.tipo === "subcentro"
+    ? centroSelecionado.centro_pai_id
+    : centroSelecionado?.id || "";
+  const subcentrosDisponiveis = centros.filter((centro) =>
+    centro.ativo !== false &&
+    centro.tipo === "subcentro" &&
+    centro.centro_pai_id === centroPrincipalId
+  );
+
+  const selecionarProjeto = (projetoId) => {
+    const centroDoProjeto = centrosPrincipais.find((centro) => centro.projeto_id === projetoId);
+    setForm((atual) => ({
+      ...atual,
+      projeto_id: projetoId,
+      centro_custo_id: centroDoProjeto?.id || (projetoId ? "" : atual.centro_custo_id),
+      centro_custo: projetoId ? "projetos" : atual.centro_custo,
+    }));
+  };
+
+  const selecionarCentroPrincipal = (centroId) => {
+    const centro = centros.find((item) => item.id === centroId);
+    setForm((atual) => ({
+      ...atual,
+      centro_custo_id: centroId,
+      projeto_id: centro?.projeto_id || atual.projeto_id,
+      centro_custo: centro?.tipo === "projeto_cliente" ? "projetos" : atual.centro_custo,
+    }));
+  };
 
   const enviarAnexo = async (event) => {
     const file = event.target.files?.[0];
@@ -172,21 +192,13 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-xs text-slate-400">Categoria *</label>
-                <select required value={form.categoria} onChange={(e) => set("categoria", e.target.value)} className={campoClass}>
-                  <option value="">Selecionar...</option>
-                  {categorias.map((categoria) => <option key={categoria.value} value={categoria.value}>{categoria.label}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs text-slate-400">Centro de custo</label>
-                <select value={form.centro_custo || "operacional"} onChange={(e) => set("centro_custo", e.target.value)}
-                  className={campoClass}>
-                  {CENTROS_CUSTO.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                </select>
-              </div>
+            <div>
+              <label className="mb-1.5 block text-xs text-slate-400">Categoria financeira *</label>
+              <select required value={form.categoria} onChange={(e) => set("categoria", e.target.value)} className={campoClass}>
+                <option value="">Selecionar...</option>
+                {categorias.map((categoria) => <option key={categoria.value} value={categoria.value}>{categoria.label}</option>)}
+              </select>
+              <p className="mt-1 text-[11px] text-slate-500">A categoria informa o tipo da receita ou despesa; não é um centro de custo.</p>
             </div>
           </section>
 
@@ -208,7 +220,7 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-xs text-slate-400">Projeto relacionado</label>
-                <select value={form.projeto_id || ""} onChange={(e) => set("projeto_id", e.target.value)} className={campoClass}>
+                <select value={form.projeto_id || ""} onChange={(e) => selecionarProjeto(e.target.value)} className={campoClass}>
                   <option value="">Nenhum projeto</option>
                   {projetos.map((projeto) => (
                     <option key={projeto.id} value={projeto.id}>{projeto.nome_cliente} — {projeto.cpf}</option>
@@ -222,15 +234,44 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
               </div>
             </div>
 
-            <div>
-              <label className="mb-1.5 block text-xs text-slate-400">Centro / subcentro de custo</label>
-              <select value={form.centro_custo_id || ""} onChange={(e) => set("centro_custo_id", e.target.value)} className={campoClass}>
-                <option value="">Não informado</option>
-                {centros.filter((centro) => centro.ativo !== false).map((centro) => {
-                  const pai = centros.find((item) => item.id === centro.centro_pai_id);
-                  return <option key={centro.id} value={centro.id}>{pai ? `${pai.nome} → ${centro.nome}` : centro.nome}</option>;
-                })}
-              </select>
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+              <div className="mb-3">
+                <p className="text-sm font-medium text-white">Destino do lançamento</p>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  O centro principal identifica o projeto ou área. O subcentro é uma divisão opcional.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-xs text-slate-400">Centro de custo principal</label>
+                  <select value={centroPrincipalId} onChange={(e) => selecionarCentroPrincipal(e.target.value)} className={campoClass}>
+                    <option value="">Não informado</option>
+                    {centrosPrincipais.map((centro) => (
+                      <option key={centro.id} value={centro.id}>
+                        {centro.tipo === "projeto_cliente" ? "Projeto: " : ""}{centro.nome}
+                      </option>
+                    ))}
+                  </select>
+                  {form.projeto_id && centroPrincipalId && (
+                    <p className="mt-1 text-[11px] text-emerald-400">Preenchido automaticamente pelo projeto.</p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs text-slate-400">Subcentro de custo (opcional)</label>
+                  <select disabled={!centroPrincipalId || !subcentrosDisponiveis.length}
+                    value={centroSelecionado?.tipo === "subcentro" ? centroSelecionado.id : ""}
+                    onChange={(e) => set("centro_custo_id", e.target.value || centroPrincipalId)}
+                    className={`${campoClass} disabled:cursor-not-allowed disabled:opacity-50`}>
+                    <option value="">Sem divisão adicional</option>
+                    {subcentrosDisponiveis.map((centro) => (
+                      <option key={centro.id} value={centro.id}>{centro.nome}</option>
+                    ))}
+                  </select>
+                  {centroPrincipalId && !subcentrosDisponiveis.length && (
+                    <p className="mt-1 text-[11px] text-slate-500">Este centro ainda não possui subcentros.</p>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
