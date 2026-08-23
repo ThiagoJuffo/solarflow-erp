@@ -14,9 +14,14 @@
         "projeto_cliente",
         "departamento",
         "administrativo",
+        "subcentro",
         "outros"
       ],
       "default": "projeto_cliente"
+    },
+    "centro_pai_id": {
+      "type": "string",
+      "description": "Centro de custo principal quando este registro for um subcentro"
     },
     "projeto_id": {
       "type": "string",
