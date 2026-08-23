@@ -1,0 +1,63 @@
+{
+  "name": "MovimentoExtrato",
+  "type": "object",
+  "properties": {
+    "importacao_id": {
+      "type": "string"
+    },
+    "conta_financeira_id": {
+      "type": "string"
+    },
+    "data": {
+      "type": "string",
+      "format": "date"
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "documento": {
+      "type": "string"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "credito",
+        "debito"
+      ]
+    },
+    "valor": {
+      "type": "number"
+    },
+    "saldo": {
+      "type": "number"
+    },
+    "status_conciliacao": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "sugerido",
+        "conciliado",
+        "ignorado"
+      ],
+      "default": "pendente"
+    },
+    "lancamento_id": {
+      "type": "string"
+    },
+    "score_match": {
+      "type": "number",
+      "default": 0
+    },
+    "justificativa_match": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "importacao_id",
+    "conta_financeira_id",
+    "data",
+    "descricao",
+    "tipo",
+    "valor"
+  ]
+}
