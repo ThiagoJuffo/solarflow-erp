@@ -1,0 +1,44 @@
+{
+  "name": "CentroCusto",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string"
+    },
+    "codigo": {
+      "type": "string"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "projeto_cliente",
+        "departamento",
+        "administrativo",
+        "outros"
+      ],
+      "default": "projeto_cliente"
+    },
+    "projeto_id": {
+      "type": "string",
+      "description": "Projeto/cliente relacionado ao centro de custo"
+    },
+    "cliente_nome": {
+      "type": "string"
+    },
+    "orcamento": {
+      "type": "number",
+      "default": 0
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "nome",
+    "tipo"
+  ]
+}
