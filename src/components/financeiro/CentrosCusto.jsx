@@ -159,9 +159,11 @@ export default function CentrosCusto({ centros, projetos, lancamentos, canEdit, 
     const centroPai = centros.find((item) => item.id === centro.centro_pai_id);
     return { ...centro, centroPai, receitas, despesas, resultado: receitas - despesas, quantidade: vinculados.length };
   }).sort((a, b) => {
-    const grupoA = a.tipo === "subcentro" ? a.centro_pai_id : a.id;
-    const grupoB = b.tipo === "subcentro" ? b.centro_pai_id : b.id;
-    if (grupoA === grupoB) return a.tipo === "subcentro" ? 1 : -1;
+    const nomeGrupoA = a.tipo === "subcentro" ? (a.centroPai?.nome || a.nome) : a.nome;
+    const nomeGrupoB = b.tipo === "subcentro" ? (b.centroPai?.nome || b.nome) : b.nome;
+    const porGrupo = nomeGrupoA.localeCompare(nomeGrupoB, "pt-BR");
+    if (porGrupo !== 0) return porGrupo;
+    if (a.tipo !== b.tipo) return a.tipo === "subcentro" ? 1 : -1;
     return a.nome.localeCompare(b.nome, "pt-BR");
   }), [centros, lancamentos]);
 
