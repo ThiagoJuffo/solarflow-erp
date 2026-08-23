@@ -87,7 +87,7 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
     setForm((atual) => ({
       ...atual,
       centro_custo_id: centroId,
-      projeto_id: centroId ? (centro?.projeto_id || atual.projeto_id) : "",
+      projeto_id: centro?.projeto_id || "",
       centro_custo: centro?.tipo === "projeto_cliente" ? "projetos" : "",
     }));
   };
