@@ -49,6 +49,7 @@
       "type": "string",
       "enum": [
         "pendente",
+        "parcial",
         "pago",
         "atrasado",
         "cancelado"
@@ -109,6 +110,45 @@
     "recorrente": {
       "type": "boolean",
       "default": false
+    },
+    "frequencia_recorrencia": {
+      "type": "string",
+      "enum": [
+        "semanal",
+        "mensal",
+        "trimestral",
+        "anual"
+      ],
+      "default": "mensal"
+    },
+    "quantidade_recorrencias": {
+      "type": "integer",
+      "default": 1
+    },
+    "valor_pago": {
+      "type": "number",
+      "default": 0
+    },
+    "anexos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "file_uri": {
+            "type": "string"
+          },
+          "data_upload": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
     },
     "parcela_atual": {
       "type": "integer",
