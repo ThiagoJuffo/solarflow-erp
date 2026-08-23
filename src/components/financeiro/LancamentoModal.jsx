@@ -77,8 +77,8 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
     setForm((atual) => ({
       ...atual,
       projeto_id: projetoId,
-      centro_custo_id: centroDoProjeto?.id || (projetoId ? "" : atual.centro_custo_id),
-      centro_custo: projetoId ? "projetos" : atual.centro_custo,
+      centro_custo_id: centroDoProjeto?.id || "",
+      centro_custo: projetoId ? "projetos" : "",
     }));
   };
 
@@ -87,8 +87,8 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
     setForm((atual) => ({
       ...atual,
       centro_custo_id: centroId,
-      projeto_id: centro?.projeto_id || atual.projeto_id,
-      centro_custo: centro?.tipo === "projeto_cliente" ? "projetos" : atual.centro_custo,
+      projeto_id: centroId ? (centro?.projeto_id || atual.projeto_id) : "",
+      centro_custo: centro?.tipo === "projeto_cliente" ? "projetos" : "",
     }));
   };
 
