@@ -20,6 +20,16 @@ const CATEGORIA_LABELS = {
   outros: "Outros",
 };
 
+const listarTodos = async (entidade, ordenacao) => {
+  const todos = [];
+  const limite = 5000;
+  for (let pagina = 0; ; pagina += 1) {
+    const lote = await entidade.list(ordenacao, limite, pagina * limite);
+    todos.push(...lote);
+    if (lote.length < limite) return todos;
+  }
+};
+
 const STATUS_PROJETO = {
   pago_projeto_iniciado: "Iniciado",
   kit_confirmado: "Kit Confirmado",
@@ -45,20 +55,28 @@ export default function DREProjeto() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    Promise.all([
-      base44.entities.Projeto.list("-created_date", 200),
-      base44.entities.PreProjeto.list("-created_date", 200),
-      base44.entities.CustoProjeto.list("-created_date", 500),
-      base44.entities.Lancamento.list("-created_date", 500),
-      base44.auth.me()
-    ]).then(([p, pp, c, l, u]) => {
-      setProjetos(p);
-      setPreProjetos(pp);
-      setCustos(c);
-      setLancamentos(l);
-      setUser(u);
-      setLoading(false);
-    });
+    const carregar = async () => {
+      try {
+        const u = await base44.auth.me();
+        const [p, pp, c] = await Promise.all([
+          listarTodos(base44.entities.Projeto, "-created_date"),
+          listarTodos(base44.entities.PreProjeto, "-created_date"),
+          listarTodos(base44.entities.CustoProjeto, "-created_date"),
+        ]);
+        const podeVerFinanceiro = u?.role === "admin" || u?.role === "financeiro";
+        const l = podeVerFinanceiro
+          ? await listarTodos(base44.entities.Lancamento, "-created_date")
+          : [];
+        setProjetos(p);
+        setPreProjetos(pp);
+        setCustos(c);
+        setLancamentos(l);
+        setUser(u);
+      } finally {
+        setLoading(false);
+      }
+    };
+    carregar();
   }, []);
 
   const canEdit = user?.role === "admin" || user?.role === "financeiro" || user?.role === "engenharia";
