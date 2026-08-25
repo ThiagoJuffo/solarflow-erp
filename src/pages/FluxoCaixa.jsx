@@ -238,10 +238,21 @@ export default function FluxoCaixa() {
         if (dados.frequencia_recorrencia === "trimestral") return addMonths(data, indice * 3);
         return addYears(data, indice);
       };
+      let saldoLiquidado = Number(dados.valor_pago || 0);
       const registros = Array.from({ length: repeticoes }, (_, indice) => {
         const valorRegistro = totalParcelas > 1 && indice === totalParcelas - 1
           ? Math.round((valorBase - valorParcela * (totalParcelas - 1)) * 100) / 100
           : valorParcela;
+        const valorPagoRegistro = Math.min(saldoLiquidado, valorRegistro);
+        saldoLiquidado = Math.max(saldoLiquidado - valorPagoRegistro, 0);
+        const possuiLiquidacao = dados.status === "pago" || dados.status === "parcial";
+        const statusRegistro = possuiLiquidacao
+          ? valorPagoRegistro >= valorRegistro - 0.01
+            ? "pago"
+            : valorPagoRegistro > 0
+              ? "parcial"
+              : "pendente"
+          : dados.status;
         return {
           ...dados,
           descricao: repeticoes > 1 ? `${dados.descricao} (${indice + 1}/${repeticoes})` : dados.descricao,
@@ -249,7 +260,10 @@ export default function FluxoCaixa() {
           data_vencimento: format(avancar(inicio, indice), "yyyy-MM-dd"),
           parcela_atual: totalParcelas > 1 ? indice + 1 : 1,
           total_parcelas: totalParcelas,
-          valor_pago: dados.status === "pago" ? valorRegistro : 0,
+          status: statusRegistro,
+          valor_pago: valorPagoRegistro,
+          data_pagamento: valorPagoRegistro > 0 ? dados.data_pagamento : "",
+          conciliado: valorPagoRegistro > 0 ? Boolean(dados.conciliado) : false,
         };
       });
       const novos = [];
