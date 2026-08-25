@@ -10,6 +10,38 @@ import {
 const moeda = (valor) => Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const campoClass = "w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-white outline-none focus:border-amber-500";
 
+const listarTodos = async (entidade, ordenacao) => {
+  const todos = [];
+  const limite = 5000;
+  for (let pagina = 0; ; pagina += 1) {
+    const lote = await entidade.list(ordenacao, limite, pagina * limite);
+    todos.push(...lote);
+    if (lote.length < limite) return todos;
+  }
+};
+
+const saldoAberto = (lancamento) =>
+  Math.max(Number(lancamento?.valor || 0) - Number(lancamento?.valor_pago || 0), 0);
+
+const normalizarChave = (valor) =>
+  String(valor ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+
+const chaveMovimento = (movimento) => [
+  movimento.conta_financeira_id,
+  movimento.data,
+  movimento.tipo,
+  Number(movimento.valor || 0).toFixed(2),
+  normalizarChave(movimento.documento),
+  normalizarChave(movimento.descricao),
+  movimento.saldo === undefined || movimento.saldo === null ? "" : Number(movimento.saldo).toFixed(2),
+].join("|");
+
+const hashArquivo = async (file) => {
+  const buffer = await file.arrayBuffer();
+  const digest = await crypto.subtle.digest("SHA-256", buffer);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+};
+
 const diferencaDias = (a, b) => {
   if (!a || !b) return 999;
   return Math.abs((parseISO(a).getTime() - parseISO(b).getTime()) / 86400000);
@@ -21,7 +53,8 @@ const sugerirLancamento = (movimento, lancamentos) => {
     l.tipo === tipoLancamento &&
     l.status !== "cancelado" &&
     l.conciliado !== true &&
-    Math.abs(Number(l.valor || 0) - Number(movimento.valor || 0)) <= 0.01 &&
+    saldoAberto(l) > 0 &&
+    Math.abs(saldoAberto(l) - Number(movimento.valor || 0)) <= 0.01 &&
     diferencaDias(l.data_pagamento || l.data_vencimento, movimento.data) <= 3
   );
 
@@ -148,23 +181,29 @@ function RateioModal({ movimento, centros, contaId, onConcluir, onFechar }) {
 }
 
 export default function ConciliacaoBancaria({
-  contas, centros, lancamentos, canEdit, onLancamentoAtualizado, onLancamentosCriados
+  contas, centros, lancamentos, canEdit, onLancamentoAtualizado, onLancamentosCriados, onBaixasCriadas
 }) {
   const inputRef = useRef(null);
   const [contaId, setContaId] = useState("");
   const [processando, setProcessando] = useState(false);
+  const [processandoMovimento, setProcessandoMovimento] = useState("");
   const [erro, setErro] = useState("");
   const [movimentos, setMovimentos] = useState([]);
   const [importacoes, setImportacoes] = useState([]);
   const [rateando, setRateando] = useState(null);
 
   const carregarHistorico = async () => {
-    const [listaImportacoes, listaMovimentos] = await Promise.all([
-      base44.entities.ImportacaoExtrato.list("-created_date", 20),
-      base44.entities.MovimentoExtrato.list("-data", 500),
-    ]);
-    setImportacoes(listaImportacoes);
-    setMovimentos(listaMovimentos);
+    try {
+      const [listaImportacoes, listaMovimentos] = await Promise.all([
+        listarTodos(base44.entities.ImportacaoExtrato, "-created_date"),
+        listarTodos(base44.entities.MovimentoExtrato, "-data"),
+      ]);
+      setImportacoes(listaImportacoes);
+      setMovimentos(listaMovimentos);
+      setErro("");
+    } catch (error) {
+      setErro(error?.message || "Não foi possível carregar o histórico da conciliação.");
+    }
   };
 
   useEffect(() => { carregarHistorico(); }, []);
@@ -186,11 +225,21 @@ export default function ConciliacaoBancaria({
     setProcessando(true);
     let importacao;
     try {
+      const arquivoHash = await hashArquivo(file);
+      const importacoesIguais = await base44.entities.ImportacaoExtrato.filter({
+        conta_financeira_id: contaId,
+        arquivo_hash: arquivoHash,
+      }, "-created_date", 1);
+      if (importacoesIguais.some((item) => ["processando", "processado", "revisado"].includes(item.status))) {
+        throw new Error("Este mesmo extrato já foi importado para a conta selecionada.");
+      }
+
       const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
       importacao = await base44.entities.ImportacaoExtrato.create({
         conta_financeira_id: contaId,
         nome_arquivo: file.name,
         arquivo_uri: file_uri,
+        arquivo_hash: arquivoHash,
         status: "processando",
       });
       const { signed_url } = await base44.integrations.Core.CreateFileSignedUrl({ file_uri, expires_in: 3600 });
@@ -227,6 +276,13 @@ export default function ConciliacaoBancaria({
       const extraidos = Array.isArray(dados?.movimentos) ? dados.movimentos : [];
       if (!extraidos.length) throw new Error("Nenhum movimento foi encontrado no extrato.");
 
+      const chavesExistentes = new Set(
+        movimentos
+          .filter((movimento) => movimento.conta_financeira_id === contaId)
+          .map((movimento) => movimento.chave_unica || chaveMovimento(movimento))
+      );
+      const chavesDoArquivo = new Set();
+      let movimentosDuplicados = 0;
       const preparados = extraidos.map((item) => {
         const valorOriginal = Number(item.valor || 0);
         const tipo = item.tipo || (valorOriginal < 0 ? "debito" : "credito");
@@ -240,17 +296,28 @@ export default function ConciliacaoBancaria({
           valor: Math.abs(valorOriginal),
           saldo: item.saldo === undefined ? undefined : Number(item.saldo),
         };
+        const chaveUnica = chaveMovimento(movimento);
+        if (chavesExistentes.has(chaveUnica) || chavesDoArquivo.has(chaveUnica)) {
+          movimentosDuplicados += 1;
+          return null;
+        }
+        chavesDoArquivo.add(chaveUnica);
         const sugestao = sugerirLancamento(movimento, lancamentos);
         return {
           ...movimento,
+          chave_unica: chaveUnica,
           status_conciliacao: sugestao ? "sugerido" : "pendente",
           lancamento_id: sugestao?.lancamento.id || "",
           score_match: sugestao?.score || 0,
           justificativa_match: sugestao
-            ? `Mesmo valor e data com diferença de ${sugestao.dias} dia(s)`
+            ? `Mesmo saldo em aberto e data com diferença de ${sugestao.dias} dia(s)`
             : "Nenhum lançamento compatível encontrado",
         };
-      });
+      }).filter(Boolean);
+
+      if (!preparados.length) {
+        throw new Error("Nenhum movimento novo foi encontrado. O extrato parece já ter sido importado.");
+      }
 
       const criados = await base44.entities.MovimentoExtrato.bulkCreate(preparados);
       const totalCreditos = preparados.filter((m) => m.tipo === "credito").reduce((s, m) => s + m.valor, 0);
@@ -261,6 +328,7 @@ export default function ConciliacaoBancaria({
         periodo_fim: dados.periodo_fim || "",
         status: "processado",
         total_movimentos: preparados.length,
+        movimentos_duplicados: movimentosDuplicados,
         total_creditos: totalCreditos,
         total_debitos: totalDebitos,
       });
