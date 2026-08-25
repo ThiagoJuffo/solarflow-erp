@@ -533,6 +533,29 @@ export default function FluxoCaixa() {
     );
   }
 
+  if (erroCarregamento) {
+    return (
+      <div className="mx-auto max-w-3xl p-6 md:p-8">
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6">
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={22} className="mt-0.5 shrink-0 text-red-400" />
+            <div>
+              <h1 className="font-semibold text-white">Não foi possível abrir o Financeiro</h1>
+              <p className="mt-1 text-sm text-red-200">{erroCarregamento}</p>
+              <p className="mt-2 text-xs text-slate-400">
+                Confirme se seu usuário possui perfil Admin ou Financeiro e tente novamente.
+              </p>
+              <button onClick={() => window.location.reload()}
+                className="mt-4 rounded-xl bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
+                Tentar novamente
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
