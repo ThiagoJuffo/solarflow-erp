@@ -214,7 +214,7 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
           </div>
 
           <section className="space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Dados principais</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">1. O que é o lançamento</p>
             <div>
               <label className="mb-1.5 block text-xs text-slate-400">Descrição *</label>
               <input required value={form.descricao} onChange={(e) => set("descricao", e.target.value)}
@@ -225,18 +225,20 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
             <div className="grid gap-3 sm:grid-cols-3">
               <div>
                 <label className="mb-1.5 block text-xs text-slate-400">Valor (R$) *</label>
-                <input required type="number" min="0" step="0.01" value={form.valor}
+                <input required type="number" min="0.01" step="0.01" value={form.valor}
                   onChange={(e) => set("valor", e.target.value)} placeholder="0,00" className={campoClass} />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs text-slate-400">Competência</label>
-                <input type="date" value={form.data_competencia || ""} onChange={(e) => set("data_competencia", e.target.value)}
+                <label className="mb-1.5 block text-xs text-slate-400">Competência *</label>
+                <input required type="date" value={form.data_competencia || ""} onChange={(e) => set("data_competencia", e.target.value)}
                   className={campoClass} />
+                <p className="mt-1 text-[11px] text-slate-500">Quando a receita ou despesa pertence.</p>
               </div>
               <div>
                 <label className="mb-1.5 block text-xs text-slate-400">Vencimento *</label>
                 <input required type="date" value={form.data_vencimento} onChange={(e) => set("data_vencimento", e.target.value)}
                   className={campoClass} />
+                <p className="mt-1 text-[11px] text-slate-500">Quando deve ser paga ou recebida.</p>
               </div>
             </div>
 
@@ -246,7 +248,7 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
                 <option value="">Selecionar...</option>
                 {categorias.map((categoria) => <option key={categoria.value} value={categoria.value}>{categoria.label}</option>)}
               </select>
-              <p className="mt-1 text-[11px] text-slate-500">A categoria informa o tipo da receita ou despesa; não é um centro de custo.</p>
+              <p className="mt-1 text-[11px] text-slate-500">Classificação financeira usada no DRE. Não indica projeto ou área.</p>
             </div>
           </section>
 
@@ -363,7 +365,7 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
           </section>
 
           <section className="space-y-4 border-t border-slate-800 pt-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Liquidação</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">5. Pagamento ou recebimento</p>
             <div className="grid gap-3 sm:grid-cols-3">
               <div>
                 <label className="mb-1.5 block text-xs text-slate-400">Status</label>
