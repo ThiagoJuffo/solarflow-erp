@@ -165,7 +165,11 @@ export default function Projetos() {
       ["Comissão comercial", "COM"],
       ["ART / Taxas", "TAXAS"],
       ["Materiais extras", "MAT"],
-      ["Deslocamento / Hospedagem", "DESL"],
+      ["Deslocamento", "DESL"],
+      ["Combustível", "COMB"],
+      ["Hospedagem", "HOSP"],
+      ["String Box", "STRBOX"],
+      ["Cabos e infraestrutura", "CAB"],
       ["Pós-venda / Manutenção", "POS"],
     ];
     await Promise.all(subcentrosPadrao.map(([nome, sufixo]) =>
