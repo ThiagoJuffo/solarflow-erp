@@ -63,7 +63,7 @@ const moeda = (valor) =>
 
 const statusCalculado = (lancamento) => {
   if (
-    lancamento.status === "pendente" &&
+    ["pendente", "parcial"].includes(lancamento.status) &&
     lancamento.data_vencimento &&
     isPast(parseISO(lancamento.data_vencimento)) &&
     !isToday(parseISO(lancamento.data_vencimento))
@@ -185,11 +185,10 @@ export default function FluxoCaixa() {
       .reduce((total, l) => total + Number(l.valor || 0), 0);
     const despesasPrevistas = lancamentosMes.filter((l) => l.tipo === "despesa")
       .reduce((total, l) => total + Number(l.valor || 0), 0);
-    const valorRealizado = (l) => Number(l.valor_pago || (l.status_calculado === "pago" ? l.valor : 0));
-    const receitasRealizadas = lancamentosMes.filter((l) => l.tipo === "receita")
-      .reduce((total, l) => total + valorRealizado(l), 0);
-    const despesasRealizadas = lancamentosMes.filter((l) => l.tipo === "despesa")
-      .reduce((total, l) => total + valorRealizado(l), 0);
+    const receitasRealizadas = ativos.filter((l) => l.tipo === "receita")
+      .reduce((total, l) => total + valorRealizadoNoMes(l, baixas, mesAtual), 0);
+    const despesasRealizadas = ativos.filter((l) => l.tipo === "despesa")
+      .reduce((total, l) => total + valorRealizadoNoMes(l, baixas, mesAtual), 0);
     const atrasados = ativos.filter((l) => l.status_calculado === "atrasado");
     return {
       receitasPrevistas,
@@ -199,9 +198,12 @@ export default function FluxoCaixa() {
       saldoPrevisto: receitasPrevistas - despesasPrevistas,
       saldoRealizado: receitasRealizadas - despesasRealizadas,
       atrasados,
-      valorAtrasado: atrasados.reduce((total, l) => total + Number(l.valor || 0), 0),
+      valorAtrasado: atrasados.reduce(
+        (total, l) => total + Math.max(Number(l.valor || 0) - Number(l.valor_pago || 0), 0),
+        0
+      ),
     };
-  }, [ativos, lancamentosMes]);
+  }, [ativos, baixas, lancamentosMes, mesAtual]);
 
   const dadosMensais = useMemo(() =>
     Array.from({ length: 6 }, (_, indice) => addMonths(mesAtual, indice - 2)).map((mes) => {
@@ -224,16 +226,34 @@ export default function FluxoCaixa() {
     })).sort((a, b) => b.value - a.value);
   }, [lancamentosMes]);
 
-  const contasComSaldo = useMemo(() => contas.map((conta) => {
-    const movimentos = ativos.filter((l) =>
-      l.conta_financeira_id === conta.id && ["pago", "parcial"].includes(l.status_calculado)
-    );
-    const saldoMovimentos = movimentos.reduce((total, l) => {
-      const realizado = Number(l.valor_pago || (l.status_calculado === "pago" ? l.valor : 0));
-      return total + (l.tipo === "receita" ? realizado : -realizado);
-    }, 0);
-    return { ...conta, saldo_atual: Number(conta.saldo_inicial || 0) + saldoMovimentos };
-  }), [ativos, contas]);
+  const contasComSaldo = useMemo(() => {
+    const lancamentoPorId = new Map(ativos.map((lancamento) => [lancamento.id, lancamento]));
+    const lancamentosComBaixa = new Set(baixas.map((baixa) => baixa.lancamento_id));
+
+    return contas.map((conta) => {
+      const saldoDasBaixas = baixas
+        .filter((baixa) => baixa.conta_financeira_id === conta.id)
+        .reduce((total, baixa) => {
+          const lancamento = lancamentoPorId.get(baixa.lancamento_id);
+          if (!lancamento) return total;
+          return total + (lancamento.tipo === "receita" ? Number(baixa.valor || 0) : -Number(baixa.valor || 0));
+        }, 0);
+      const saldoLegado = ativos
+        .filter((lancamento) =>
+          !lancamentosComBaixa.has(lancamento.id) &&
+          lancamento.conta_financeira_id === conta.id &&
+          ["pago", "parcial"].includes(lancamento.status)
+        )
+        .reduce((total, lancamento) => {
+          const realizado = Number(lancamento.valor_pago || (lancamento.status === "pago" ? lancamento.valor : 0));
+          return total + (lancamento.tipo === "receita" ? realizado : -realizado);
+        }, 0);
+      return {
+        ...conta,
+        saldo_atual: Number(conta.saldo_inicial || 0) + saldoDasBaixas + saldoLegado,
+      };
+    });
+  }, [ativos, baixas, contas]);
 
   const filtrados = useMemo(() => lancamentosMes.filter((l) => {
     const termo = busca.toLowerCase();
