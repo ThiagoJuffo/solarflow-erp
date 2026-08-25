@@ -253,10 +253,95 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
           </section>
 
           <section className="space-y-4 border-t border-slate-800 pt-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Relacionamentos e documento</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">2. Para onde vai</p>
+
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+              <div className="mb-4">
+                <p className="text-sm font-medium text-white">Destino do lançamento</p>
+                <p className="mt-1 text-xs leading-5 text-slate-400">
+                  Se houver um projeto, selecione-o primeiro. O centro principal será preenchido automaticamente.
+                  Use o subcentro somente quando quiser detalhar o gasto.
+                </p>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs text-slate-400">Projeto / cliente (opcional)</label>
+                <select value={form.projeto_id || ""} onChange={(e) => selecionarProjeto(e.target.value)} className={campoClass}>
+                  <option value="">Não pertence a um projeto</option>
+                  {projetos.map((projeto) => (
+                    <option key={projeto.id} value={projeto.id}>{projeto.nome_cliente} — {projeto.cpf}</option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Para despesas gerais da empresa, deixe sem projeto e escolha uma área da Ecomar abaixo.
+                </p>
+              </div>
+
+              {form.projeto_id && !centroDoProjeto && (
+                <p className="mt-3 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                  Este projeto ainda não possui um centro de custo. Revise o cadastro de centros antes de salvar.
+                </p>
+              )}
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-xs text-slate-400">Centro de custo principal *</label>
+                  <select required value={centroPrincipalId} onChange={(e) => selecionarCentroPrincipal(e.target.value)} className={campoClass}>
+                    <option value="">Selecione o projeto ou a área...</option>
+                    {centrosCorporativos.length > 0 && (
+                      <optgroup label="Áreas da Ecomar">
+                        {centrosCorporativos.map((centro) => (
+                          <option key={centro.id} value={centro.id}>{centro.nome}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {centrosProjetos.length > 0 && (
+                      <optgroup label="Projetos / clientes">
+                        {centrosProjetos.map((centro) => (
+                          <option key={centro.id} value={centro.id}>{centro.nome}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                  </select>
+                  {form.projeto_id && centroDoProjeto && (
+                    <p className="mt-1 text-[11px] text-emerald-400">Centro preenchido automaticamente pelo projeto.</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-xs text-slate-400">Subcentro (opcional)</label>
+                  <select disabled={!centroPrincipalId || !subcentrosDisponiveis.length}
+                    value={centroSelecionado?.tipo === "subcentro" ? centroSelecionado.id : ""}
+                    onChange={(e) => selecionarSubcentro(e.target.value)}
+                    className={`${campoClass} disabled:cursor-not-allowed disabled:opacity-50`}>
+                    <option value="">Sem detalhamento</option>
+                    {subcentrosDisponiveis.map((centro) => (
+                      <option key={centro.id} value={centro.id}>{centro.nome}</option>
+                    ))}
+                  </select>
+                  {centroPrincipalId && !subcentrosDisponiveis.length && (
+                    <p className="mt-1 text-[11px] text-slate-500">Este centro não possui subdivisões.</p>
+                  )}
+                </div>
+              </div>
+
+              {centroPrincipal && (
+                <div className="mt-4 rounded-lg bg-slate-950/60 px-3 py-2 text-xs text-slate-300">
+                  <span className="text-slate-500">Destino escolhido: </span>
+                  <span className="font-semibold text-white">{centroPrincipal.nome}</span>
+                  {centroSelecionado?.tipo === "subcentro" && (
+                    <span className="text-amber-300"> → {centroSelecionado.nome}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section className="space-y-4 border-t border-slate-800 pt-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">3. Pessoa e documento (opcional)</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs text-slate-400">Cliente / Fornecedor</label>
+                <label className="mb-1.5 block text-xs text-slate-400">Cliente / fornecedor</label>
                 <input value={form.nome_cliente_fornecedor || ""} onChange={(e) => set("nome_cliente_fornecedor", e.target.value)}
                   placeholder="Nome ou razão social" className={campoClass} />
               </div>
@@ -266,67 +351,18 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
                   placeholder="Documento" className={campoClass} />
               </div>
             </div>
+            <div>
+              <label className="mb-1.5 block text-xs text-slate-400">Número do documento</label>
+              <input value={form.numero_documento || ""} onChange={(e) => set("numero_documento", e.target.value)}
+                placeholder="Nota fiscal, boleto ou referência" className={campoClass} />
+            </div>
+          </section>
 
+          <section className="space-y-4 border-t border-slate-800 pt-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">4. Parcelamento e recorrência</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs text-slate-400">Projeto relacionado</label>
-                <select value={form.projeto_id || ""} onChange={(e) => selecionarProjeto(e.target.value)} className={campoClass}>
-                  <option value="">Nenhum projeto</option>
-                  {projetos.map((projeto) => (
-                    <option key={projeto.id} value={projeto.id}>{projeto.nome_cliente} — {projeto.cpf}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs text-slate-400">Número do documento</label>
-                <input value={form.numero_documento || ""} onChange={(e) => set("numero_documento", e.target.value)}
-                  placeholder="NF, boleto ou referência" className={campoClass} />
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
-              <div className="mb-3">
-                <p className="text-sm font-medium text-white">Destino do lançamento</p>
-                <p className="mt-0.5 text-xs text-slate-500">
-                  O centro principal identifica o projeto ou área. O subcentro é uma divisão opcional.
-                </p>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-xs text-slate-400">Centro de custo principal</label>
-                  <select value={centroPrincipalId} onChange={(e) => selecionarCentroPrincipal(e.target.value)} className={campoClass}>
-                    <option value="">Não informado</option>
-                    {centrosPrincipais.map((centro) => (
-                      <option key={centro.id} value={centro.id}>
-                        {centro.tipo === "projeto_cliente" ? "Projeto: " : ""}{centro.nome}
-                      </option>
-                    ))}
-                  </select>
-                  {form.projeto_id && centroPrincipalId && (
-                    <p className="mt-1 text-[11px] text-emerald-400">Preenchido automaticamente pelo projeto.</p>
-                  )}
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs text-slate-400">Subcentro de custo (opcional)</label>
-                  <select disabled={!centroPrincipalId || !subcentrosDisponiveis.length}
-                    value={centroSelecionado?.tipo === "subcentro" ? centroSelecionado.id : ""}
-                    onChange={(e) => set("centro_custo_id", e.target.value || centroPrincipalId)}
-                    className={`${campoClass} disabled:cursor-not-allowed disabled:opacity-50`}>
-                    <option value="">Sem divisão adicional</option>
-                    {subcentrosDisponiveis.map((centro) => (
-                      <option key={centro.id} value={centro.id}>{centro.nome}</option>
-                    ))}
-                  </select>
-                  {centroPrincipalId && !subcentrosDisponiveis.length && (
-                    <p className="mt-1 text-[11px] text-slate-500">Este centro ainda não possui subcentros.</p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-xs text-slate-400">Parcelamento</label>
+                <label className="mb-1.5 block text-xs text-slate-400">Número de parcelas</label>
                 <input type="number" min="1" max="120" value={form.total_parcelas || 1}
                   onChange={(e) => set("total_parcelas", e.target.value)} className={campoClass} />
                 {!lancamento && Number(form.total_parcelas || 1) > 1 && (
@@ -339,7 +375,7 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
                     set("recorrente", e.target.checked);
                     if (e.target.checked) set("total_parcelas", 1);
                   }} className="h-4 w-4 accent-amber-500" />
-                <span className="text-sm text-slate-300">Lançamento recorrente</span>
+                <span className="text-sm text-slate-300">Repetir este lançamento</span>
               </label>
             </div>
 
