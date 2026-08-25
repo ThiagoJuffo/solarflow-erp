@@ -29,11 +29,31 @@ function CentroModal({ centro, centros, projetos, onSalvar, onFechar }) {
     }));
   };
 
+  const selecionarCentroPai = (centroPaiId) => {
+    const centroPai = centros.find((item) => item.id === centroPaiId);
+    setForm((atual) => ({
+      ...atual,
+      centro_pai_id: centroPaiId,
+      projeto_id: centroPai?.projeto_id || "",
+    }));
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSaving(true);
     try {
-      await onSalvar({ ...form, orcamento: Number(form.orcamento || 0) });
+      const centroPai = centros.find((item) => item.id === form.centro_pai_id);
+      const dados = {
+        ...form,
+        orcamento: Number(form.orcamento || 0),
+        centro_pai_id: form.tipo === "subcentro" ? (centroPai?.id || "") : "",
+        projeto_id: form.tipo === "subcentro"
+          ? (centroPai?.projeto_id || "")
+          : form.tipo === "projeto_cliente"
+            ? (form.projeto_id || "")
+            : "",
+      };
+      await onSalvar(dados);
     } finally {
       setSaving(false);
     }
@@ -84,7 +104,7 @@ function CentroModal({ centro, centros, projetos, onSalvar, onFechar }) {
           {form.tipo === "subcentro" && (
             <div>
               <label className="mb-1.5 block text-xs text-slate-400">Centro principal *</label>
-              <select required value={form.centro_pai_id || ""} onChange={(e) => set("centro_pai_id", e.target.value)} className={campoClass}>
+              <select required value={form.centro_pai_id || ""} onChange={(e) => selecionarCentroPai(e.target.value)} className={campoClass}>
                 <option value="">Selecionar centro principal...</option>
                 {centros.filter((item) => item.id !== centro?.id && item.tipo !== "subcentro").map((item) => (
                   <option key={item.id} value={item.id}>{item.nome}</option>
