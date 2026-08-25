@@ -71,6 +71,15 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const set = (campo, valor) => setForm((atual) => ({ ...atual, [campo]: valor }));
+  const selecionarStatus = (status) => {
+    const liquidado = status === "pago" || status === "parcial";
+    setForm((atual) => ({
+      ...atual,
+      status,
+      data_pagamento: liquidado ? (atual.data_pagamento || hoje) : "",
+      conciliado: liquidado ? Boolean(atual.conciliado) : false,
+    }));
+  };
 
   const categorias = useMemo(
     () => form.tipo === "receita" ? CATEGORIAS_RECEITA : CATEGORIAS_DESPESA,
@@ -403,7 +412,7 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
             <div className="grid gap-3 sm:grid-cols-3">
               <div>
                 <label className="mb-1.5 block text-xs text-slate-400">Status</label>
-                <select value={form.status} onChange={(e) => set("status", e.target.value)} className={campoClass}>
+                <select value={form.status} onChange={(e) => selecionarStatus(e.target.value)} className={campoClass}>
                   <option value="pendente">Pendente</option>
                   <option value="parcial">Parcialmente liquidado</option>
                   <option value="pago">{form.tipo === "receita" ? "Recebido" : "Pago"}</option>
