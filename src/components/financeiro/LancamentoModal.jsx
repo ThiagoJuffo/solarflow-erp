@@ -71,15 +71,6 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const set = (campo, valor) => setForm((atual) => ({ ...atual, [campo]: valor }));
-  const selecionarStatus = (status) => {
-    const liquidado = status === "pago" || status === "parcial";
-    setForm((atual) => ({
-      ...atual,
-      status,
-      data_pagamento: liquidado ? (atual.data_pagamento || hoje) : "",
-      conciliado: liquidado ? Boolean(atual.conciliado) : false,
-    }));
-  };
 
   const categorias = useMemo(
     () => form.tipo === "receita" ? CATEGORIAS_RECEITA : CATEGORIAS_DESPESA,
@@ -165,22 +156,21 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
       const centroPrincipalFinal = centroDestino?.tipo === "subcentro"
         ? centrosPrincipais.find((centro) => centro.id === centroDestino.centro_pai_id)
         : centroDestino;
-      const valor = Number(form.valor);
-      const statusLiquidado = form.status === "pago" || form.status === "parcial";
       const dados = {
         ...form,
-        valor,
+        valor: Number(form.valor),
         parcela_atual: Number(form.parcela_atual || 1),
         total_parcelas: Number(form.total_parcelas || 1),
         quantidade_recorrencias: Number(form.quantidade_recorrencias || 1),
-        valor_pago: form.status === "pago" ? valor : form.status === "parcial" ? Number(form.valor_pago || 0) : 0,
-        data_pagamento: statusLiquidado ? form.data_pagamento : "",
-        conciliado: statusLiquidado ? Boolean(form.conciliado) : false,
+        status: lancamento?.status || "pendente",
+        valor_pago: Number(lancamento?.valor_pago || 0),
+        data_pagamento: lancamento?.data_pagamento || "",
+        conciliado: Boolean(lancamento?.conciliado),
+        origem: lancamento?.origem || "manual",
         centro_custo_id: centroDestino?.id || centroPrincipalFinal?.id || "",
         projeto_id: centroDestino?.projeto_id || centroPrincipalFinal?.projeto_id || "",
         centro_custo: centroCustoLegado(centroPrincipalFinal),
       };
-      if (dados.status === "pago" && !dados.data_pagamento) dados.data_pagamento = hoje;
       await onSalvar(dados);
     } finally {
       setSaving(false);
@@ -408,22 +398,13 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
           </section>
 
           <section className="space-y-4 border-t border-slate-800 pt-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">5. Pagamento ou recebimento</p>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">5. Previsão de pagamento ou recebimento</p>
+            <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs text-slate-400">Status</label>
-                <select value={form.status} onChange={(e) => selecionarStatus(e.target.value)} className={campoClass}>
-                  <option value="pendente">Pendente</option>
-                  <option value="parcial">Parcialmente liquidado</option>
-                  <option value="pago">{form.tipo === "receita" ? "Recebido" : "Pago"}</option>
-                  <option value="cancelado">Cancelado</option>
-                </select>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs text-slate-400">Forma de pagamento</label>
+                <label className="mb-1.5 block text-xs text-slate-400">Forma prevista</label>
                 <select value={form.forma_pagamento || ""} onChange={(e) => set("forma_pagamento", e.target.value)}
                   className={campoClass}>
-                  <option value="">Selecionar...</option>
+                  <option value="">Ainda não definida</option>
                   <option value="pix">Pix</option>
                   <option value="boleto">Boleto</option>
                   <option value="cartao">Cartão</option>
@@ -434,43 +415,27 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs text-slate-400">Conta financeira</label>
+                <label className="mb-1.5 block text-xs text-slate-400">Conta prevista</label>
                 <select value={form.conta_financeira_id || ""} onChange={(e) => set("conta_financeira_id", e.target.value)}
                   className={campoClass}>
-                  <option value="">Não informada</option>
+                  <option value="">Ainda não definida</option>
                   {contas.filter((conta) => conta.ativa !== false).map((conta) => (
                     <option key={conta.id} value={conta.id}>{conta.nome}</option>
                   ))}
                 </select>
               </div>
             </div>
-
-            {(form.status === "pago" || form.status === "parcial") && (
-              <div className={`grid gap-3 ${form.status === "parcial" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
-                {form.status === "parcial" && (
-                  <div>
-                    <label className="mb-1.5 block text-xs text-slate-400">
-                      Valor {form.tipo === "receita" ? "recebido" : "pago"} (R$) *
-                    </label>
-                    <input required type="number" min="0.01"
-                      max={Math.max(Number(form.valor || 0) - 0.01, 0.01)} step="0.01"
-                      value={form.valor_pago || ""} onChange={(e) => set("valor_pago", e.target.value)}
-                      placeholder="0,00" className={campoClass} />
-                    <p className="mt-1 text-[11px] text-slate-500">Deve ser menor que o valor total.</p>
-                  </div>
-                )}
-                <div>
-                  <label className="mb-1.5 block text-xs text-slate-400">Data da liquidação *</label>
-                  <input required type="date" value={form.data_pagamento || ""} onChange={(e) => set("data_pagamento", e.target.value)}
-                    className={campoClass} />
-                </div>
-                <label className="mt-6 flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-                  <input type="checkbox" checked={Boolean(form.conciliado)}
-                    onChange={(e) => set("conciliado", e.target.checked)} className="h-4 w-4 accent-amber-500" />
-                  <span className="text-sm text-slate-300">Movimento conciliado</span>
-                </label>
-              </div>
-            )}
+            <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 px-4 py-3">
+              <p className="text-sm font-medium text-blue-200">
+                {lancamento
+                  ? `Status atual: ${lancamento.status === "pago" ? (form.tipo === "receita" ? "Recebido" : "Pago") : lancamento.status === "parcial" ? "Parcialmente liquidado" : lancamento.status === "cancelado" ? "Cancelado" : "Pendente"}`
+                  : "O lançamento será criado como pendente."}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-slate-400">
+                Pagamentos e recebimentos devem ser registrados pela ação “Dar baixa” ou pela conciliação bancária.
+                Assim o sistema mantém data, conta, valor e comprovante no histórico.
+              </p>
+            </div>
           </section>
 
           <div>
