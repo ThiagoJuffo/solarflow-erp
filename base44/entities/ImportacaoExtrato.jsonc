@@ -45,9 +45,62 @@
       "type": "number",
       "default": 0
     },
+    "arquivo_hash": {
+      "type": "string",
+      "description": "SHA-256 usado para impedir a importa\u00e7\u00e3o repetida do mesmo arquivo"
+    },
+    "movimentos_duplicados": {
+      "type": "integer",
+      "default": 0
+    },
     "mensagem_erro": {
       "type": "string"
     }
+  },
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        }
+      ]
+    },
+    "delete": false
   },
   "required": [
     "conta_financeira_id",
