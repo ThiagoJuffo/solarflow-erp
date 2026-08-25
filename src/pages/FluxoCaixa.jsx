@@ -89,7 +89,9 @@ const listarTodos = async (entidade, ordenacao) => {
 };
 
 const valorRealizadoNoMes = (lancamento, baixas, mes) => {
-  const historico = baixas.filter((baixa) => baixa.lancamento_id === lancamento.id);
+  const historico = baixas.filter(
+    (baixa) => baixa.lancamento_id === lancamento.id && baixa.status !== "estornada"
+  );
   if (historico.length) {
     return historico
       .filter((baixa) => dentroDoMes(baixa.data, mes))
@@ -228,10 +230,11 @@ export default function FluxoCaixa() {
 
   const contasComSaldo = useMemo(() => {
     const lancamentoPorId = new Map(ativos.map((lancamento) => [lancamento.id, lancamento]));
-    const lancamentosComBaixa = new Set(baixas.map((baixa) => baixa.lancamento_id));
+    const baixasAtivas = baixas.filter((baixa) => baixa.status !== "estornada");
+    const lancamentosComBaixa = new Set(baixasAtivas.map((baixa) => baixa.lancamento_id));
 
     return contas.map((conta) => {
-      const saldoDasBaixas = baixas
+      const saldoDasBaixas = baixasAtivas
         .filter((baixa) => baixa.conta_financeira_id === conta.id)
         .reduce((total, baixa) => {
           const lancamento = lancamentoPorId.get(baixa.lancamento_id);
@@ -356,46 +359,84 @@ export default function FluxoCaixa() {
   const registrarLancamentosCriados = (novos) =>
     setLancamentos((lista) => [...novos, ...lista]);
 
+  const registrarBaixasCriadas = (novasBaixas) =>
+    setBaixas((lista) => [...novasBaixas, ...lista]);
+
   const baixarLancamento = (lancamento) => setLancamentoBaixa(lancamento);
 
   const salvarBaixa = async (dados) => {
-    const baixa = await base44.entities.BaixaFinanceira.create({
-      lancamento_id: lancamentoBaixa.id,
-      conta_financeira_id: dados.conta_financeira_id || "",
-      valor: Number(dados.valor),
-      data: dados.data,
-      forma_pagamento: dados.forma_pagamento || undefined,
-      comprovante_uri: dados.comprovante_uri || "",
-      observacoes: dados.observacoes || "",
-    });
-    const valorPago = Math.min(
-      Number(lancamentoBaixa.valor || 0),
-      Number(lancamentoBaixa.valor_pago || 0) + Number(baixa.valor || 0)
+    const lancamentoAtual = await base44.entities.Lancamento.get(lancamentoBaixa.id);
+    const saldoAberto = Math.max(
+      Number(lancamentoAtual.valor || 0) - Number(lancamentoAtual.valor_pago || 0),
+      0
     );
-    const liquidado = valorPago >= Number(lancamentoBaixa.valor || 0) - 0.01;
-    const anexos = [...(lancamentoBaixa.anexos || [])];
-    if (dados.comprovante_uri) anexos.push({
-      nome: dados.comprovante_nome || "Comprovante",
-      tipo: "comprovante",
-      file_uri: dados.comprovante_uri,
-      data_upload: new Date().toISOString(),
-    });
-    const atualizado = await base44.entities.Lancamento.update(lancamentoBaixa.id, {
-      valor_pago: valorPago,
-      status: liquidado ? "pago" : "parcial",
-      data_pagamento: liquidado ? dados.data : "",
-      conta_financeira_id: dados.conta_financeira_id || lancamentoBaixa.conta_financeira_id || "",
-      forma_pagamento: dados.forma_pagamento || lancamentoBaixa.forma_pagamento || undefined,
-      anexos,
-    });
-    setLancamentos((lista) => lista.map((l) => l.id === atualizado.id ? atualizado : l));
-    setLancamentoBaixa(null);
+    const valorDaBaixa = Number(dados.valor || 0);
+    if (valorDaBaixa <= 0 || valorDaBaixa > saldoAberto + 0.01) {
+      throw new Error("O saldo do lançamento mudou. Atualize a tela e tente novamente.");
+    }
+
+    let baixa;
+    try {
+      baixa = await base44.entities.BaixaFinanceira.create({
+        lancamento_id: lancamentoAtual.id,
+        conta_financeira_id: dados.conta_financeira_id,
+        valor: valorDaBaixa,
+        data: dados.data,
+        forma_pagamento: dados.forma_pagamento || undefined,
+        comprovante_uri: dados.comprovante_uri || "",
+        observacoes: dados.observacoes || "",
+        origem: "manual",
+        status: "ativa",
+      });
+      const valorPago = Math.min(
+        Number(lancamentoAtual.valor || 0),
+        Number(lancamentoAtual.valor_pago || 0) + valorDaBaixa
+      );
+      const liquidado = valorPago >= Number(lancamentoAtual.valor || 0) - 0.01;
+      const anexos = [...(lancamentoAtual.anexos || [])];
+      if (dados.comprovante_uri) anexos.push({
+        nome: dados.comprovante_nome || "Comprovante",
+        tipo: "comprovante",
+        file_uri: dados.comprovante_uri,
+        data_upload: new Date().toISOString(),
+      });
+      const atualizado = await base44.entities.Lancamento.update(lancamentoAtual.id, {
+        valor_pago: valorPago,
+        status: liquidado ? "pago" : "parcial",
+        data_pagamento: dados.data,
+        conta_financeira_id: dados.conta_financeira_id,
+        forma_pagamento: dados.forma_pagamento || lancamentoAtual.forma_pagamento || undefined,
+        anexos,
+      });
+      setBaixas((lista) => [baixa, ...lista]);
+      setLancamentos((lista) => lista.map((l) => l.id === atualizado.id ? atualizado : l));
+      setLancamentoBaixa(null);
+    } catch (error) {
+      if (baixa?.id) {
+        await base44.entities.BaixaFinanceira.update(baixa.id, {
+          status: "estornada",
+          estornada_em: new Date().toISOString(),
+          motivo_estorno: "Falha ao atualizar o lançamento relacionado",
+        });
+      }
+      throw error;
+    }
   };
 
-  const excluirLancamento = async (lancamento) => {
-    if (!window.confirm(`Remover o lançamento "${lancamento.descricao}"?`)) return;
-    await base44.entities.Lancamento.delete(lancamento.id);
-    setLancamentos((lista) => lista.filter((l) => l.id !== lancamento.id));
+  const cancelarLancamento = async (lancamento) => {
+    if (Number(lancamento.valor_pago || 0) > 0 || ["pago", "parcial"].includes(lancamento.status) || lancamento.conciliado) {
+      window.alert("Lançamentos com baixa ou conciliação não podem ser cancelados. Registre primeiro o estorno financeiro.");
+      return;
+    }
+    const motivo = window.prompt(`Motivo do cancelamento de "${lancamento.descricao}":`);
+    if (motivo === null) return;
+    const atualizado = await base44.entities.Lancamento.update(lancamento.id, {
+      status: "cancelado",
+      motivo_cancelamento: motivo.trim() || "Cancelado pelo usuário",
+      cancelado_em: new Date().toISOString(),
+      cancelado_por: user?.email || user?.full_name || "Financeiro",
+    });
+    setLancamentos((lista) => lista.map((l) => l.id === atualizado.id ? atualizado : l));
   };
 
   const alternarConta = async (conta) => {
@@ -471,7 +512,7 @@ export default function FluxoCaixa() {
               className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-400 transition-colors hover:bg-amber-500/20 hover:text-amber-400">
               <Edit3 size={14} />
             </button>
-            <button onClick={() => excluirLancamento(lancamento)} title="Remover"
+            <button onClick={() => cancelarLancamento(lancamento)} title="Cancelar lançamento"
               className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-400 transition-colors hover:bg-red-500/20 hover:text-red-400">
               <X size={14} />
             </button>
