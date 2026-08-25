@@ -30,9 +30,66 @@
     "comprovante_uri": {
       "type": "string"
     },
+    "origem": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "conciliacao",
+        "cadastro_inicial"
+      ],
+      "default": "manual"
+    },
+    "movimento_extrato_id": {
+      "type": "string"
+    },
     "observacoes": {
       "type": "string"
     }
+  },
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        }
+      ]
+    },
+    "delete": false
   },
   "required": [
     "lancamento_id",
