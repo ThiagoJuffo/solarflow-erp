@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bot, CheckCircle2, ExternalLink, Loader2, MessageCircle, RefreshCw, ShieldCheck, XCircle } from "lucide-react";
+import { AlertCircle, Bot, CheckCircle2, ExternalLink, Loader2, MessageCircle, RefreshCw, ShieldCheck, XCircle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const moeda = (valor) =>
@@ -11,10 +11,21 @@ const STATUS = {
   rejeitada: "bg-red-500/10 text-red-300",
 };
 
+const listarTodos = async (entidade, ordenacao) => {
+  const todos = [];
+  const limite = 5000;
+  for (let pagina = 0; ; pagina += 1) {
+    const lote = await entidade.list(ordenacao, limite, pagina * limite);
+    todos.push(...lote);
+    if (lote.length < limite) return todos;
+  }
+};
+
 export default function AssistenteComercial({ canEdit, user, onLancamentoCriado }) {
   const [solicitacoes, setSolicitacoes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processando, setProcessando] = useState("");
+  const [erro, setErro] = useState("");
   const whatsappUrl = useMemo(
     () => base44.agents.getWhatsAppConnectURL("comercial_ecomar"),
     []
@@ -23,8 +34,11 @@ export default function AssistenteComercial({ canEdit, user, onLancamentoCriado 
   const carregar = async () => {
     setLoading(true);
     try {
-      const lista = await base44.entities.SolicitacaoLancamento.list("-created_date", 200);
+      const lista = await listarTodos(base44.entities.SolicitacaoLancamento, "-created_date");
       setSolicitacoes(lista);
+      setErro("");
+    } catch (error) {
+      setErro(error?.message || "Não foi possível carregar as solicitações.");
     } finally {
       setLoading(false);
     }
@@ -34,26 +48,37 @@ export default function AssistenteComercial({ canEdit, user, onLancamentoCriado 
 
   const aprovar = async (solicitacao) => {
     if (!canEdit || !window.confirm(`Aprovar e criar o lançamento "${solicitacao.descricao}"?`)) return;
+    setErro("");
     setProcessando(solicitacao.id);
     try {
-      const lancamento = await base44.entities.Lancamento.create({
-        tipo: solicitacao.tipo,
-        descricao: solicitacao.descricao,
-        valor: Number(solicitacao.valor || 0),
-        data_competencia: solicitacao.data_vencimento,
-        data_vencimento: solicitacao.data_vencimento,
-        categoria: solicitacao.categoria || "outros",
-        projeto_id: solicitacao.projeto_id || "",
-        centro_custo_id: solicitacao.centro_custo_id || "",
-        nome_cliente_fornecedor: solicitacao.nome_cliente_fornecedor || "",
-        numero_documento: solicitacao.numero_documento || "",
-        observacoes: [solicitacao.observacoes, "Origem: Assistente Comercial ECOMAR / WhatsApp"].filter(Boolean).join("\n"),
-        status: "pendente",
-        valor_pago: 0,
-        recorrente: false,
-        conciliado: false,
-      });
-      const atualizada = await base44.entities.SolicitacaoLancamento.update(solicitacao.id, {
+      const atual = await base44.entities.SolicitacaoLancamento.get(solicitacao.id);
+      if (atual.status !== "pendente" || atual.lancamento_id) {
+        throw new Error("Esta solicitação já foi tratada. Atualize a lista.");
+      }
+      const existentes = await base44.entities.Lancamento.filter({
+        solicitacao_lancamento_id: atual.id,
+      }, "-created_date", 5);
+      const lancamento = existentes.find((item) => item.status !== "cancelado") ||
+        await base44.entities.Lancamento.create({
+          tipo: atual.tipo,
+          descricao: atual.descricao,
+          valor: Number(atual.valor || 0),
+          data_competencia: atual.data_vencimento,
+          data_vencimento: atual.data_vencimento,
+          categoria: atual.categoria || "outros",
+          projeto_id: atual.projeto_id || "",
+          centro_custo_id: atual.centro_custo_id || "",
+          nome_cliente_fornecedor: atual.nome_cliente_fornecedor || "",
+          numero_documento: atual.numero_documento || "",
+          observacoes: [atual.observacoes, "Origem: Assistente Comercial ECOMAR / WhatsApp"].filter(Boolean).join("\n"),
+          status: "pendente",
+          valor_pago: 0,
+          recorrente: false,
+          conciliado: false,
+          origem: "assistente",
+          solicitacao_lancamento_id: atual.id,
+        });
+      const atualizada = await base44.entities.SolicitacaoLancamento.update(atual.id, {
         status: "aprovada",
         lancamento_id: lancamento.id,
         decidido_por: user?.email || user?.full_name || "Financeiro",
@@ -61,6 +86,8 @@ export default function AssistenteComercial({ canEdit, user, onLancamentoCriado 
       });
       setSolicitacoes((lista) => lista.map((item) => item.id === atualizada.id ? atualizada : item));
       onLancamentoCriado?.(lancamento);
+    } catch (error) {
+      setErro(error?.message || "Não foi possível aprovar a solicitação.");
     } finally {
       setProcessando("");
     }
@@ -70,15 +97,22 @@ export default function AssistenteComercial({ canEdit, user, onLancamentoCriado 
     if (!canEdit) return;
     const motivo = window.prompt("Motivo da rejeição (opcional):") ?? null;
     if (motivo === null) return;
+    setErro("");
     setProcessando(solicitacao.id);
     try {
-      const atualizada = await base44.entities.SolicitacaoLancamento.update(solicitacao.id, {
+      const atual = await base44.entities.SolicitacaoLancamento.get(solicitacao.id);
+      if (atual.status !== "pendente" || atual.lancamento_id) {
+        throw new Error("Esta solicitação já foi tratada. Atualize a lista.");
+      }
+      const atualizada = await base44.entities.SolicitacaoLancamento.update(atual.id, {
         status: "rejeitada",
         motivo_rejeicao: motivo,
         decidido_por: user?.email || user?.full_name || "Financeiro",
         decidido_em: new Date().toISOString(),
       });
       setSolicitacoes((lista) => lista.map((item) => item.id === atualizada.id ? atualizada : item));
+    } catch (error) {
+      setErro(error?.message || "Não foi possível rejeitar a solicitação.");
     } finally {
       setProcessando("");
     }
@@ -137,6 +171,12 @@ export default function AssistenteComercial({ canEdit, user, onLancamentoCriado 
             <RefreshCw size={13} className={loading ? "animate-spin" : ""} /> Atualizar
           </button>
         </div>
+
+        {erro && (
+          <div className="mx-5 mt-4 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            <AlertCircle size={14} /> {erro}
+          </div>
+        )}
 
         <div className="divide-y divide-slate-800">
           {loading ? (
