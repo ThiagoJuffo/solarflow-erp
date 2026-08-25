@@ -820,6 +820,7 @@ export default function FluxoCaixa() {
           canEdit={canEdit}
           onLancamentoAtualizado={registrarLancamentoAtualizado}
           onLancamentosCriados={registrarLancamentosCriados}
+          onBaixasCriadas={registrarBaixasCriadas}
         />
       )}
 
