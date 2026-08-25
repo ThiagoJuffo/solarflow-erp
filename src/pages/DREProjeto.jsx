@@ -3,8 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
-  BarChart2, Search, ChevronRight, TrendingUp, TrendingDown,
-  Plus, X, CheckCircle, Loader2, AlertTriangle, Package
+  BarChart2, Search, ChevronRight,
+  Plus, X, AlertTriangle, Package
 } from "lucide-react";
 import CustoProjetoModal from "../components/financeiro/CustoProjetoModal";
 
