@@ -77,6 +77,29 @@ const dentroDoMes = (data, mes) => {
   return parsed >= startOfMonth(mes) && parsed <= endOfMonth(mes);
 };
 
+const listarTodos = async (entidade, ordenacao) => {
+  const limite = 5000;
+  const registros = [];
+  let pagina = [];
+  do {
+    pagina = await entidade.list(ordenacao, limite, registros.length);
+    registros.push(...pagina);
+  } while (pagina.length === limite);
+  return registros;
+};
+
+const valorRealizadoNoMes = (lancamento, baixas, mes) => {
+  const historico = baixas.filter((baixa) => baixa.lancamento_id === lancamento.id);
+  if (historico.length) {
+    return historico
+      .filter((baixa) => dentroDoMes(baixa.data, mes))
+      .reduce((total, baixa) => total + Number(baixa.valor || 0), 0);
+  }
+  return dentroDoMes(lancamento.data_pagamento, mes)
+    ? Number(lancamento.valor_pago || (lancamento.status === "pago" ? lancamento.valor : 0))
+    : 0;
+};
+
 const CardIndicador = ({ titulo, valor, detalhe, icon: Icon, cor = "amber" }) => {
   const estilos = {
     amber: "border-amber-500/20 bg-amber-500/5 text-amber-400",
@@ -102,6 +125,7 @@ const CardIndicador = ({ titulo, valor, detalhe, icon: Icon, cor = "amber" }) =>
 
 export default function FluxoCaixa() {
   const [lancamentos, setLancamentos] = useState([]);
+  const [baixas, setBaixas] = useState([]);
   const [projetos, setProjetos] = useState([]);
   const [contas, setContas] = useState([]);
   const [centros, setCentros] = useState([]);
@@ -119,24 +143,29 @@ export default function FluxoCaixa() {
   const [busca, setBusca] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("todos");
   const [filtroStatus, setFiltroStatus] = useState("todos");
+  const [erroCarregamento, setErroCarregamento] = useState("");
 
   useEffect(() => {
     Promise.all([
-      base44.entities.Lancamento.list("-data_vencimento", 500),
-      base44.entities.Projeto.list("-created_date", 250),
-      base44.entities.ContaFinanceira.list("-created_date", 100),
-      base44.entities.CentroCusto.list("nome", 5000),
-      base44.entities.CustoProjeto.list("-data", 1000),
-      base44.entities.PreProjeto.list("-created_date", 500),
+      listarTodos(base44.entities.Lancamento, "-data_vencimento"),
+      listarTodos(base44.entities.BaixaFinanceira, "-data"),
+      listarTodos(base44.entities.Projeto, "-created_date"),
+      listarTodos(base44.entities.ContaFinanceira, "-created_date"),
+      listarTodos(base44.entities.CentroCusto, "nome"),
+      listarTodos(base44.entities.CustoProjeto, "-data"),
+      listarTodos(base44.entities.PreProjeto, "-created_date"),
       base44.auth.me(),
-    ]).then(([listaLancamentos, listaProjetos, listaContas, listaCentros, listaCustos, listaPreProjetos, usuario]) => {
+    ]).then(([listaLancamentos, listaBaixas, listaProjetos, listaContas, listaCentros, listaCustos, listaPreProjetos, usuario]) => {
       setLancamentos(listaLancamentos);
+      setBaixas(listaBaixas);
       setProjetos(listaProjetos);
       setContas(listaContas);
       setCentros(listaCentros);
       setCustosProjeto(listaCustos);
       setPreProjetos(listaPreProjetos);
       setUser(usuario);
+    }).catch((error) => {
+      setErroCarregamento(error?.message || "Não foi possível carregar os dados financeiros.");
     }).finally(() => setLoading(false));
   }, []);
 
