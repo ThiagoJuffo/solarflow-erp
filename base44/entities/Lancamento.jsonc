@@ -162,9 +162,82 @@
       "type": "boolean",
       "default": false
     },
+    "origem": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "conciliacao",
+        "assistente",
+        "importacao"
+      ],
+      "default": "manual"
+    },
+    "movimento_extrato_id": {
+      "type": "string",
+      "description": "Movimento banc\u00e1rio que originou ou conciliou o lan\u00e7amento"
+    },
+    "solicitacao_lancamento_id": {
+      "type": "string",
+      "description": "Solicita\u00e7\u00e3o do assistente que originou o lan\u00e7amento"
+    },
+    "cancelado_em": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cancelado_por": {
+      "type": "string"
+    },
+    "motivo_cancelamento": {
+      "type": "string"
+    },
     "observacoes": {
       "type": "string"
     }
+  },
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        }
+      ]
+    },
+    "delete": false
   },
   "required": [
     "tipo",
