@@ -23,6 +23,23 @@ const CATEGORIAS_DESPESA = [
 
 const campoClass = "w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-white outline-none transition-colors focus:border-amber-500";
 
+const centroCustoLegado = (centro) => {
+  if (!centro) return "outros";
+  if (centro.tipo === "projeto_cliente") return "projetos";
+
+  const prefixo = String(centro.codigo || "").toUpperCase().split("-")[0];
+  return {
+    ADM: "administrativo",
+    COM: "comercial",
+    MKT: "marketing",
+    OPS: "operacional",
+    TRIB: "tributos",
+    RH: "pessoal",
+    FIN: "outros",
+    TI: "outros",
+  }[prefixo] || (centro.tipo === "administrativo" ? "administrativo" : "outros");
+};
+
 export default function LancamentoModal({ lancamento, projetos, contas, centros = [], onSalvar, onFechar }) {
   const hoje = new Date().toISOString().split("T")[0];
   const [form, setForm] = useState(lancamento || {
@@ -59,36 +76,60 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
     [form.tipo]
   );
   const centrosPrincipais = useMemo(
-    () => centros.filter((centro) => centro.ativo !== false && centro.tipo !== "subcentro"),
+    () => centros
+      .filter((centro) => centro.ativo !== false && centro.tipo !== "subcentro")
+      .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")),
     [centros]
   );
+  const centrosCorporativos = centrosPrincipais.filter((centro) => centro.tipo !== "projeto_cliente");
+  const centrosProjetos = centrosPrincipais.filter((centro) => centro.tipo === "projeto_cliente");
   const centroSelecionado = centros.find((centro) => centro.id === form.centro_custo_id);
+  const centroDoProjeto = form.projeto_id
+    ? centrosPrincipais.find((centro) => centro.projeto_id === form.projeto_id)
+    : null;
   const centroPrincipalId = centroSelecionado?.tipo === "subcentro"
     ? centroSelecionado.centro_pai_id
-    : centroSelecionado?.id || "";
-  const subcentrosDisponiveis = centros.filter((centro) =>
-    centro.ativo !== false &&
-    centro.tipo === "subcentro" &&
-    centro.centro_pai_id === centroPrincipalId
-  );
+    : centroSelecionado?.id || centroDoProjeto?.id || "";
+  const centroPrincipal = centrosPrincipais.find((centro) => centro.id === centroPrincipalId);
+  const subcentrosDisponiveis = centros
+    .filter((centro) =>
+      centro.ativo !== false &&
+      centro.tipo === "subcentro" &&
+      centro.centro_pai_id === centroPrincipalId
+    )
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
 
   const selecionarProjeto = (projetoId) => {
-    const centroDoProjeto = centrosPrincipais.find((centro) => centro.projeto_id === projetoId);
+    const projeto = projetos.find((item) => item.id === projetoId);
+    const centro = centrosPrincipais.find((item) => item.projeto_id === projetoId);
     setForm((atual) => ({
       ...atual,
       projeto_id: projetoId,
-      centro_custo_id: centroDoProjeto?.id || "",
-      centro_custo: projetoId ? "projetos" : "",
+      centro_custo_id: centro?.id || "",
+      nome_cliente_fornecedor: projetoId
+        ? (atual.nome_cliente_fornecedor || projeto?.nome_cliente || "")
+        : atual.nome_cliente_fornecedor,
+      documento_cliente_fornecedor: projetoId
+        ? (atual.documento_cliente_fornecedor || projeto?.cpf || "")
+        : atual.documento_cliente_fornecedor,
     }));
   };
 
   const selecionarCentroPrincipal = (centroId) => {
-    const centro = centros.find((item) => item.id === centroId);
+    const centro = centrosPrincipais.find((item) => item.id === centroId);
     setForm((atual) => ({
       ...atual,
-      centro_custo_id: centroId,
+      centro_custo_id: centro?.id || "",
       projeto_id: centro?.projeto_id || "",
-      centro_custo: centro?.tipo === "projeto_cliente" ? "projetos" : "",
+    }));
+  };
+
+  const selecionarSubcentro = (subcentroId) => {
+    const destino = centros.find((item) => item.id === subcentroId) || centroPrincipal;
+    setForm((atual) => ({
+      ...atual,
+      centro_custo_id: destino?.id || "",
+      projeto_id: destino?.projeto_id || centroPrincipal?.projeto_id || "",
     }));
   };
 
@@ -117,6 +158,10 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
     event.preventDefault();
     setSaving(true);
     try {
+      const centroDestino = centros.find((centro) => centro.id === form.centro_custo_id) || centroDoProjeto;
+      const centroPrincipalFinal = centroDestino?.tipo === "subcentro"
+        ? centrosPrincipais.find((centro) => centro.id === centroDestino.centro_pai_id)
+        : centroDestino;
       const dados = {
         ...form,
         valor: Number(form.valor),
@@ -124,6 +169,9 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
         total_parcelas: Number(form.total_parcelas || 1),
         quantidade_recorrencias: Number(form.quantidade_recorrencias || 1),
         valor_pago: form.status === "pago" ? Number(form.valor) : Number(form.valor_pago || 0),
+        centro_custo_id: centroDestino?.id || centroPrincipalFinal?.id || "",
+        projeto_id: centroDestino?.projeto_id || centroPrincipalFinal?.projeto_id || "",
+        centro_custo: centroCustoLegado(centroPrincipalFinal),
       };
       if (dados.status === "pago" && !dados.data_pagamento) dados.data_pagamento = hoje;
       await onSalvar(dados);
