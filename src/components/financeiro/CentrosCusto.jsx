@@ -161,7 +161,9 @@ export default function CentrosCusto({ centros, projetos, lancamentos, canEdit, 
       return { ...centro, subcentros, receitas, despesas, resultado: receitas - despesas, quantidade: vinculados.length };
     })
     .sort((a, b) => {
-      if (a.tipo !== b.tipo) return a.tipo === "projeto_cliente" ? 1 : -1;
+      const grupoA = a.tipo === "projeto_cliente" ? 1 : 0;
+      const grupoB = b.tipo === "projeto_cliente" ? 1 : 0;
+      if (grupoA !== grupoB) return grupoA - grupoB;
       return a.nome.localeCompare(b.nome, "pt-BR");
     }), [centros, lancamentos]);
 
