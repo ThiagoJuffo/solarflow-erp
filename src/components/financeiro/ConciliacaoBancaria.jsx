@@ -694,7 +694,8 @@ export default function ConciliacaoBancaria({
             <h3 className="font-semibold text-white">Movimentos para revisar</h3>
             <p className="text-xs text-slate-500">O rateio permite dividir uma entrada única entre vários centros e subcentros.</p>
           </div>
-          <button onClick={carregarHistorico} className="flex items-center gap-2 text-xs text-slate-400 hover:text-white">
+          <button onClick={carregarHistorico} disabled={Boolean(processandoMovimento)}
+            className="flex items-center gap-2 text-xs text-slate-400 hover:text-white disabled:opacity-50">
             <RefreshCw size={13} /> Atualizar
           </button>
         </div>
@@ -724,9 +725,9 @@ export default function ConciliacaoBancaria({
                     <p className="text-[11px] text-slate-500">{movimento.justificativa_match} • Confiança {movimento.score_match}%</p>
                   </div>
                   {canEdit && (
-                    <button onClick={() => confirmarSugestao(movimento)}
-                      className="flex items-center gap-1.5 rounded-lg bg-blue-500 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-400">
-                      <Link2 size={13} /> Conciliar
+                    <button onClick={() => confirmarSugestao(movimento)} disabled={Boolean(processandoMovimento)}
+                      className="flex items-center gap-1.5 rounded-lg bg-blue-500 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-400 disabled:opacity-50">
+                      {processandoMovimento === movimento.id ? <Loader2 size={13} className="animate-spin" /> : <Link2 size={13} />} Conciliar
                     </button>
                   )}
                 </div>
@@ -735,17 +736,17 @@ export default function ConciliacaoBancaria({
               {canEdit && (
                 <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-800 pt-3">
                   {!lancamento && (
-                    <button onClick={() => criarLancamento(movimento)}
-                      className="flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-400 hover:bg-emerald-500/20">
-                      <Plus size={13} /> Criar lançamento
+                    <button onClick={() => criarLancamento(movimento)} disabled={Boolean(processandoMovimento)}
+                      className="flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-400 hover:bg-emerald-500/20 disabled:opacity-50">
+                      {processandoMovimento === movimento.id ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />} Criar lançamento
                     </button>
                   )}
-                  <button onClick={() => setRateando(movimento)}
-                    className="flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-400 hover:bg-amber-500/20">
+                  <button onClick={() => setRateando(movimento)} disabled={Boolean(processandoMovimento)}
+                    className="flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-400 hover:bg-amber-500/20 disabled:opacity-50">
                     <Split size={13} /> Ratear entre centros
                   </button>
-                  <button onClick={() => ignorar(movimento)}
-                    className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-medium text-slate-400 hover:text-white">
+                  <button onClick={() => ignorar(movimento)} disabled={Boolean(processandoMovimento)}
+                    className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-medium text-slate-400 hover:text-white disabled:opacity-50">
                     Ignorar
                   </button>
                 </div>
@@ -768,7 +769,10 @@ export default function ConciliacaoBancaria({
               <div key={item.id} className="flex items-center gap-3 rounded-xl bg-slate-800/60 px-4 py-3">
                 <FileLock2 size={15} className="text-slate-500" />
                 <span className="min-w-0 flex-1 truncate text-sm text-slate-300">{item.nome_arquivo}</span>
-                <span className="text-xs text-slate-500">{item.total_movimentos || 0} movimentos</span>
+                <span className="text-xs text-slate-500">
+                  {item.total_movimentos || 0} novos
+                  {Number(item.movimentos_duplicados || 0) > 0 ? ` • ${item.movimentos_duplicados} duplicados ignorados` : ""}
+                </span>
                 <span className={`rounded-lg px-2 py-1 text-[11px] ${
                   item.status === "erro" ? "bg-red-500/10 text-red-400" : item.status === "processando" ? "bg-amber-500/10 text-amber-400" : "bg-emerald-500/10 text-emerald-400"
                 }`}>{item.status}</span>
