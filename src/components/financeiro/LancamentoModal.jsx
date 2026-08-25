@@ -47,6 +47,7 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
     categoria: "",
     descricao: "",
     valor: "",
+    valor_pago: "",
     data_competencia: hoje,
     data_vencimento: hoje,
     data_pagamento: "",
@@ -106,12 +107,8 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
       ...atual,
       projeto_id: projetoId,
       centro_custo_id: centro?.id || "",
-      nome_cliente_fornecedor: projetoId
-        ? (atual.nome_cliente_fornecedor || projeto?.nome_cliente || "")
-        : atual.nome_cliente_fornecedor,
-      documento_cliente_fornecedor: projetoId
-        ? (atual.documento_cliente_fornecedor || projeto?.cpf || "")
-        : atual.documento_cliente_fornecedor,
+      nome_cliente_fornecedor: projetoId ? (projeto?.nome_cliente || "") : atual.nome_cliente_fornecedor,
+      documento_cliente_fornecedor: projetoId ? (projeto?.cpf || "") : atual.documento_cliente_fornecedor,
     }));
   };
 
@@ -162,13 +159,17 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
       const centroPrincipalFinal = centroDestino?.tipo === "subcentro"
         ? centrosPrincipais.find((centro) => centro.id === centroDestino.centro_pai_id)
         : centroDestino;
+      const valor = Number(form.valor);
+      const statusLiquidado = form.status === "pago" || form.status === "parcial";
       const dados = {
         ...form,
-        valor: Number(form.valor),
+        valor,
         parcela_atual: Number(form.parcela_atual || 1),
         total_parcelas: Number(form.total_parcelas || 1),
         quantidade_recorrencias: Number(form.quantidade_recorrencias || 1),
-        valor_pago: form.status === "pago" ? Number(form.valor) : Number(form.valor_pago || 0),
+        valor_pago: form.status === "pago" ? valor : form.status === "parcial" ? Number(form.valor_pago || 0) : 0,
+        data_pagamento: statusLiquidado ? form.data_pagamento : "",
+        conciliado: statusLiquidado ? Boolean(form.conciliado) : false,
         centro_custo_id: centroDestino?.id || centroPrincipalFinal?.id || "",
         projeto_id: centroDestino?.projeto_id || centroPrincipalFinal?.projeto_id || "",
         centro_custo: centroCustoLegado(centroPrincipalFinal),
@@ -438,11 +439,23 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
               </div>
             </div>
 
-            {form.status === "pago" && (
-              <div className="grid gap-3 sm:grid-cols-2">
+            {(form.status === "pago" || form.status === "parcial") && (
+              <div className={`grid gap-3 ${form.status === "parcial" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+                {form.status === "parcial" && (
+                  <div>
+                    <label className="mb-1.5 block text-xs text-slate-400">
+                      Valor {form.tipo === "receita" ? "recebido" : "pago"} (R$) *
+                    </label>
+                    <input required type="number" min="0.01"
+                      max={Math.max(Number(form.valor || 0) - 0.01, 0.01)} step="0.01"
+                      value={form.valor_pago || ""} onChange={(e) => set("valor_pago", e.target.value)}
+                      placeholder="0,00" className={campoClass} />
+                    <p className="mt-1 text-[11px] text-slate-500">Deve ser menor que o valor total.</p>
+                  </div>
+                )}
                 <div>
-                  <label className="mb-1.5 block text-xs text-slate-400">Data da liquidação</label>
-                  <input type="date" value={form.data_pagamento || ""} onChange={(e) => set("data_pagamento", e.target.value)}
+                  <label className="mb-1.5 block text-xs text-slate-400">Data da liquidação *</label>
+                  <input required type="date" value={form.data_pagamento || ""} onChange={(e) => set("data_pagamento", e.target.value)}
                     className={campoClass} />
                 </div>
                 <label className="mt-6 flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-950/50 p-3">
