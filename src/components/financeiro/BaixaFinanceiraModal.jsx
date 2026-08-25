@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { CheckCircle2, FileUp, Loader2, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, FileUp, Loader2, X } from "lucide-react";
 
 const campoClass = "w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-white outline-none focus:border-amber-500";
 const moeda = (valor) => Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -17,6 +17,7 @@ export default function BaixaFinanceiraModal({ lancamento, contas, onSalvar, onF
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [erro, setErro] = useState("");
   const set = (campo, valor) => setForm((atual) => ({ ...atual, [campo]: valor }));
 
   const enviarComprovante = async (event) => {
@@ -37,9 +38,16 @@ export default function BaixaFinanceiraModal({ lancamento, contas, onSalvar, onF
     event.preventDefault();
     const valor = Number(form.valor || 0);
     if (valor <= 0 || valor > saldoAberto + 0.01) return;
+    if (!form.conta_financeira_id) {
+      setErro("Selecione a conta financeira usada no pagamento ou recebimento.");
+      return;
+    }
+    setErro("");
     setSaving(true);
     try {
       await onSalvar({ ...form, valor });
+    } catch (error) {
+      setErro(error?.message || "Não foi possível registrar a baixa.");
     } finally {
       setSaving(false);
     }
@@ -92,9 +100,9 @@ export default function BaixaFinanceiraModal({ lancamento, contas, onSalvar, onF
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs text-slate-400">Conta financeira</label>
-              <select value={form.conta_financeira_id} onChange={(e) => set("conta_financeira_id", e.target.value)} className={campoClass}>
-                <option value="">Não informada</option>
+              <label className="mb-1.5 block text-xs text-slate-400">Conta financeira *</label>
+              <select required value={form.conta_financeira_id} onChange={(e) => set("conta_financeira_id", e.target.value)} className={campoClass}>
+                <option value="">Selecione a conta...</option>
                 {contas.filter((conta) => conta.ativa !== false).map((conta) => (
                   <option key={conta.id} value={conta.id}>{conta.nome}</option>
                 ))}
@@ -134,12 +142,18 @@ export default function BaixaFinanceiraModal({ lancamento, contas, onSalvar, onF
             {saldoDepois < 0.01 ? "Esta baixa liquidará o lançamento." : `Saldo restante: ${moeda(saldoDepois)}`}
           </div>
 
+          {erro && (
+            <div className="flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+              <AlertCircle size={14} /> {erro}
+            </div>
+          )}
+
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onFechar}
               className="flex-1 rounded-xl bg-slate-800 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-700">
               Cancelar
             </button>
-            <button type="submit" disabled={saving || uploading || valorInformado <= 0 || valorInformado > saldoAberto + 0.01}
+            <button type="submit" disabled={saving || uploading || !form.conta_financeira_id || valorInformado <= 0 || valorInformado > saldoAberto + 0.01}
               className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amber-500 py-2.5 text-sm font-semibold text-white hover:bg-amber-400 disabled:opacity-50">
               {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
               {saving ? "Salvando..." : "Confirmar baixa"}
