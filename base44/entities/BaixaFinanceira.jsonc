@@ -39,7 +39,22 @@
       ],
       "default": "manual"
     },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativa",
+        "estornada"
+      ],
+      "default": "ativa"
+    },
     "movimento_extrato_id": {
+      "type": "string"
+    },
+    "estornada_em": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "motivo_estorno": {
       "type": "string"
     },
     "observacoes": {
