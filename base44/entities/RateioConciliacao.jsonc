@@ -22,6 +22,17 @@
     },
     "descricao": {
       "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativo",
+        "estornado"
+      ],
+      "default": "ativo"
+    },
+    "motivo_estorno": {
+      "type": "string"
     }
   },
   "rls": {
