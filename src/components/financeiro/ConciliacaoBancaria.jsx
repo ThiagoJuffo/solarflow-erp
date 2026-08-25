@@ -345,92 +345,267 @@ export default function ConciliacaoBancaria({
     }
   };
 
+  const obterMovimentoPendente = async (movimentoId) => {
+    const atual = await base44.entities.MovimentoExtrato.get(movimentoId);
+    if (!["pendente", "sugerido"].includes(atual.status_conciliacao)) {
+      throw new Error("Este movimento já foi tratado. Atualize a conciliação.");
+    }
+    return atual;
+  };
+
   const confirmarSugestao = async (movimento) => {
-    const lancamento = lancamentos.find((l) => l.id === movimento.lancamento_id);
-    if (!lancamento) return;
-    const atualizado = await base44.entities.Lancamento.update(lancamento.id, {
-      status: "pago",
-      data_pagamento: movimento.data,
-      conta_financeira_id: movimento.conta_financeira_id,
-      conciliado: true,
-    });
-    const movimentoAtualizado = await base44.entities.MovimentoExtrato.update(movimento.id, {
-      status_conciliacao: "conciliado",
-      score_match: 100,
-    });
-    setMovimentos((lista) => lista.map((m) => m.id === movimento.id ? movimentoAtualizado : m));
-    onLancamentoAtualizado(atualizado);
+    setErro("");
+    setProcessandoMovimento(movimento.id);
+    let baixa;
+    let lancamentoAntes;
+    let lancamentoAtualizado;
+    try {
+      const movimentoAtual = await obterMovimentoPendente(movimento.id);
+      lancamentoAntes = await base44.entities.Lancamento.get(movimentoAtual.lancamento_id);
+      const aberto = saldoAberto(lancamentoAntes);
+      const valorMovimento = Number(movimentoAtual.valor || 0);
+      if (valorMovimento <= 0 || valorMovimento > aberto + 0.01) {
+        throw new Error("O valor do movimento não corresponde mais ao saldo em aberto do lançamento.");
+      }
+
+      baixa = await base44.entities.BaixaFinanceira.create({
+        lancamento_id: lancamentoAntes.id,
+        conta_financeira_id: movimentoAtual.conta_financeira_id,
+        valor: valorMovimento,
+        data: movimentoAtual.data,
+        forma_pagamento: "transferencia",
+        observacoes: `Baixa gerada pela conciliação do movimento ${movimentoAtual.id}`,
+        origem: "conciliacao",
+        movimento_extrato_id: movimentoAtual.id,
+        status: "ativa",
+      });
+      const valorPago = Math.min(Number(lancamentoAntes.valor || 0), Number(lancamentoAntes.valor_pago || 0) + valorMovimento);
+      const liquidado = valorPago >= Number(lancamentoAntes.valor || 0) - 0.01;
+      lancamentoAtualizado = await base44.entities.Lancamento.update(lancamentoAntes.id, {
+        valor_pago: valorPago,
+        status: liquidado ? "pago" : "parcial",
+        data_pagamento: movimentoAtual.data,
+        conta_financeira_id: movimentoAtual.conta_financeira_id,
+        conciliado: liquidado,
+      });
+      const movimentoAtualizado = await base44.entities.MovimentoExtrato.update(movimentoAtual.id, {
+        status_conciliacao: "conciliado",
+        score_match: 100,
+      });
+      setMovimentos((lista) => lista.map((item) => item.id === movimentoAtualizado.id ? movimentoAtualizado : item));
+      onLancamentoAtualizado(lancamentoAtualizado);
+      onBaixasCriadas?.([baixa]);
+    } catch (error) {
+      const compensacoes = [];
+      if (lancamentoAtualizado?.id && lancamentoAntes) {
+        compensacoes.push(base44.entities.Lancamento.update(lancamentoAntes.id, {
+          valor_pago: Number(lancamentoAntes.valor_pago || 0),
+          status: lancamentoAntes.status,
+          data_pagamento: lancamentoAntes.data_pagamento || "",
+          conta_financeira_id: lancamentoAntes.conta_financeira_id || "",
+          conciliado: Boolean(lancamentoAntes.conciliado),
+        }));
+      }
+      if (baixa?.id) {
+        compensacoes.push(base44.entities.BaixaFinanceira.update(baixa.id, {
+          status: "estornada",
+          estornada_em: new Date().toISOString(),
+          motivo_estorno: "Falha ao concluir a conciliação",
+        }));
+      }
+      await Promise.allSettled(compensacoes);
+      setErro(error?.message || "Não foi possível confirmar a conciliação.");
+    } finally {
+      setProcessandoMovimento("");
+    }
   };
 
   const criarLancamento = async (movimento) => {
-    const novo = await base44.entities.Lancamento.create({
-      tipo: movimento.tipo === "credito" ? "receita" : "despesa",
-      categoria: "outros",
-      descricao: movimento.descricao,
-      valor: movimento.valor,
-      data_competencia: movimento.data,
-      data_vencimento: movimento.data,
-      data_pagamento: movimento.data,
-      status: "pago",
-      conta_financeira_id: movimento.conta_financeira_id,
-      numero_documento: movimento.documento || "",
-      conciliado: true,
-      centro_custo: "outros",
-    });
-    const movimentoAtualizado = await base44.entities.MovimentoExtrato.update(movimento.id, {
-      status_conciliacao: "conciliado",
-      lancamento_id: novo.id,
-      score_match: 100,
-      justificativa_match: "Lançamento criado a partir do extrato",
-    });
-    setMovimentos((lista) => lista.map((m) => m.id === movimento.id ? movimentoAtualizado : m));
-    onLancamentosCriados([novo]);
+    setErro("");
+    setProcessandoMovimento(movimento.id);
+    let novo;
+    let baixa;
+    try {
+      const movimentoAtual = await obterMovimentoPendente(movimento.id);
+      const existentes = await base44.entities.Lancamento.filter({
+        movimento_extrato_id: movimentoAtual.id,
+      }, "-created_date", 5);
+      if (existentes.some((item) => item.status !== "cancelado")) {
+        throw new Error("Já existe um lançamento criado para este movimento.");
+      }
+
+      novo = await base44.entities.Lancamento.create({
+        tipo: movimentoAtual.tipo === "credito" ? "receita" : "despesa",
+        categoria: "outros",
+        descricao: movimentoAtual.descricao,
+        valor: Number(movimentoAtual.valor),
+        valor_pago: Number(movimentoAtual.valor),
+        data_competencia: movimentoAtual.data,
+        data_vencimento: movimentoAtual.data,
+        data_pagamento: movimentoAtual.data,
+        status: "pago",
+        conta_financeira_id: movimentoAtual.conta_financeira_id,
+        numero_documento: movimentoAtual.documento || "",
+        conciliado: true,
+        centro_custo: "outros",
+        origem: "conciliacao",
+        movimento_extrato_id: movimentoAtual.id,
+      });
+      baixa = await base44.entities.BaixaFinanceira.create({
+        lancamento_id: novo.id,
+        conta_financeira_id: movimentoAtual.conta_financeira_id,
+        valor: Number(movimentoAtual.valor),
+        data: movimentoAtual.data,
+        forma_pagamento: "transferencia",
+        observacoes: `Lançamento criado pela conciliação do movimento ${movimentoAtual.id}`,
+        origem: "conciliacao",
+        movimento_extrato_id: movimentoAtual.id,
+        status: "ativa",
+      });
+      const movimentoAtualizado = await base44.entities.MovimentoExtrato.update(movimentoAtual.id, {
+        status_conciliacao: "conciliado",
+        lancamento_id: novo.id,
+        score_match: 100,
+        justificativa_match: "Lançamento e baixa criados a partir do extrato",
+      });
+      setMovimentos((lista) => lista.map((item) => item.id === movimentoAtualizado.id ? movimentoAtualizado : item));
+      onLancamentosCriados([novo]);
+      onBaixasCriadas?.([baixa]);
+    } catch (error) {
+      const compensacoes = [];
+      if (baixa?.id) {
+        compensacoes.push(base44.entities.BaixaFinanceira.update(baixa.id, {
+          status: "estornada",
+          estornada_em: new Date().toISOString(),
+          motivo_estorno: "Falha ao concluir a conciliação",
+        }));
+      }
+      if (novo?.id) {
+        compensacoes.push(base44.entities.Lancamento.update(novo.id, {
+          status: "cancelado",
+          cancelado_em: new Date().toISOString(),
+          motivo_cancelamento: "Falha ao concluir a conciliação",
+        }));
+      }
+      await Promise.allSettled(compensacoes);
+      setErro(error?.message || "Não foi possível criar o lançamento conciliado.");
+    } finally {
+      setProcessandoMovimento("");
+    }
   };
 
   const concluirRateio = async (movimento, linhas) => {
+    setErro("");
+    setProcessandoMovimento(movimento.id);
     const novosLancamentos = [];
-    for (const linha of linhas) {
-      const centro = centros.find((item) => item.id === linha.centro_custo_id);
-      const novo = await base44.entities.Lancamento.create({
-        tipo: movimento.tipo === "credito" ? "receita" : "despesa",
-        categoria: "outros",
-        descricao: linha.descricao || `${movimento.descricao} — ${centro?.nome || "Rateio"}`,
-        valor: Number(linha.valor),
-        data_competencia: movimento.data,
-        data_vencimento: movimento.data,
-        data_pagamento: movimento.data,
-        status: "pago",
-        conta_financeira_id: movimento.conta_financeira_id,
-        centro_custo_id: centro?.id || "",
-        projeto_id: centro?.projeto_id || "",
-        numero_documento: movimento.documento || "",
-        conciliado: true,
+    const novasBaixas = [];
+    const novosRateios = [];
+    try {
+      const movimentoAtual = await obterMovimentoPendente(movimento.id);
+      const totalRateado = linhas.reduce((total, linha) => total + Number(linha.valor || 0), 0);
+      if (Math.abs(totalRateado - Number(movimentoAtual.valor || 0)) > 0.01) {
+        throw new Error("A soma do rateio precisa ser igual ao valor do movimento.");
+      }
+      const existentes = await base44.entities.Lancamento.filter({
+        movimento_extrato_id: movimentoAtual.id,
+      }, "-created_date", 50);
+      if (existentes.some((item) => item.status !== "cancelado")) {
+        throw new Error("Já existem lançamentos criados para este movimento.");
+      }
+
+      for (const linha of linhas) {
+        const centro = centros.find((item) => item.id === linha.centro_custo_id);
+        if (!centro || Number(linha.valor || 0) <= 0) throw new Error("Revise os centros e valores do rateio.");
+        const novo = await base44.entities.Lancamento.create({
+          tipo: movimentoAtual.tipo === "credito" ? "receita" : "despesa",
+          categoria: "outros",
+          descricao: linha.descricao || `${movimentoAtual.descricao} — ${centro.nome}`,
+          valor: Number(linha.valor),
+          valor_pago: Number(linha.valor),
+          data_competencia: movimentoAtual.data,
+          data_vencimento: movimentoAtual.data,
+          data_pagamento: movimentoAtual.data,
+          status: "pago",
+          conta_financeira_id: movimentoAtual.conta_financeira_id,
+          centro_custo_id: centro.id,
+          projeto_id: centro.projeto_id || "",
+          numero_documento: movimentoAtual.documento || "",
+          conciliado: true,
+          origem: "conciliacao",
+          movimento_extrato_id: movimentoAtual.id,
+        });
+        novosLancamentos.push(novo);
+        const baixaCriada = await base44.entities.BaixaFinanceira.create({
+          lancamento_id: novo.id,
+          conta_financeira_id: movimentoAtual.conta_financeira_id,
+          valor: Number(linha.valor),
+          data: movimentoAtual.data,
+          forma_pagamento: "transferencia",
+          observacoes: `Rateio da conciliação do movimento ${movimentoAtual.id}`,
+          origem: "conciliacao",
+          movimento_extrato_id: movimentoAtual.id,
+          status: "ativa",
+        });
+        novasBaixas.push(baixaCriada);
+        const rateioCriado = await base44.entities.RateioConciliacao.create({
+          movimento_extrato_id: movimentoAtual.id,
+          lancamento_id: novo.id,
+          centro_custo_id: centro.id,
+          projeto_id: centro.projeto_id || "",
+          valor: Number(linha.valor),
+          percentual: Number(((Number(linha.valor) / Number(movimentoAtual.valor)) * 100).toFixed(4)),
+          descricao: linha.descricao || "",
+          status: "ativo",
+        });
+        novosRateios.push(rateioCriado);
+      }
+      const movimentoAtualizado = await base44.entities.MovimentoExtrato.update(movimentoAtual.id, {
+        status_conciliacao: "conciliado",
+        lancamento_id: "",
+        score_match: 100,
+        justificativa_match: `Rateado em ${linhas.length} centros/subcentros`,
       });
-      novosLancamentos.push(novo);
-      await base44.entities.RateioConciliacao.create({
-        movimento_extrato_id: movimento.id,
-        lancamento_id: novo.id,
-        centro_custo_id: centro?.id || "",
-        projeto_id: centro?.projeto_id || "",
-        valor: Number(linha.valor),
-        percentual: Number(((Number(linha.valor) / Number(movimento.valor)) * 100).toFixed(4)),
-        descricao: linha.descricao || "",
-      });
+      setMovimentos((lista) => lista.map((item) => item.id === movimentoAtualizado.id ? movimentoAtualizado : item));
+      onLancamentosCriados(novosLancamentos);
+      onBaixasCriadas?.(novasBaixas);
+      setRateando(null);
+    } catch (error) {
+      await Promise.allSettled([
+        ...novasBaixas.map((item) => base44.entities.BaixaFinanceira.update(item.id, {
+          status: "estornada",
+          estornada_em: new Date().toISOString(),
+          motivo_estorno: "Falha ao concluir o rateio",
+        })),
+        ...novosLancamentos.map((item) => base44.entities.Lancamento.update(item.id, {
+          status: "cancelado",
+          cancelado_em: new Date().toISOString(),
+          motivo_cancelamento: "Falha ao concluir o rateio",
+        })),
+        ...novosRateios.map((item) => base44.entities.RateioConciliacao.update(item.id, {
+          status: "estornado",
+          motivo_estorno: "Falha ao concluir o rateio",
+        })),
+      ]);
+      setErro(error?.message || "Não foi possível concluir o rateio.");
+    } finally {
+      setProcessandoMovimento("");
     }
-    const movimentoAtualizado = await base44.entities.MovimentoExtrato.update(movimento.id, {
-      status_conciliacao: "conciliado",
-      lancamento_id: "",
-      score_match: 100,
-      justificativa_match: `Rateado em ${linhas.length} centros/subcentros`,
-    });
-    setMovimentos((lista) => lista.map((m) => m.id === movimento.id ? movimentoAtualizado : m));
-    onLancamentosCriados(novosLancamentos);
-    setRateando(null);
   };
 
   const ignorar = async (movimento) => {
-    const atualizado = await base44.entities.MovimentoExtrato.update(movimento.id, { status_conciliacao: "ignorado" });
-    setMovimentos((lista) => lista.map((m) => m.id === atualizado.id ? atualizado : m));
+    setErro("");
+    setProcessandoMovimento(movimento.id);
+    try {
+      const movimentoAtual = await obterMovimentoPendente(movimento.id);
+      const atualizado = await base44.entities.MovimentoExtrato.update(movimentoAtual.id, {
+        status_conciliacao: "ignorado",
+      });
+      setMovimentos((lista) => lista.map((item) => item.id === atualizado.id ? atualizado : item));
+    } catch (error) {
+      setErro(error?.message || "Não foi possível ignorar o movimento.");
+    } finally {
+      setProcessandoMovimento("");
+    }
   };
 
   const pendentes = movimentos.filter((m) => ["pendente", "sugerido"].includes(m.status_conciliacao));
