@@ -125,7 +125,7 @@ export default function FluxoCaixa() {
       base44.entities.Lancamento.list("-data_vencimento", 500),
       base44.entities.Projeto.list("-created_date", 250),
       base44.entities.ContaFinanceira.list("-created_date", 100),
-      base44.entities.CentroCusto.list("-created_date", 250),
+      base44.entities.CentroCusto.list("nome", 5000),
       base44.entities.CustoProjeto.list("-data", 1000),
       base44.entities.PreProjeto.list("-created_date", 500),
       base44.auth.me(),
