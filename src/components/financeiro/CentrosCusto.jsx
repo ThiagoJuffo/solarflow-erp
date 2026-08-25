@@ -145,27 +145,25 @@ export default function CentrosCusto({ centros, projetos, lancamentos, canEdit, 
   const [modalOpen, setModalOpen] = useState(false);
   const [editando, setEditando] = useState(null);
 
-  const cards = useMemo(() => centros.map((centro) => {
-    const filhosIds = centro.tipo === "subcentro"
-      ? []
-      : centros.filter((item) => item.centro_pai_id === centro.id).map((item) => item.id);
-    const idsDoCentro = [centro.id, ...filhosIds];
-    const vinculados = lancamentos.filter((l) =>
-      idsDoCentro.includes(l.centro_custo_id) ||
-      (!l.centro_custo_id && centro.projeto_id && l.projeto_id === centro.projeto_id)
-    ).filter((l) => l.status !== "cancelado");
-    const receitas = vinculados.filter((l) => l.tipo === "receita").reduce((s, l) => s + Number(l.valor || 0), 0);
-    const despesas = vinculados.filter((l) => l.tipo === "despesa").reduce((s, l) => s + Number(l.valor || 0), 0);
-    const centroPai = centros.find((item) => item.id === centro.centro_pai_id);
-    return { ...centro, centroPai, receitas, despesas, resultado: receitas - despesas, quantidade: vinculados.length };
-  }).sort((a, b) => {
-    const nomeGrupoA = a.tipo === "subcentro" ? (a.centroPai?.nome || a.nome) : a.nome;
-    const nomeGrupoB = b.tipo === "subcentro" ? (b.centroPai?.nome || b.nome) : b.nome;
-    const porGrupo = nomeGrupoA.localeCompare(nomeGrupoB, "pt-BR");
-    if (porGrupo !== 0) return porGrupo;
-    if (a.tipo !== b.tipo) return a.tipo === "subcentro" ? 1 : -1;
-    return a.nome.localeCompare(b.nome, "pt-BR");
-  }), [centros, lancamentos]);
+  const cards = useMemo(() => centros
+    .filter((centro) => centro.tipo !== "subcentro")
+    .map((centro) => {
+      const subcentros = centros
+        .filter((item) => item.centro_pai_id === centro.id)
+        .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+      const idsDoCentro = [centro.id, ...subcentros.map((item) => item.id)];
+      const vinculados = lancamentos.filter((l) =>
+        idsDoCentro.includes(l.centro_custo_id) ||
+        (!l.centro_custo_id && centro.projeto_id && l.projeto_id === centro.projeto_id)
+      ).filter((l) => l.status !== "cancelado");
+      const receitas = vinculados.filter((l) => l.tipo === "receita").reduce((s, l) => s + Number(l.valor || 0), 0);
+      const despesas = vinculados.filter((l) => l.tipo === "despesa").reduce((s, l) => s + Number(l.valor || 0), 0);
+      return { ...centro, subcentros, receitas, despesas, resultado: receitas - despesas, quantidade: vinculados.length };
+    })
+    .sort((a, b) => {
+      if (a.tipo !== b.tipo) return a.tipo === "projeto_cliente" ? 1 : -1;
+      return a.nome.localeCompare(b.nome, "pt-BR");
+    }), [centros, lancamentos]);
 
   const salvar = async (dados) => {
     await onSalvar(dados, editando);
@@ -213,9 +211,7 @@ export default function CentrosCusto({ centros, projetos, lancamentos, canEdit, 
                     <div>
                       <p className="font-semibold text-white">{centro.nome}</p>
                       <p className="text-xs text-slate-500">
-                        {centro.tipo === "subcentro"
-                          ? `Subcentro de ${centro.centroPai?.nome || "centro principal"}`
-                          : `Centro principal · ${centro.codigo || centro.cliente_nome || centro.tipo.replaceAll("_", " ")}`}
+                        Centro principal · {centro.codigo || centro.cliente_nome || centro.tipo.replaceAll("_", " ")}
                       </p>
                     </div>
                   </div>
@@ -248,6 +244,24 @@ export default function CentrosCusto({ centros, projetos, lancamentos, canEdit, 
                     <div className="h-2 overflow-hidden rounded-full bg-slate-800">
                       <div className={`h-full rounded-full ${consumo > 90 ? "bg-red-500" : consumo > 70 ? "bg-amber-500" : "bg-emerald-500"}`}
                         style={{ width: `${consumo}%` }} />
+                    </div>
+                  </div>
+                )}
+
+                {centro.subcentros.length > 0 && (
+                  <div className="mt-4 border-t border-slate-800 pt-4">
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Subcentros ({centro.subcentros.length})
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {centro.subcentros.map((subcentro) => (
+                        <button key={subcentro.id} type="button"
+                          disabled={!canEdit}
+                          onClick={() => { setEditando(subcentro); setModalOpen(true); }}
+                          className="rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-left text-[11px] text-slate-300 hover:border-amber-500/40 hover:text-white disabled:cursor-default disabled:hover:border-slate-700 disabled:hover:text-slate-300">
+                          {subcentro.nome}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 )}
