@@ -101,14 +101,11 @@ export default function LancamentoModal({ lancamento, projetos, contas, centros 
     .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
 
   const selecionarProjeto = (projetoId) => {
-    const projeto = projetos.find((item) => item.id === projetoId);
     const centro = centrosPrincipais.find((item) => item.projeto_id === projetoId);
     setForm((atual) => ({
       ...atual,
       projeto_id: projetoId,
       centro_custo_id: centro?.id || "",
-      nome_cliente_fornecedor: projetoId ? (projeto?.nome_cliente || "") : atual.nome_cliente_fornecedor,
-      documento_cliente_fornecedor: projetoId ? (projeto?.cpf || "") : atual.documento_cliente_fornecedor,
     }));
   };
 
