@@ -639,7 +639,8 @@ export default function ConciliacaoBancaria({
                 <option key={conta.id} value={conta.id}>{conta.nome}</option>
               ))}
             </select>
-            <button onClick={() => inputRef.current?.click()} disabled={!canEdit || processando}
+            <button onClick={() => inputRef.current?.click()} disabled={!canEdit || processando || !contaId}
+              title={!contaId ? "Selecione primeiro a conta financeira do extrato" : "Selecionar extrato em PDF"}
               className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-400 disabled:opacity-50">
               {processando ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
               {processando ? "Lendo extrato..." : "Selecionar PDF"}
