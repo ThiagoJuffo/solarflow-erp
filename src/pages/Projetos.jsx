@@ -53,6 +53,15 @@ const STATUS_GROUPS = {
   "Finalizado": ["monitoramento_cadastrado", "concluido"]
 };
 
+const TIPO_TELHADO_LABELS = {
+  ceramica: "Cerâmica",
+  fibrocimento: "Fibrocimento",
+  metalico: "Metálico",
+  laje: "Laje",
+  sanduiche: "Sanduíche",
+  outro: "Outro",
+};
+
 const ADMIN_SENHA = "2200001122";
 
 const statusColor = (status) => {
@@ -540,6 +549,11 @@ export default function Projetos() {
                         ? preProjetos.find(p => p.id === item.pre_projeto_id)
                         : item;
                       return <>
+                        {pp?.tipo_telhado && (
+                          <p className="text-violet-400/70 text-xs flex items-center gap-1">
+                            <Sun size={11} /> {TIPO_TELHADO_LABELS[pp.tipo_telhado] || pp.tipo_telhado}
+                          </p>
+                        )}
                         <span className="flex items-center gap-1 group/vendedor">
                           <p className="text-amber-400/70 text-xs">Vendedor: {pp?.vendedor_nome || "—"}</p>
                           <button
