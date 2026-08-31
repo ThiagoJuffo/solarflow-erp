@@ -170,6 +170,15 @@
     },
     "observacoes": {
       "type": "string"
+    },
+    "evento_orfao_google": {
+      "type": "boolean",
+      "default": false,
+      "description": "Sinaliza que o evento no Google Calendar foi exclu\u00eddo e o registro est\u00e1 \u00f3rf\u00e3o"
+    },
+    "sync_origem": {
+      "type": "string",
+      "description": "Origem da \u00faltima sincroniza\u00e7\u00e3o: 'google' (webhook/polling) ou 'app' (a\u00e7\u00e3o do usu\u00e1rio)"
     }
   },
   "required": [

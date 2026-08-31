@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Wrench, Search, Plus, ChevronRight, Calendar, DollarSign, X, Loader2, CheckCircle, Clock, Target, Copy, Check, Trash2, Phone, MapPin } from "lucide-react";
+import { Wrench, Search, Plus, ChevronRight, Calendar, DollarSign, X, Loader2, CheckCircle, Clock, Target, Copy, Check, Trash2, Phone, MapPin, AlertCircle } from "lucide-react";
 
 const STATUS_LABELS = {
   agendar: "A Agendar",
@@ -233,6 +233,11 @@ export default function Manutencoes() {
                   <span className={`text-xs font-medium px-2.5 py-1 rounded-lg border ${STATUS_COLORS[m.status]}`}>
                     {STATUS_LABELS[m.status]}
                   </span>
+                  {m.evento_orfao_google && (
+                    <span className="text-xs font-medium px-2.5 py-1 rounded-lg border border-orange-400/20 text-orange-400 bg-orange-400/10 flex items-center gap-1" title="Evento excluído no Google Calendar — manutenção órfã">
+                      <AlertCircle size={10} /> Órfão
+                    </span>
+                  )}
                   <button
                     onClick={() => setConfirmarExcluir(m)}
                     className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-red-500/20 flex items-center justify-center text-slate-500 hover:text-red-400 transition-all"

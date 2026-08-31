@@ -609,6 +609,11 @@ export default function Projetos() {
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-lg border ${statusColor(item.status)}`}>
                       {STATUS_LABELS[item.status] || item.status}
                     </span>
+                    {item._tipo === "projeto" && item.evento_orfao_google && (
+                      <span className="text-xs font-medium px-2.5 py-1 rounded-lg border border-orange-400/20 text-orange-400 bg-orange-400/10 flex items-center gap-1" title="Evento excluído no Google Calendar — registro órfão">
+                        <AlertTriangle size={10} /> Órfão
+                      </span>
+                    )}
                     {(() => {
                       const ehExpansao = item._tipo === "pre_projeto"
                         ? item.expansao

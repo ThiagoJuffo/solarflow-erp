@@ -72,7 +72,7 @@ export default async function(req) {
     const dataInstalacao = newStart.toISOString().split('T')[0];
     const historico = Array.isArray(fresh.reagendamentos) ? fresh.reagendamentos : [];
     historico.push({ data: new Date().toISOString() });
-    await base44.asServiceRole.entities.Projeto.update(projetoId, { data_instalacao: dataInstalacao, reagendamentos: historico });
+    await base44.asServiceRole.entities.Projeto.update(projetoId, { data_instalacao: dataInstalacao, reagendamentos: historico, sync_origem: 'app' });
 
     return Response.json({ success: true, data_instalacao: dataInstalacao });
   } catch (error) {

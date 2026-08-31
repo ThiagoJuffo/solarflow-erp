@@ -453,6 +453,14 @@ export default function Agenda() {
               <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md border ${badgeClass}`}>
                 {badgeLabel}
               </span>
+              {(ev.projetoVinculado?.evento_orfao_google || (isManut && ev.detalhes?.evento_orfao_google)) && (
+                <span
+                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-md border bg-orange-500/10 text-orange-400 border-orange-500/20 flex items-center gap-1"
+                  title="Evento foi excluído no Google Calendar — o registro está órfão"
+                >
+                  <AlertCircle size={9} /> Órfão
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-3 mt-1 flex-wrap">
               <span className="text-slate-400 text-xs flex items-center gap-1">
@@ -693,7 +701,12 @@ export default function Agenda() {
                         {isManut ? <Wrench size={12} className="text-amber-400" /> : isInst ? <Sun size={12} className={instCfg.iconColor} /> : <CalendarClock size={12} className="text-violet-400" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-white text-xs font-medium truncate">{ev.titulo}</p>
+                        <div className="flex items-center gap-1">
+                          <p className="text-white text-xs font-medium truncate">{ev.titulo}</p>
+                          {(ev.projetoVinculado?.evento_orfao_google || (isManut && ev.detalhes?.evento_orfao_google)) && (
+                            <AlertCircle size={10} className="text-orange-400 shrink-0" title="Evento excluído no Google Calendar" />
+                          )}
+                        </div>
                         <p className="text-slate-500 text-xs">{fmtData(ev.data)} · {fmtHora(ev.data)}</p>
                       </div>
                       {ev.projetoVinculado && (

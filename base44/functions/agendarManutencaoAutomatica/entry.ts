@@ -18,6 +18,11 @@ export default async function(req) {
     const fresh = await base44.entities.Manutencao.get(manId);
     if (!fresh) return Response.json({ error: 'Manutenção não encontrada ou sem acesso' }, { status: 403 });
 
+    // Prevenção de loop: ignora atualizações originadas da sincronização com o Google
+    if (fresh.sync_origem === 'google') {
+      return Response.json({ skipped: true, reason: 'sync_from_google' });
+    }
+
     // Segurança: não reagenda se já tem evento vinculado
     if (fresh.google_calendar_event_id) {
       return Response.json({ skipped: true, reason: 'already scheduled' });
@@ -40,7 +45,8 @@ export default async function(req) {
     await base44.asServiceRole.entities.Manutencao.update(manId, {
       google_calendar_event_id: eventId,
       data_agendamento: startDateTime.toISOString(),
-      status: 'agendada'
+      status: 'agendada',
+      sync_origem: 'app'
     });
 
     return Response.json({ success: true, event_id: eventId });

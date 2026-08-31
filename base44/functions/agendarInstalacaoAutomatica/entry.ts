@@ -18,6 +18,11 @@ export default async function(req) {
     const fresh = await base44.entities.Projeto.get(projetoId);
     if (!fresh) return Response.json({ error: 'Projeto não encontrado ou sem acesso' }, { status: 403 });
 
+    // Prevenção de loop: ignora atualizações originadas da sincronização com o Google
+    if (fresh.sync_origem === 'google') {
+      return Response.json({ skipped: true, reason: 'sync_from_google' });
+    }
+
     // Segurança: só prossegue se kit confirmado, pagamento existe e sem evento já criado
     if (!fresh.equipamentos_confirmados || !fresh.data_pagamento) {
       return Response.json({ skipped: true, reason: 'conditions not met' });
@@ -44,7 +49,8 @@ export default async function(req) {
     const dataInstalacao = startDateTime.toISOString().split('T')[0];
     await base44.asServiceRole.entities.Projeto.update(projetoId, {
       google_calendar_event_id: eventId,
-      data_instalacao: dataInstalacao
+      data_instalacao: dataInstalacao,
+      sync_origem: 'app'
     });
 
     return Response.json({ success: true, event_id: eventId, data_instalacao: dataInstalacao });

@@ -65,7 +65,7 @@ export default async function(req) {
     if (PRE_INSTALACAO.includes(fresh.status)) {
       updateData.status = 'instalacao_agendada';
     }
-    await base44.asServiceRole.entities.Projeto.update(projetoId, updateData);
+    await base44.asServiceRole.entities.Projeto.update(projetoId, { ...updateData, sync_origem: 'app' });
 
     return Response.json({ success: true, event_id: eventIds[0], event_ids: eventIds, data_instalacao: dataInstalacao });
   } catch (error) {
