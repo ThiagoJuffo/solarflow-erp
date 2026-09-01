@@ -23,6 +23,11 @@ export default async function(req) {
       return Response.json({ skipped: true, reason: 'sync_from_google' });
     }
 
+    // Pula se o projeto já está instalado/concluído — não deve criar novo evento
+    if (fresh.sistema_instalado || fresh.status === 'sistema_instalado' || fresh.status === 'concluido') {
+      return Response.json({ skipped: true, reason: 'already_installed' });
+    }
+
     // Segurança: só prossegue se kit confirmado, pagamento existe e sem evento já criado
     if (!fresh.equipamentos_confirmados || !fresh.data_pagamento) {
       return Response.json({ skipped: true, reason: 'conditions not met' });

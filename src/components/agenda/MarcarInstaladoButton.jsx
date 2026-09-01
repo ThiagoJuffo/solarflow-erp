@@ -10,26 +10,26 @@ export default function MarcarInstaladoButton({ projeto, onDone, continuacaoData
     setMarcando(true);
     try {
       const dataFinal = continuacaoData || projeto.data_instalacao || new Date().toISOString().slice(0, 10);
-      const continuacoes = Array.isArray(projeto.continuacoes)
-        ? projeto.continuacoes.map(c => ({ ...c, concluida: true }))
-        : [];
-      await base44.entities.Projeto.update(projeto.id, {
+      const updateData = {
         sistema_instalado: true,
         status: "sistema_instalado",
-        data_instalacao: dataFinal,
-        continuacoes
-      });
+        data_instalacao: dataFinal
+      };
+      if (Array.isArray(projeto.continuacoes) && projeto.continuacoes.length > 0) {
+        updateData.continuacoes = projeto.continuacoes.map(c => ({ ...c, concluida: true }));
+      }
+      await base44.entities.Projeto.update(projeto.id, updateData);
       setMostrarDialogo(false);
       onDone?.();
-    } catch {
-      // erro sobe naturalmente
+    } catch (e) {
+      alert("Erro ao concluir instalação: " + (e?.message || e));
+    } finally {
+      setMarcando(false);
     }
-    setMarcando(false);
   };
 
   const handleApenasRegistrar = async () => {
     if (!continuacaoData) {
-      // Dia original — apenas fecha o diálogo
       setMostrarDialogo(false);
       return;
     }
@@ -41,10 +41,11 @@ export default function MarcarInstaladoButton({ projeto, onDone, continuacaoData
       await base44.entities.Projeto.update(projeto.id, { continuacoes });
       setMostrarDialogo(false);
       onDone?.();
-    } catch {
-      // erro sobe naturalmente
+    } catch (e) {
+      alert("Erro ao registrar dia: " + (e?.message || e));
+    } finally {
+      setMarcando(false);
     }
-    setMarcando(false);
   };
 
   return (
