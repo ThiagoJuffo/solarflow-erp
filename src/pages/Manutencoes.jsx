@@ -38,6 +38,9 @@ export default function Manutencoes() {
   const [buscandoMaps, setBuscandoMaps] = useState(false);
   const [mapsErro, setMapsErro] = useState("");
   const debounceTimer = useRef(null);
+  const [showModalCorretiva, setShowModalCorretiva] = useState(false);
+  const [formCorretiva, setFormCorretiva] = useState({ nome_cliente: "", telefone: "", endereco: "", data: "", hora: "08:00", descricao_servico: "" });
+  const setCorretiva = (k, v) => setFormCorretiva(f => ({ ...f, [k]: v }));
 
   useEffect(() => {
     base44.entities.Manutencao.list("-created_date", 200).then(setManutencoes).finally(() => setLoading(false));
@@ -75,6 +78,24 @@ export default function Manutencoes() {
     setForm({ nome_cliente: "", telefone: "", kit: "", endereco: "", valor: "", condicao_pagamento: "", google_maps_url: "" });
     setCopiado(false);
     setShowModal(false);
+    setSaving(false);
+  };
+
+  const handleCriarCorretiva = async () => {
+    if (!formCorretiva.nome_cliente || !formCorretiva.data) return;
+    setSaving(true);
+    const dataAgendamento = new Date(`${formCorretiva.data}T${formCorretiva.hora || "08:00"}:00`).toISOString();
+    const nova = await base44.entities.Manutencao.create({
+      nome_cliente: formCorretiva.nome_cliente,
+      telefone: formCorretiva.telefone || undefined,
+      endereco: formCorretiva.endereco || undefined,
+      data_agendamento: dataAgendamento,
+      observacoes: formCorretiva.descricao_servico || undefined,
+      status: "agendada"
+    });
+    setManutencoes(prev => [nova, ...prev]);
+    setFormCorretiva({ nome_cliente: "", telefone: "", endereco: "", data: "", hora: "08:00", descricao_servico: "" });
+    setShowModalCorretiva(false);
     setSaving(false);
   };
 
@@ -118,12 +139,20 @@ export default function Manutencoes() {
           </h1>
           <p className="text-slate-400 text-sm mt-1">{manutencoes.length} manutenções cadastradas</p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-amber-500/20"
-        >
-          <Plus size={16} /> Nova Manutenção
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-amber-500/20"
+          >
+            <Plus size={16} /> Nova Manutenção
+          </button>
+          <button
+            onClick={() => setShowModalCorretiva(true)}
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border border-slate-700"
+          >
+            <Wrench size={16} className="text-sky-400" /> Manutenção Corretiva
+          </button>
+        </div>
       </div>
 
       {/* Meta Mensal */}
@@ -294,6 +323,70 @@ export default function Manutencoes() {
               >
                 {excluindo ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                 Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Manutenção Corretiva */}
+      {showModalCorretiva && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-white font-bold text-base flex items-center gap-2"><Wrench size={16} className="text-sky-400" /> Manutenção Corretiva</h3>
+              <button onClick={() => setShowModalCorretiva(false)} className="text-slate-500 hover:text-white transition-colors"><X size={18} /></button>
+            </div>
+            <p className="text-slate-400 text-xs -mt-2">Atendimento fora de projeto, com data e serviço já definidos.</p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-slate-400 text-xs mb-1.5 block">Nome do Cliente *</label>
+                <input value={formCorretiva.nome_cliente} onChange={e => setCorretiva("nome_cliente", e.target.value)}
+                  placeholder="Ex: João da Silva"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500 placeholder-slate-600" />
+              </div>
+              <div>
+                <label className="text-slate-400 text-xs mb-1.5 block">Telefone</label>
+                <input value={formCorretiva.telefone} onChange={e => setCorretiva("telefone", e.target.value)}
+                  placeholder="Ex: (27) 99999-9999"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500 placeholder-slate-600" />
+              </div>
+              <div>
+                <label className="text-slate-400 text-xs mb-1.5 block flex items-center gap-1.5">
+                  <MapPin size={11} /> Endereço
+                </label>
+                <input value={formCorretiva.endereco} onChange={e => setCorretiva("endereco", e.target.value)}
+                  placeholder="Ex: Rua X, 123 - Bairro, Cidade-ES"
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500 placeholder-slate-600" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-slate-400 text-xs mb-1.5 block">Data *</label>
+                  <input type="date" value={formCorretiva.data} onChange={e => setCorretiva("data", e.target.value)}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+                </div>
+                <div>
+                  <label className="text-slate-400 text-xs mb-1.5 block">Horário</label>
+                  <input type="time" value={formCorretiva.hora} onChange={e => setCorretiva("hora", e.target.value)}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500" />
+                </div>
+              </div>
+              <div>
+                <label className="text-slate-400 text-xs mb-1.5 block">Descrição do Serviço *</label>
+                <textarea value={formCorretiva.descricao_servico} onChange={e => setCorretiva("descricao_servico", e.target.value)}
+                  placeholder="Ex: Inversor apresentando erro E012, verificar e substituir se necessário"
+                  rows={3}
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500 placeholder-slate-600 resize-none" />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <button onClick={() => setShowModalCorretiva(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm font-medium transition-all">Cancelar</button>
+              <button onClick={handleCriarCorretiva} disabled={saving || !formCorretiva.nome_cliente || !formCorretiva.data}
+                className="flex-1 bg-sky-500 hover:bg-sky-400 disabled:opacity-50 text-white py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2">
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                Criar Agendamento
               </button>
             </div>
           </div>
