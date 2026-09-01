@@ -99,14 +99,19 @@ export default function Agenda() {
     return preProjetos.find(pp => pp.id === proj.pre_projeto_id || pp.projeto_id === proj.id) || null;
   };
 
-  // Retorna cidade e nº de placas do projeto
+  // Retorna cidade, nº de placas e dias agendados do projeto
   const getProjetoInfo = (proj) => {
     if (!proj) return null;
     const uc = findUCByProjeto(proj.id);
     const pp = findPreProjetoByProjeto(proj);
+    const diasPrincipais = Array.isArray(proj.google_calendar_event_ids) && proj.google_calendar_event_ids.length > 0
+      ? proj.google_calendar_event_ids.length
+      : 1;
+    const diasContinuacao = Array.isArray(proj.continuacoes) ? proj.continuacoes.length : 0;
     return {
       cidade: uc?.cidade || "",
       placas: pp?.modulo_quantidade || "",
+      diasAgendados: diasPrincipais + diasContinuacao,
     };
   };
 
