@@ -31,7 +31,7 @@ export default function ContinuarInstalacaoButton({ projeto, onDone }) {
         onClick={() => setAberto(true)}
         className="text-xs bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-400 px-2.5 py-1 rounded-lg transition-all flex items-center gap-1"
       >
-        <CalendarPlus size={11} /> Continuar noutro dia
+        <CalendarPlus size={11} /> Continuar em outro dia
       </button>
     );
   }
