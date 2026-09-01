@@ -11,6 +11,7 @@ import VincularProjetoButton from "../components/agenda/VincularProjetoButton";
 import NovoAgendamentoModal from "../components/agenda/NovoAgendamentoModal";
 import MarcarInstaladoButton from "../components/agenda/MarcarInstaladoButton";
 import ContinuarInstalacaoButton from "../components/agenda/ContinuarInstalacaoButton";
+import CancelarAgendamentoButton from "../components/agenda/CancelarAgendamentoButton";
 import KpiGrid from "../components/agenda/KpiGrid";
 import { Plus } from "lucide-react";
 
@@ -557,6 +558,7 @@ export default function Agenda() {
                 {!ev.isContinuacao && (
                   <ContinuarInstalacaoButton projeto={ev.projetoVinculado} onDone={loadData} />
                 )}
+                <CancelarAgendamentoButton tipo="instalacao" projetoId={ev.projetoVinculado.id} onDone={loadData} />
               </div>
             )}
             {!ev.projetoVinculado && isGoogle && (
@@ -570,6 +572,11 @@ export default function Agenda() {
               <p className="text-orange-400/80 text-xs mt-1 flex items-center gap-1">
                 <AlertCircle size={10} /> Sem projeto vinculado
               </p>
+            )}
+            {isManut && ev.detalhes.status !== "cancelada" && ev.detalhes.status !== "concluida" && (
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <CancelarAgendamentoButton tipo="manutencao" manutencaoId={ev.detalhes.id} onDone={loadData} />
+              </div>
             )}
           </div>
           {ev.projetoVinculado && (
