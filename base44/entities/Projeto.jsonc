@@ -135,6 +135,26 @@
       },
       "description": "IDs de todos os eventos de instala\u00e7\u00e3o no Google Calendar (instala\u00e7\u00f5es multi-dia)"
     },
+    "continuacoes": {
+      "type": "array",
+      "description": "Continua\u00e7\u00f5es de instala\u00e7\u00e3o em dias n\u00e3o consecutivos (vinculadas \u00e0 instala\u00e7\u00e3o original)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "format": "date"
+          },
+          "google_calendar_event_id": {
+            "type": "string"
+          },
+          "concluida": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
     "evidencias_instalacao": {
       "type": "array",
       "items": {

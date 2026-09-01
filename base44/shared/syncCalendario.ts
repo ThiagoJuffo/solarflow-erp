@@ -37,11 +37,15 @@ export async function loadSyncableRecords(base44) {
   return { projetos, manutencoes, ucs };
 }
 
-// Encontra projeto pelo event ID (single ou multi-day array)
+// Encontra projeto pelo event ID (single, multi-day array ou continuação)
 export function findProjetoByEventId(projetos, eventId) {
-  return projetos.find(p =>
+  const byMain = projetos.find(p =>
     p.google_calendar_event_id === eventId ||
     (Array.isArray(p.google_calendar_event_ids) && p.google_calendar_event_ids.includes(eventId))
+  );
+  if (byMain) return byMain;
+  return projetos.find(p =>
+    Array.isArray(p.continuacoes) && p.continuacoes.some(c => c.google_calendar_event_id === eventId)
   ) || null;
 }
 
@@ -81,6 +85,25 @@ export async function applyGoogleEventToRecord(base44, type, record, event, ucs)
   }
 
   if (type === 'projeto') {
+    // Verifica se é um evento de continuação
+    const isContinuation = Array.isArray(record.continuacoes) &&
+      record.continuacoes.some(c => c.google_calendar_event_id === event.id);
+
+    if (isContinuation) {
+      const contDateStr = extractDateFromEventStart(event);
+      const continuacoes = record.continuacoes.map(c =>
+        c.google_calendar_event_id === event.id
+          ? { ...c, data: contDateStr || c.data }
+          : c
+      );
+      await base44.asServiceRole.entities.Projeto.update(record.id, {
+        continuacoes,
+        sync_origem: 'google',
+        evento_orfao_google: false
+      });
+      return { updated: true, reason: 'google_wins_continuation' };
+    }
+
     const updateData = { sync_origem: 'google', evento_orfao_google: false };
     const dateStr = extractDateFromEventStart(event);
     if (dateStr) updateData.data_instalacao = dateStr;

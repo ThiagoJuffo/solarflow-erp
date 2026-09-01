@@ -7,6 +7,7 @@ import {
   applyGoogleEventToRecord,
   markRecordAsOrphan,
   unmarkOrphan,
+  extractDateFromEventStart,
 } from '../../shared/syncCalendario.ts';
 
 // Polling de segurança — executa a cada 15 min via automação agendada
@@ -66,6 +67,39 @@ export default async function(req) {
           await markRecordAsOrphan(base44, 'projeto', proj);
           orphansMarked++;
         }
+      }
+    }
+
+    // Reconcilia continuaçãoes de instalação (eventos separados vinculados ao projeto)
+    for (const proj of projetos) {
+      if (!Array.isArray(proj.continuacoes) || proj.continuacoes.length === 0) continue;
+      const continuacoesRestantes = [];
+      let alterouContinuacoes = false;
+      for (const cont of proj.continuacoes) {
+        const contEvent = googleEventMap.get(cont.google_calendar_event_id);
+        if (!contEvent) {
+          // Continuação excluída no Google — remove do array (não marca projeto como órfão)
+          alterouContinuacoes = true;
+          continue;
+        }
+        const googleUpdated = new Date(contEvent.updated);
+        const recordUpdated = new Date(proj.updated_date);
+        if (googleUpdated > recordUpdated) {
+          const dateStr = extractDateFromEventStart(contEvent);
+          if (dateStr && dateStr !== cont.data) {
+            continuacoesRestantes.push({ ...cont, data: dateStr });
+            alterouContinuacoes = true;
+            continue;
+          }
+        }
+        continuacoesRestantes.push(cont);
+      }
+      if (alterouContinuacoes) {
+        await base44.asServiceRole.entities.Projeto.update(proj.id, {
+          continuacoes: continuacoesRestantes,
+          sync_origem: 'google'
+        });
+        updated++;
       }
     }
 

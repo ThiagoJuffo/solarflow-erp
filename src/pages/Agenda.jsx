@@ -10,6 +10,7 @@ import {
 import VincularProjetoButton from "../components/agenda/VincularProjetoButton";
 import NovoAgendamentoModal from "../components/agenda/NovoAgendamentoModal";
 import MarcarInstaladoButton from "../components/agenda/MarcarInstaladoButton";
+import ContinuarInstalacaoButton from "../components/agenda/ContinuarInstalacaoButton";
 import KpiGrid from "../components/agenda/KpiGrid";
 import { Plus } from "lucide-react";
 
@@ -152,8 +153,31 @@ export default function Agenda() {
       });
     }
   });
+  // Continuações de instalação (dias não consecutivos) — eventos separados vinculados ao projeto original
+  projetos.forEach(p => {
+    if (!Array.isArray(p.continuacoes)) return;
+    p.continuacoes.forEach(cont => {
+      if (!cont.data) return;
+      const d = new Date(cont.data + "T12:00:00");
+      if (!isDataValida(d)) return;
+      eventos.push({
+        tipo: "instalacao",
+        isContinuacao: true,
+        continuacaoData: cont.data,
+        data: d,
+        titulo: p.nome_cliente,
+        detalhes: p,
+        projetoVinculado: p,
+      });
+    });
+  });
+  // Verifica se um evento do Google é uma continuação (para evitar duplicação)
+  const isContinuationGoogleEvent = (eventId) => projetos.some(p =>
+    Array.isArray(p.continuacoes) && p.continuacoes.some(c => c.google_calendar_event_id === eventId)
+  );
   eventosGoogle.forEach(g => {
     if (!g.start) return;
+    if (isContinuationGoogleEvent(g.id)) return; // tratado como continuação separada acima
     const dataEvt = g.start.includes("T") ? new Date(g.start) : new Date(g.start + "T12:00:00");
     const projId = parseIdFromTitle(g.summary);
     const projetoVinculado = projId ? findProjetoById(projId) : (findProjetoByEventId(g.id) || findProjetoByName(g.summary));
@@ -194,7 +218,15 @@ export default function Agenda() {
 
   // KPIs
   const isInstalacao = (ev) => ev.tipo === "instalacao" || (ev.tipo === "google" && ev.projetoVinculado);
-  const instalacoesHoje = eventos.filter(ev => isInstalacao(ev) && ev.data.toDateString() === today.toDateString()).length;
+  const instalacoesHoje = (() => {
+    const seen = new Set();
+    eventos.forEach(ev => {
+      if (!isInstalacao(ev) || ev.data.toDateString() !== today.toDateString()) return;
+      const key = ev.projetoVinculado?.id || ev.detalhes?.eventId || (ev.titulo + ev.data.toISOString());
+      seen.add(key);
+    });
+    return seen.size;
+  })();
 
   const instalacoesAtrasadas = (() => {
     const seen = new Set();
@@ -237,9 +269,15 @@ export default function Agenda() {
   endOfWeekFull.setDate(startOfWeek.getDate() + 6);
   endOfWeekFull.setHours(23, 59, 59, 999);
 
-  const instalacoesSemana = eventos.filter(ev =>
-    isInstalacao(ev) && ev.data >= startOfWeek && ev.data <= endOfWeekFull
-  ).length;
+  const instalacoesSemana = (() => {
+    const seen = new Set();
+    eventos.forEach(ev => {
+      if (!isInstalacao(ev) || ev.data < startOfWeek || ev.data > endOfWeekFull) return;
+      const key = ev.projetoVinculado?.id || ev.detalhes?.eventId || (ev.titulo + ev.data.toISOString());
+      seen.add(key);
+    });
+    return seen.size;
+  })();
 
   // Próximos 7 dias
   const fimProximos7 = new Date(today);
@@ -402,7 +440,7 @@ export default function Agenda() {
 
   const [dragOverDay, setDragOverDay] = useState(null);
 
-  const canDragEv = (ev) => ev.tipo !== "manutencao" && !!ev.projetoVinculado?.google_calendar_event_id;
+  const canDragEv = (ev) => ev.tipo !== "manutencao" && !ev.isContinuacao && !!ev.projetoVinculado?.google_calendar_event_id;
 
   const handleDrop = async (e, targetDate) => {
     e.preventDefault();
@@ -453,6 +491,11 @@ export default function Agenda() {
               <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md border ${badgeClass}`}>
                 {badgeLabel}
               </span>
+              {ev.isContinuacao && (
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md border bg-sky-500/10 text-sky-400 border-sky-500/20 flex items-center gap-1">
+                  <CalendarClock size={9} /> Continuação
+                </span>
+              )}
               {(ev.projetoVinculado?.evento_orfao_google || (isManut && ev.detalhes?.evento_orfao_google)) && (
                 <span
                   className="text-[10px] font-medium px-1.5 py-0.5 rounded-md border bg-orange-500/10 text-orange-400 border-orange-500/20 flex items-center gap-1"
@@ -499,7 +542,12 @@ export default function Agenda() {
               );
             })()}
             {ev.projetoVinculado && (isGoogle || ev.tipo === "instalacao") && !ev.projetoVinculado.sistema_instalado && ev.projetoVinculado.status !== "sistema_instalado" && (
-              <MarcarInstaladoButton projeto={ev.projetoVinculado} onDone={loadData} />
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <MarcarInstaladoButton projeto={ev.projetoVinculado} onDone={loadData} continuacaoData={ev.continuacaoData} />
+                {!ev.isContinuacao && (
+                  <ContinuarInstalacaoButton projeto={ev.projetoVinculado} onDone={loadData} />
+                )}
+              </div>
             )}
             {!ev.projetoVinculado && isGoogle && (
               <VincularProjetoButton
