@@ -543,6 +543,11 @@ export default function Agenda() {
                       <Sun size={10} /> {info.placas} placas
                     </span>
                   )}
+                  {info.diasAgendados > 1 && (
+                    <span className="text-slate-400 text-xs flex items-center gap-1">
+                      <CalendarClock size={10} /> {info.diasAgendados} dias agendados
+                    </span>
+                  )}
                 </div>
               );
             })()}
