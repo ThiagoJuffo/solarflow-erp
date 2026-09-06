@@ -1,0 +1,44 @@
+{
+  "name": "Sincronizar Google Calendar (Polling Seguran\u00e7a)",
+  "description": "Polling de seguran\u00e7a a cada 15 minutos: compara todos os eventos do Google Calendar com os registros do banco e corrige diverg\u00eancias que o webhook possa ter perdido (eventos atualizados, \u00f3rf\u00e3os, etc.).",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 15,
+      "interval_unit": "minutes",
+      "interval_anchor": "2026-08-31T19:08:59.747000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "sincronizar_google_calendar_polling_seguran_a",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sincronizarPollingCalendario",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "sincronizarPollingCalendario"
+  }
+}
