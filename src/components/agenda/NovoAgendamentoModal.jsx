@@ -26,13 +26,12 @@ export default function NovoAgendamentoModal({ projetos, ucs, preProjetos, manut
     ? projetos.filter(p => (p.nome_cliente || "").toLowerCase().includes(busca.toLowerCase())).slice(0, 6)
     : [];
 
-  // Manutenções filtradas (apenas status "agendar" — pendentes de agendamento)
-  const manutencoesFiltradas = busca
-    ? manutencoes.filter(m =>
-        m.status === "agendar" &&
-        (m.nome_cliente || "").toLowerCase().includes(busca.toLowerCase())
-      ).slice(0, 6)
-    : [];
+  // Manutenções pendentes de agendamento (status "agendar") — mostra todas ao clicar, filtra ao digitar
+  const manutencoesPendentes = manutencoes.filter(m => m.status === "agendar");
+  const manutencoesFiltradas = (busca
+    ? manutencoesPendentes.filter(m => (m.nome_cliente || "").toLowerCase().includes(busca.toLowerCase()))
+    : manutencoesPendentes
+  ).slice(0, 6);
 
   const ucDoProjeto = projetoSel ? ucs.find(u => u.projeto_id === projetoSel.id) : null;
   const ppDoProjeto = projetoSel
@@ -190,9 +189,14 @@ export default function NovoAgendamentoModal({ projetos, ucs, preProjetos, manut
                   {tipo === "instalacao" ? "Nenhum projeto encontrado." : "Nenhuma manutenção pendente de agendamento encontrada."}
                 </p>
               )}
-              {!busca && (
+              {!busca && tipo === "instalacao" && (
                 <p className="text-slate-500 text-xs text-center py-4">
-                  {tipo === "instalacao" ? "Digite para buscar um projeto." : "Digite para buscar uma manutenção (apenas pendentes)."}
+                  Digite para buscar um projeto.
+                </p>
+              )}
+              {!busca && tipo === "manutencao" && manutencoesPendentes.length === 0 && (
+                <p className="text-slate-500 text-xs text-center py-4">
+                  Nenhuma manutenção pendente de agendamento.
                 </p>
               )}
             </div>
