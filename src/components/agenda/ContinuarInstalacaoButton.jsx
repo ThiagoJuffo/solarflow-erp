@@ -19,8 +19,8 @@ export default function ContinuarInstalacaoButton({ projeto, onDone }) {
       setAberto(false);
       setData("");
       onDone?.();
-    } catch {
-      // erro sobe naturalmente
+    } catch (e) {
+      alert("Erro ao agendar continuação: " + (e?.message || e));
     }
     setSalvando(false);
   };

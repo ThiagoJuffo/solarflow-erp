@@ -1512,35 +1512,35 @@ function InstalacaoTab({ projeto, updateProjeto, canEdit }) {
     if (!dataInst) return;
     setAgendando(true);
     try {
-      await updateProjeto({
-        data_instalacao: dataInst,
-        status: "instalacao_agendada",
+      const dataHora = new Date(`${dataInst}T${horaInst || "08:00"}:00`).toISOString();
+      const res = await base44.functions.invoke("agendarInstalacaoManual", {
+        projeto_id: projeto.id,
+        data_agendamento: dataHora,
+        quantidade_dias: 1,
       });
+      if (res.data?.error) throw new Error(res.data.error);
+      if (res.data?.skipped) {
+        alert("Este projeto já tem uma instalação agendada.");
+      } else {
+        await updateProjeto({ data_instalacao: dataInst, status: "instalacao_agendada" });
+      }
       setDataInst("");
       setHoraInst("08:00");
-    } catch {
-      alert("Erro ao agendar instalação. Tente novamente.");
+    } catch (e) {
+      alert("Erro ao agendar instalação: " + (e?.message || e));
     }
     setAgendando(false);
   };
 
   const handleExcluirAgendamento = async () => {
-    if (!window.confirm("Excluir agendamento da agenda do SolarFlow?")) return;
+    if (!window.confirm("Excluir agendamento? O evento será removido do Google Calendar e os dados de instalação serão zerados.")) return;
     try {
       const res = await base44.functions.invoke("excluirAgendamentoSolarFlow", {
         tipo: "instalacao",
         projeto_id: projeto.id,
       });
       if (res.data?.error) throw new Error(res.data.error);
-      await updateProjeto({
-        data_instalacao: null,
-        google_calendar_event_id: null,
-        google_calendar_event_ids: [],
-        continuacoes: [],
-        reagendamentos: [],
-        evento_orfao_google: false,
-        status: projeto.status === "instalacao_agendada" ? "aprovado" : projeto.status,
-      });
+      await updateProjeto({ sync_origem: "app" });
     } catch (e) {
       alert("Erro ao excluir agendamento: " + (e?.message || e));
     }

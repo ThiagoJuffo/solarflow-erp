@@ -11,7 +11,6 @@ import VincularProjetoButton from "../components/agenda/VincularProjetoButton";
 import NovoAgendamentoModal from "../components/agenda/NovoAgendamentoModal";
 import MarcarInstaladoButton from "../components/agenda/MarcarInstaladoButton";
 import ContinuarInstalacaoButton from "../components/agenda/ContinuarInstalacaoButton";
-import CancelarAgendamentoButton from "../components/agenda/CancelarAgendamentoButton";
 import ReagendarButton from "../components/agenda/ReagendarButton";
 import ExcluirAgendamentoButton from "../components/agenda/ExcluirAgendamentoButton";
 import KpiGrid from "../components/agenda/KpiGrid";
@@ -148,8 +147,8 @@ export default function Agenda() {
   const isDataValida = (d) => d && !isNaN(d.getTime()) && d.getFullYear() > 2000;
 
   projetos.forEach(p => {
-    // Ignora instalações já vinculadas ao Google Calendar (aparecerão via eventosGoogle)
-    if (p.data_instalacao && !p.google_calendar_event_id) {
+    // SolarFlow é a fonte da verdade: renderiza todas as instalações com data_instalacao
+    if (p.data_instalacao) {
       const d = new Date(p.data_instalacao + "T12:00:00");
       if (!isDataValida(d)) return;
       eventos.push({
@@ -193,6 +192,7 @@ export default function Agenda() {
     if (dataEvt >= limiteGoogleCalendar) return; // ignora eventos do Google a partir de Setembro/2026
     const projId = parseIdFromTitle(g.summary);
     const projetoVinculado = projId ? findProjetoById(projId) : (findProjetoByEventId(g.id) || findProjetoByName(g.summary));
+    if (projetoVinculado) return; // já renderizado via projetos (SolarFlow é fonte da verdade)
     eventos.push({
       tipo: "google",
       data: dataEvt,
@@ -295,9 +295,15 @@ export default function Agenda() {
   const fimProximos7 = new Date(today);
   fimProximos7.setDate(today.getDate() + 7);
   fimProximos7.setHours(23, 59, 59, 999);
-  const instalacoesProximos7 = eventos.filter(ev =>
-    isInstalacao(ev) && ev.data >= today && ev.data <= fimProximos7
-  ).length;
+  const instalacoesProximos7 = (() => {
+    const seen = new Set();
+    eventos.forEach(ev => {
+      if (!isInstalacao(ev) || ev.data < today || ev.data > fimProximos7) return;
+      const key = ev.projetoVinculado?.id || ev.detalhes?.eventId || (ev.titulo + ev.data.toISOString());
+      seen.add(key);
+    });
+    return seen.size;
+  })();
 
   // Taxa de conclusão (% de agendadas que viraram instalado)
   const instalacoesComData = projetos.filter(p => p.data_instalacao);
@@ -425,7 +431,7 @@ export default function Agenda() {
   const kpiCards = [
     { id: "modulos_semana", label: "Módulos agendados (semana)", value: modulosAgendadosSemana, color: "cyan", Icon: Layers },
     { id: "modulos_mes", label: "Módulos agendados (mês)", value: modulosAgendadosMes, color: "cyan", Icon: Layers },
-    { id: "modulos_dia", label: "Módulos instalados/dia", value: modulosInstaladosPorDia, color: "cyan", Icon: Layers },
+    { id: "modulos_dia", label: "Média de placas/projeto", value: modulosInstaladosPorDia, color: "cyan", Icon: Layers },
     { id: "concluidas", label: "Instalações concluídas (mês)", value: instalacoesConcluidasMes, color: "emerald", Icon: Sun },
     { id: "manut_agendar", label: "Manut. a agendar", value: manutencoesAgendar, color: "amber", Icon: Wrench },
   { id: "manut_concluidas_mes", label: "Manut. concluídas (mês)", value: manutencoesConcluidasMes, color: "emerald", Icon: CheckCircle },
@@ -452,7 +458,7 @@ export default function Agenda() {
 
   const [dragOverDay, setDragOverDay] = useState(null);
 
-  const canDragEv = (ev) => ev.tipo !== "manutencao" && !ev.isContinuacao && !!ev.projetoVinculado?.google_calendar_event_id;
+  const canDragEv = (ev) => ev.tipo !== "manutencao" && !ev.isContinuacao && !!ev.projetoVinculado;
 
   const handleDrop = async (e, targetDate) => {
     e.preventDefault();
@@ -561,17 +567,13 @@ export default function Agenda() {
             {ev.projetoVinculado && (isGoogle || ev.tipo === "instalacao") && !ev.projetoVinculado.sistema_instalado && ev.projetoVinculado.status !== "sistema_instalado" && (
               <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <MarcarInstaladoButton projeto={ev.projetoVinculado} onDone={loadData} continuacaoData={ev.continuacaoData} />
-                {!ev.isContinuacao && ev.projetoVinculado.google_calendar_event_id && (
+                {!ev.isContinuacao && (
                   <ReagendarButton tipo="instalacao" projeto={ev.projetoVinculado} onDone={loadData} />
                 )}
                 {!ev.isContinuacao && (
                   <ContinuarInstalacaoButton projeto={ev.projetoVinculado} onDone={loadData} />
                 )}
-                {ev.projetoVinculado.google_calendar_event_id ? (
-                  <CancelarAgendamentoButton tipo="instalacao" projetoId={ev.projetoVinculado.id} onDone={loadData} />
-                ) : (
-                  <ExcluirAgendamentoButton tipo="instalacao" projetoId={ev.projetoVinculado.id} onDone={loadData} />
-                )}
+                <ExcluirAgendamentoButton tipo="instalacao" projetoId={ev.projetoVinculado.id} onDone={loadData} />
               </div>
             )}
             {!ev.projetoVinculado && isGoogle && (
@@ -588,14 +590,8 @@ export default function Agenda() {
             )}
             {isManut && ev.detalhes.status !== "cancelada" && ev.detalhes.status !== "concluida" && (
               <div className="flex items-center gap-2 mt-1 flex-wrap">
-                {ev.detalhes.google_calendar_event_id && (
-                  <ReagendarButton tipo="manutencao" manutencao={ev.detalhes} onDone={loadData} />
-                )}
-                {ev.detalhes.google_calendar_event_id ? (
-                  <CancelarAgendamentoButton tipo="manutencao" manutencaoId={ev.detalhes.id} onDone={loadData} />
-                ) : (
-                  <ExcluirAgendamentoButton tipo="manutencao" manutencaoId={ev.detalhes.id} onDone={loadData} />
-                )}
+                <ReagendarButton tipo="manutencao" manutencao={ev.detalhes} onDone={loadData} />
+                <ExcluirAgendamentoButton tipo="manutencao" manutencaoId={ev.detalhes.id} onDone={loadData} />
               </div>
             )}
           </div>

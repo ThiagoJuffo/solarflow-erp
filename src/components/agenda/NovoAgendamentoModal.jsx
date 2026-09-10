@@ -39,7 +39,7 @@ export default function NovoAgendamentoModal({ projetos, ucs, preProjetos, onClo
         onClose?.();
       }
     } catch {
-      setErro("Erro ao agendar no Google Calendar. Tente novamente.");
+      setErro("Erro ao agendar instalação. Tente novamente.");
     }
     setCriando(false);
   };
@@ -86,7 +86,7 @@ export default function NovoAgendamentoModal({ projetos, ucs, preProjetos, onClo
                           <MapPin size={10} /> {uc.cidade}
                         </span>
                       )}
-                      {p.google_calendar_event_id && (
+                      {p.data_instalacao && (
                         <span className="text-amber-400/70 text-xs flex items-center gap-1">
                           <Calendar size={10} /> Já agendado
                         </span>
@@ -172,10 +172,10 @@ export default function NovoAgendamentoModal({ projetos, ucs, preProjetos, onClo
               )}
             </div>
 
-            {projetoSel.google_calendar_event_id && (
+            {projetoSel.data_instalacao && (
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5 flex items-start gap-2">
                 <Calendar size={12} className="text-amber-400 shrink-0 mt-0.5" />
-                <p className="text-amber-300 text-xs">Este projeto já possui um agendamento. Um novo evento será criado apenas se o vínculo for removido primeiro.</p>
+                <p className="text-amber-300 text-xs">Este projeto já possui uma instalação agendada.</p>
               </div>
             )}
 
