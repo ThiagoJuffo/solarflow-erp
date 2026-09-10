@@ -20,7 +20,7 @@ export default async function(req) {
       if (fresh.google_calendar_event_id) {
         try {
           const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlecalendar');
-          await deleteCalendarEvent(accessToken, { eventId: fresh.google_calendar_event_id, calendarId: 'atendimento@ecomareng.com' });
+          await deleteCalendarEvent(accessToken, { eventId: fresh.google_calendar_event_id, calendarId: 'primary' });
         } catch (e) {
           console.warn('[manutencaoCalendar] Falha ao excluir evento Google:', e?.message);
         }
@@ -49,7 +49,7 @@ export default async function(req) {
           await updateCalendarEvent(accessToken, {
             eventId: fresh.google_calendar_event_id,
             summary: `Manutenção ${fresh.nome_cliente} [${manutencao_id}]`,
-            startDateTime: start, endDateTime: end, calendarId: 'atendimento@ecomareng.com'
+            startDateTime: start, endDateTime: end, calendarId: 'primary'
           });
         } catch (e) {
           console.warn('[manutencaoCalendar] Falha ao atualizar Google Calendar:', e?.message);
@@ -71,7 +71,7 @@ export default async function(req) {
       const end = new Date(start.getTime() + 60 * 60 * 1000);
       const eventId = await createCalendarEvent(accessToken, {
         summary: `Manutenção ${fresh.nome_cliente} [${manutencao_id}]`,
-        startDateTime: start, endDateTime: end, colorId: '3', calendarId: 'atendimento@ecomareng.com'
+        startDateTime: start, endDateTime: end, colorId: '3', calendarId: 'primary'
       });
 
       await base44.asServiceRole.entities.Manutencao.update(manutencao_id, {

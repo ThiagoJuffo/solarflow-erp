@@ -85,7 +85,7 @@ export default async function(req) {
       if (fresh.google_calendar_event_id) {
         try {
           const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlecalendar');
-          await deleteCalendarEvent(accessToken, { eventId: fresh.google_calendar_event_id, calendarId: 'atendimento@ecomareng.com' });
+          await deleteCalendarEvent(accessToken, { eventId: fresh.google_calendar_event_id, calendarId: 'primary' });
         } catch (e) {
           console.warn('[excluirAgendamentoSolarFlow] Falha ao excluir evento de manutenção:', e?.message);
         }
