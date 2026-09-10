@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { createCalendarEvent } from '../../shared/googleCalendar.ts';
 
+// Agendamento automático de manutenção no SolarFlow (sem Google Calendar).
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -14,42 +14,27 @@ export default async function(req) {
       return Response.json({ error: 'ID de manutenção inválido' }, { status: 400 });
     }
 
-    // Busca no escopo do usuário (respeita RLS) — verifica acesso antes de elevar privilégio
     const fresh = await base44.entities.Manutencao.get(manId);
     if (!fresh) return Response.json({ error: 'Manutenção não encontrada ou sem acesso' }, { status: 403 });
 
-    // Prevenção de loop: ignora atualizações originadas da sincronização com o Google
     if (fresh.sync_origem === 'google') {
       return Response.json({ skipped: true, reason: 'sync_from_google' });
     }
-
-    // Segurança: não reagenda se já tem evento vinculado
-    if (fresh.google_calendar_event_id) {
+    if (fresh.data_agendamento) {
       return Response.json({ skipped: true, reason: 'already scheduled' });
     }
 
     // 2 semanas a partir de agora
     const startDateTime = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
     startDateTime.setHours(8, 0, 0, 0);
-    const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000);
-
-    const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlecalendar');
-    const eventId = await createCalendarEvent(accessToken, {
-      summary: `Manutenção ${fresh.nome_cliente} [${manId}]`,
-      startDateTime,
-      endDateTime,
-      colorId: '3',
-      calendarId: 'primary'
-    });
 
     await base44.asServiceRole.entities.Manutencao.update(manId, {
-      google_calendar_event_id: eventId,
       data_agendamento: startDateTime.toISOString(),
       status: 'agendada',
       sync_origem: 'app'
     });
 
-    return Response.json({ success: true, event_id: eventId });
+    return Response.json({ success: true });
   } catch (error) {
     console.error('[agendarManutencaoAutomatica]', error);
     return Response.json({ error: 'Erro interno ao agendar manutenção' }, { status: 500 });
