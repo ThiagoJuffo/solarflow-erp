@@ -28,6 +28,34 @@ Deno.serve(async (req) => {
       return Response.json({ error: err }, { status: del.status });
     }
 
+    // UPDATE event (reagendar manutenção)
+    if (action === 'update' && event_id && nome_cliente && data_agendamento) {
+      const start = new Date(data_agendamento);
+      const end = new Date(start.getTime() + 60 * 60 * 1000); // +1h
+
+      const event = {
+        summary: `Manutenção ${nome_cliente}${manutencao_id ? ` [${manutencao_id}]` : ""}`,
+        start: { dateTime: start.toISOString(), timeZone: 'America/Sao_Paulo' },
+        end: { dateTime: end.toISOString(), timeZone: 'America/Sao_Paulo' }
+      };
+
+      const calendarId = encodeURIComponent('atendimento@ecomareng.com');
+      const res = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${event_id}`,
+        { method: 'PATCH', headers, body: JSON.stringify(event) }
+      );
+      if (!res.ok) {
+        const err = await res.text();
+        return Response.json({ error: err }, { status: res.status });
+      }
+      // Atualiza a data na entidade Manutencao
+      await base44.asServiceRole.entities.Manutencao.update(manutencao_id, {
+        data_agendamento: start.toISOString(),
+        sync_origem: 'app'
+      });
+      return Response.json({ success: true });
+    }
+
     // CREATE event
     if (action === 'create' && nome_cliente && data_agendamento) {
       const start = new Date(data_agendamento);

@@ -12,6 +12,7 @@ import NovoAgendamentoModal from "../components/agenda/NovoAgendamentoModal";
 import MarcarInstaladoButton from "../components/agenda/MarcarInstaladoButton";
 import ContinuarInstalacaoButton from "../components/agenda/ContinuarInstalacaoButton";
 import CancelarAgendamentoButton from "../components/agenda/CancelarAgendamentoButton";
+import ReagendarButton from "../components/agenda/ReagendarButton";
 import KpiGrid from "../components/agenda/KpiGrid";
 import { Plus } from "lucide-react";
 
@@ -555,6 +556,9 @@ export default function Agenda() {
             {ev.projetoVinculado && (isGoogle || ev.tipo === "instalacao") && !ev.projetoVinculado.sistema_instalado && ev.projetoVinculado.status !== "sistema_instalado" && (
               <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <MarcarInstaladoButton projeto={ev.projetoVinculado} onDone={loadData} continuacaoData={ev.continuacaoData} />
+                {!ev.isContinuacao && ev.projetoVinculado.google_calendar_event_id && (
+                  <ReagendarButton tipo="instalacao" projeto={ev.projetoVinculado} onDone={loadData} />
+                )}
                 {!ev.isContinuacao && (
                   <ContinuarInstalacaoButton projeto={ev.projetoVinculado} onDone={loadData} />
                 )}
@@ -575,6 +579,9 @@ export default function Agenda() {
             )}
             {isManut && ev.detalhes.status !== "cancelada" && ev.detalhes.status !== "concluida" && (
               <div className="flex items-center gap-2 mt-1 flex-wrap">
+                {ev.detalhes.google_calendar_event_id && (
+                  <ReagendarButton tipo="manutencao" manutencao={ev.detalhes} onDone={loadData} />
+                )}
                 <CancelarAgendamentoButton tipo="manutencao" manutencaoId={ev.detalhes.id} onDone={loadData} />
               </div>
             )}
