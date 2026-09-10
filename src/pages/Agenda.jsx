@@ -604,6 +604,15 @@ export default function Agenda() {
               <Link2 size={14} />
             </Link>
           )}
+          {isManut && ev.detalhes?.id && (
+            <Link
+              to={createPageUrl(`ManutencaoDetalhe?id=${ev.detalhes.id}`)}
+              className="shrink-0 text-amber-400 hover:text-amber-300 transition-colors"
+              title="Abrir manutenção"
+            >
+              <Link2 size={14} />
+            </Link>
+          )}
         </div>
       </div>
     );
@@ -632,6 +641,7 @@ export default function Agenda() {
           projetos={projetos}
           ucs={ucs}
           preProjetos={preProjetos}
+          manutencoes={manutencoes}
           onClose={() => setShowNovoAgendamento(false)}
           onCreated={loadData}
         />
@@ -792,6 +802,11 @@ export default function Agenda() {
                       </div>
                       {ev.projetoVinculado && (
                         <Link to={createPageUrl(`ProjetoDetalhe?id=${ev.projetoVinculado.id}`)} className="shrink-0 text-amber-400 hover:text-amber-300">
+                          <Link2 size={12} />
+                        </Link>
+                      )}
+                      {isManut && ev.detalhes?.id && (
+                        <Link to={createPageUrl(`ManutencaoDetalhe?id=${ev.detalhes.id}`)} className="shrink-0 text-amber-400 hover:text-amber-300">
                           <Link2 size={12} />
                         </Link>
                       )}
