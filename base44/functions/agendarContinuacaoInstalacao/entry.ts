@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
+import { createCalendarEvent } from '../../shared/googleCalendar.ts';
 
-// Adiciona uma continuação de instalação (dia não consecutivo) no SolarFlow.
-// Não cria evento no Google Calendar.
+// Adiciona uma continuação de instalação no SolarFlow e cria espelho no Google Calendar.
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -22,6 +22,7 @@ export default async function(req) {
     const fresh = await base44.entities.Projeto.get(projetoId);
     if (!fresh) return Response.json({ error: 'Projeto não encontrado ou sem acesso' }, { status: 403 });
 
+    // SolarFlow é a fonte da verdade: verifica data_instalacao
     if (!fresh.data_instalacao) {
       return Response.json({ error: 'Projeto não possui instalação agendada' }, { status: 400 });
     }
@@ -31,16 +32,20 @@ export default async function(req) {
       return Response.json({ error: 'Data inválida' }, { status: 400 });
     }
 
-    const dataStr = startDateTime.toISOString().split('T')[0];
-    const continuacoes = Array.isArray(fresh.continuacoes) ? [...fresh.continuacoes] : [];
-    continuacoes.push({ data: dataStr, concluida: false });
-
-    await base44.asServiceRole.entities.Projeto.update(projetoId, {
-      continuacoes,
-      sync_origem: 'app'
+    // Cria evento no Google Calendar (espelho)
+    const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlecalendar');
+    const summary = `Instalação ${fresh.nome_cliente} [${projetoId}] (Continuação)`;
+    const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000);
+    const eventId = await createCalendarEvent(accessToken, {
+      summary, startDateTime, endDateTime, colorId: '5', calendarId: 'primary'
     });
 
-    return Response.json({ success: true, data: dataStr });
+    const dataStr = startDateTime.toISOString().split('T')[0];
+    const continuacoes = Array.isArray(fresh.continuacoes) ? [...fresh.continuacoes] : [];
+    continuacoes.push({ data: dataStr, google_calendar_event_id: eventId, concluida: false });
+
+    await base44.asServiceRole.entities.Projeto.update(projetoId, { continuacoes, sync_origem: 'app' });
+    return Response.json({ success: true, event_id: eventId, data: dataStr });
   } catch (error) {
     console.error('[agendarContinuacaoInstalacao]', error);
     return Response.json({ error: 'Erro interno ao agendar continuação' }, { status: 500 });

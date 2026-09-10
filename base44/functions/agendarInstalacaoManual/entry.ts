@@ -1,7 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createCalendarEvent } from '../../shared/googleCalendar.ts';
 
-// Agenda uma instalação no SolarFlow (sem Google Calendar).
-// Multi-dia: data_instalacao = dia 1, continuações = dias 2..N.
+// Agenda uma instalação no SolarFlow (fonte da verdade) e cria espelho no Google Calendar.
+// SolarFlow → Google Calendar (one-way).
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -23,6 +24,7 @@ export default async function(req) {
     const fresh = await base44.entities.Projeto.get(projetoId);
     if (!fresh) return Response.json({ error: 'Projeto não encontrado ou sem acesso' }, { status: 403 });
 
+    // SolarFlow é a fonte da verdade: verifica data_instalacao
     if (fresh.data_instalacao) {
       return Response.json({ skipped: true, reason: 'already scheduled' });
     }
@@ -32,32 +34,34 @@ export default async function(req) {
       return Response.json({ error: 'Data de agendamento inválida' }, { status: 400 });
     }
 
+    // Cria evento(s) no Google Calendar (espelho de visualização)
+    const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlecalendar');
+    const summary = `Instalação ${fresh.nome_cliente} [${projetoId}]`;
+    const eventIds = [];
+    for (let i = 0; i < quantidadeDias; i++) {
+      const dayStart = new Date(startDateTime.getTime() + i * 24 * 60 * 60 * 1000);
+      const dayEnd = new Date(dayStart.getTime() + 60 * 60 * 1000);
+      const daySummary = quantidadeDias > 1 ? `${summary} (Dia ${i + 1}/${quantidadeDias})` : summary;
+      const eventId = await createCalendarEvent(accessToken, {
+        summary: daySummary, startDateTime: dayStart, endDateTime: dayEnd,
+        colorId: '5', calendarId: 'primary'
+      });
+      eventIds.push(eventId);
+    }
+
     const dataInstalacao = startDateTime.toISOString().split('T')[0];
     const updateData = {
+      google_calendar_event_id: eventIds[0],
       data_instalacao: dataInstalacao,
       sync_origem: 'app'
     };
-
-    // Multi-dia: dias 2..N como continuações
-    if (quantidadeDias > 1) {
-      const continuacoes = Array.isArray(fresh.continuacoes) ? [...fresh.continuacoes] : [];
-      for (let i = 1; i < quantidadeDias; i++) {
-        const dayDate = new Date(startDateTime.getTime() + i * 24 * 60 * 60 * 1000);
-        continuacoes.push({
-          data: dayDate.toISOString().split('T')[0],
-          concluida: false
-        });
-      }
-      updateData.continuacoes = continuacoes;
-    }
+    if (quantidadeDias > 1) updateData.google_calendar_event_ids = eventIds;
 
     const PRE_INSTALACAO = ['pago_projeto_iniciado','kit_confirmado','documentos_gerados','assinaturas_pendentes','assinaturas_concluidas','dossie_ok','protocolado_edp','aguardando_aprovacao','aprovado'];
-    if (PRE_INSTALACAO.includes(fresh.status)) {
-      updateData.status = 'instalacao_agendada';
-    }
+    if (PRE_INSTALACAO.includes(fresh.status)) updateData.status = 'instalacao_agendada';
 
     await base44.asServiceRole.entities.Projeto.update(projetoId, updateData);
-    return Response.json({ success: true, data_instalacao: dataInstalacao });
+    return Response.json({ success: true, event_id: eventIds[0], event_ids: eventIds, data_instalacao: dataInstalacao });
   } catch (error) {
     console.error('[agendarInstalacaoManual]', error);
     return Response.json({ error: 'Erro interno ao agendar instalação' }, { status: 500 });
