@@ -13,6 +13,7 @@ import MarcarInstaladoButton from "../components/agenda/MarcarInstaladoButton";
 import ContinuarInstalacaoButton from "../components/agenda/ContinuarInstalacaoButton";
 import CancelarAgendamentoButton from "../components/agenda/CancelarAgendamentoButton";
 import ReagendarButton from "../components/agenda/ReagendarButton";
+import ExcluirAgendamentoButton from "../components/agenda/ExcluirAgendamentoButton";
 import KpiGrid from "../components/agenda/KpiGrid";
 import { Plus } from "lucide-react";
 
@@ -182,10 +183,14 @@ export default function Agenda() {
   const isContinuationGoogleEvent = (eventId) => projetos.some(p =>
     Array.isArray(p.continuacoes) && p.continuacoes.some(c => c.google_calendar_event_id === eventId)
   );
+  // A partir de Setembro/2026, agendamentos são feitos apenas pelo SolarFlow —
+  // eventos do Google Calendar desse mês em diante não são exibidos na Agenda
+  const limiteGoogleCalendar = new Date(2026, 8, 1); // 1º de Setembro de 2026
   eventosGoogle.forEach(g => {
     if (!g.start) return;
     if (isContinuationGoogleEvent(g.id)) return; // tratado como continuação separada acima
     const dataEvt = g.start.includes("T") ? new Date(g.start) : new Date(g.start + "T12:00:00");
+    if (dataEvt >= limiteGoogleCalendar) return; // ignora eventos do Google a partir de Setembro/2026
     const projId = parseIdFromTitle(g.summary);
     const projetoVinculado = projId ? findProjetoById(projId) : (findProjetoByEventId(g.id) || findProjetoByName(g.summary));
     eventos.push({
@@ -562,7 +567,11 @@ export default function Agenda() {
                 {!ev.isContinuacao && (
                   <ContinuarInstalacaoButton projeto={ev.projetoVinculado} onDone={loadData} />
                 )}
-                <CancelarAgendamentoButton tipo="instalacao" projetoId={ev.projetoVinculado.id} onDone={loadData} />
+                {ev.projetoVinculado.google_calendar_event_id ? (
+                  <CancelarAgendamentoButton tipo="instalacao" projetoId={ev.projetoVinculado.id} onDone={loadData} />
+                ) : (
+                  <ExcluirAgendamentoButton tipo="instalacao" projetoId={ev.projetoVinculado.id} onDone={loadData} />
+                )}
               </div>
             )}
             {!ev.projetoVinculado && isGoogle && (
@@ -582,7 +591,11 @@ export default function Agenda() {
                 {ev.detalhes.google_calendar_event_id && (
                   <ReagendarButton tipo="manutencao" manutencao={ev.detalhes} onDone={loadData} />
                 )}
-                <CancelarAgendamentoButton tipo="manutencao" manutencaoId={ev.detalhes.id} onDone={loadData} />
+                {ev.detalhes.google_calendar_event_id ? (
+                  <CancelarAgendamentoButton tipo="manutencao" manutencaoId={ev.detalhes.id} onDone={loadData} />
+                ) : (
+                  <ExcluirAgendamentoButton tipo="manutencao" manutencaoId={ev.detalhes.id} onDone={loadData} />
+                )}
               </div>
             )}
           </div>

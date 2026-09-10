@@ -1508,30 +1508,42 @@ function InstalacaoTab({ projeto, updateProjeto, canEdit }) {
     setSaving(false);
   };
 
-  const handleAgendarGoogle = async () => {
+  const handleAgendar = async () => {
     if (!dataInst) return;
     setAgendando(true);
     try {
-      const dataHora = new Date(`${dataInst}T${horaInst || "08:00"}:00`);
-      const res = await base44.functions.invoke('agendarInstalacaoManual', {
-        projeto_id: projeto.id,
-        data_agendamento: dataHora.toISOString(),
+      await updateProjeto({
+        data_instalacao: dataInst,
+        status: "instalacao_agendada",
       });
-      if (res.data?.error) throw new Error(res.data.error);
-      if (res.data?.skipped) {
-        alert("Este projeto já tem uma instalação agendada no Google Calendar.");
-      } else {
-        await updateProjeto({
-          google_calendar_event_id: res.data?.event_id,
-          data_instalacao: res.data?.data_instalacao || dataInst,
-        });
-        setDataInst("");
-        setHoraInst("08:00");
-      }
+      setDataInst("");
+      setHoraInst("08:00");
     } catch {
-      alert("Erro ao agendar no Google Calendar. Tente novamente.");
+      alert("Erro ao agendar instalação. Tente novamente.");
     }
     setAgendando(false);
+  };
+
+  const handleExcluirAgendamento = async () => {
+    if (!window.confirm("Excluir agendamento da agenda do SolarFlow?")) return;
+    try {
+      const res = await base44.functions.invoke("excluirAgendamentoSolarFlow", {
+        tipo: "instalacao",
+        projeto_id: projeto.id,
+      });
+      if (res.data?.error) throw new Error(res.data.error);
+      await updateProjeto({
+        data_instalacao: null,
+        google_calendar_event_id: null,
+        google_calendar_event_ids: [],
+        continuacoes: [],
+        reagendamentos: [],
+        evento_orfao_google: false,
+        status: projeto.status === "instalacao_agendada" ? "aprovado" : projeto.status,
+      });
+    } catch (e) {
+      alert("Erro ao excluir agendamento: " + (e?.message || e));
+    }
   };
 
   return (
@@ -1540,22 +1552,30 @@ function InstalacaoTab({ projeto, updateProjeto, canEdit }) {
         <Clock size={16} className="text-amber-400" /> Agendamento de Instalação
       </h3>
 
-      {projeto.google_calendar_event_id ? (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-start gap-2">
-          <CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5" />
-          <div>
-            <p className="text-emerald-300 text-xs font-medium">Instalação agendada no Google Calendar</p>
-            {projeto.data_instalacao && (
+      {projeto.data_instalacao ? (
+        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 space-y-2">
+          <div className="flex items-start gap-2">
+            <CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-emerald-300 text-xs font-medium">Instalação agendada</p>
               <p className="text-emerald-400/70 text-xs mt-0.5">
                 {new Date(projeto.data_instalacao + "T12:00:00").toLocaleDateString("pt-BR")}
               </p>
-            )}
+            </div>
           </div>
+          {canEdit && (
+            <button
+              onClick={handleExcluirAgendamento}
+              className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5"
+            >
+              <Trash2 size={12} /> Excluir agendamento
+            </button>
+          )}
         </div>
       ) : canEdit ? (
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-3 space-y-3">
           <p className="text-slate-300 text-xs font-medium flex items-center gap-1.5">
-            <Calendar size={12} className="text-amber-400" /> Agendar no Google Calendar
+            <Calendar size={12} className="text-amber-400" /> Agendar instalação
           </p>
           <div className="grid grid-cols-2 gap-2">
             <div>
@@ -1578,7 +1598,7 @@ function InstalacaoTab({ projeto, updateProjeto, canEdit }) {
             </div>
           </div>
           <button
-            onClick={handleAgendarGoogle}
+            onClick={handleAgendar}
             disabled={!dataInst || agendando}
             className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-white py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
           >
@@ -1589,13 +1609,13 @@ function InstalacaoTab({ projeto, updateProjeto, canEdit }) {
       ) : null}
 
       {/* Sinalização de instalado */}
-      {projeto.google_calendar_event_id && projeto.status === "sistema_instalado" && (
+      {projeto.data_instalacao && projeto.status === "sistema_instalado" && (
         <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-start gap-2">
           <CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5" />
           <p className="text-emerald-300 text-xs font-medium">Sistema instalado</p>
         </div>
       )}
-      {projeto.google_calendar_event_id && projeto.status !== "sistema_instalado" && !projeto.sistema_instalado && canEdit && (
+      {projeto.data_instalacao && projeto.status !== "sistema_instalado" && !projeto.sistema_instalado && canEdit && (
         <button
           onClick={async () => {
             await updateProjeto({ sistema_instalado: true, status: "sistema_instalado" });
