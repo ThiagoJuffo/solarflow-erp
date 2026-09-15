@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Sun, ChevronRight, Search, CheckCircle, Clock, Zap, X, Lock, Package, Trash2, AlertTriangle, Pencil, MapPin } from "lucide-react";
 import PrazoDocumentacao from "../components/projeto/PrazoDocumentacao";
+import LembreteVistoria from "../components/projeto/LembreteVistoria";
 
 const CHECKLIST_OBRIGATORIOS = [
   { key: "procuracao", label: "Procuração" },
@@ -476,6 +477,9 @@ export default function Projetos() {
           </div>
         </div>
       )}
+      {/* Lembrete de vistoria pendente */}
+      <LembreteVistoria />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
