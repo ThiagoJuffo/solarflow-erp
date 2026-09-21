@@ -36,35 +36,44 @@ Deno.serve(async (req) => {
     } catch (_e) {}
   }
 
+  // Normalização de nome para matching robusto (trim + colapsa espaços múltiplos)
+  const norm = (s) => (s || "").trim().replace(/\s+/g, " ").toLowerCase();
+  const nomeProduto = (p) => norm(`${p.fabricante} ${p.modelo}`);
+
+  // Buscar TODOS os produtos (inclusive inativos) — um produto pode ter sido
+  // desativado depois que o pré-projeto foi salvo, mas ainda precisa casar
+  let todosProdutos = [];
+  try {
+    todosProdutos = await base44.asServiceRole.entities.Produto.list("-created_date", 500);
+  } catch (_e) {}
+
   // Buscar produto do módulo para obter potência em Wp
   let moduloProduto = null;
   if (preProjeto?.modulo_marca_modelo) {
-    try {
-      const produtos = await base44.asServiceRole.entities.Produto.filter({ ativo: true });
-      moduloProduto = produtos.find(p => `${p.fabricante} ${p.modelo}` === preProjeto.modulo_marca_modelo) || null;
-    } catch (_e) {}
+    const alvo = norm(preProjeto.modulo_marca_modelo);
+    moduloProduto = todosProdutos.find(p => nomeProduto(p) === alvo) || null;
   }
 
   // Buscar produtos dos inversores (suporta múltiplos modelos)
   let inversorProdutos = []; // array de { produto, quantidade }
   let inversorProduto = null; // legado: primeiro inversor
   {
-    try {
-      const todosProdutos = await base44.asServiceRole.entities.Produto.filter({ ativo: true });
-      // Suporte ao novo campo "inversores" (array)
-      const inversoresArr = preProjeto?.inversores?.length
-        ? preProjeto.inversores
-        : preProjeto?.inversor_marca_modelo
-          ? [{ marca_modelo: preProjeto.inversor_marca_modelo, quantidade: preProjeto?.inversor_quantidade || 1 }]
-          : [];
+    // Suporte ao novo campo "inversores" (array)
+    const inversoresArr = preProjeto?.inversores?.length
+      ? preProjeto.inversores
+      : preProjeto?.inversor_marca_modelo
+        ? [{ marca_modelo: preProjeto.inversor_marca_modelo, quantidade: preProjeto?.inversor_quantidade || 1 }]
+        : [];
 
-      inversorProdutos = inversoresArr.map(inv => ({
-        produto: todosProdutos.find(p => `${p.fabricante} ${p.modelo}` === inv.marca_modelo) || null,
+    inversorProdutos = inversoresArr.map(inv => {
+      const alvo = norm(inv.marca_modelo);
+      return {
+        produto: todosProdutos.find(p => nomeProduto(p) === alvo) || null,
         marca_modelo: inv.marca_modelo,
         quantidade: Number(inv.quantidade) || 1,
-      }));
-      inversorProduto = inversorProdutos[0]?.produto || null;
-    } catch (_e) {}
+      };
+    });
+    inversorProduto = inversorProdutos[0]?.produto || null;
   }
 
   if (!projetoData) return Response.json({ error: 'Projeto não encontrado' }, { status: 404 });
