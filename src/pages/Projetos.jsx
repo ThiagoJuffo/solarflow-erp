@@ -50,8 +50,8 @@ const STATUS_GROUPS = {
   "Pré-Projeto": ["rascunho", "aguardando_pagamento"],
   "Em Andamento": ["pago_projeto_iniciado", "kit_confirmado", "documentos_gerados", "assinaturas_pendentes", "assinaturas_concluidas", "dossie_ok"],
   "EDP": ["protocolado_edp", "aguardando_aprovacao", "aprovado"],
-  "Instalação": ["instalacao_agendada", "sistema_instalado"],
-  "Finalização": ["vistoria_solicitada", "aguardando_vistoria", "vistoria_aprovada", "monitoramento_cadastrado"],
+  "Instalação": ["instalacao_agendada"],
+  "Finalização": ["sistema_instalado", "vistoria_solicitada", "aguardando_vistoria", "vistoria_aprovada", "monitoramento_cadastrado"],
   "Finalizado": ["concluido"]
 };
 
