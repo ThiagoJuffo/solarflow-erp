@@ -189,7 +189,17 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
   const modVoc = moduloProduto?.voc ? `${moduloProduto.voc} V` : "—";
   const modIsc = moduloProduto?.isc ? `${moduloProduto.isc} A` : "—";
   const modEficiencia = moduloProduto?.eficiencia_modulo ? `${moduloProduto.eficiencia_modulo}%` : "—";
-  const modArea = moduloProduto?.area_m2 ? `${moduloProduto.area_m2} m²` : "—";
+  // Área do módulo em m²: usa area_m2 se preenchido, senão calcula a partir de dimensoes
+  // (pega todos os números da string, ex: "2382x1134x35", "2278MM 1134MM 30MM", "2382x1134x35/30")
+  const areaModuloM2 = (p) => {
+    if (p?.area_m2) return p.area_m2;
+    if (!p?.dimensoes) return null;
+    const nums = (String(p.dimensoes).match(/\d+(?:[.,]\d+)?/g) || []).map(s => parseFloat(s.replace(",", "."))).filter(n => !isNaN(n));
+    if (nums.length < 2) return null;
+    return (nums[0] / 1000) * (nums[1] / 1000);
+  };
+  const _areaModulo = areaModuloM2(moduloProduto);
+  const modArea = _areaModulo ? `${_areaModulo.toFixed(2)} m²` : "—";
   const modCoefTemp = moduloProduto?.coef_temperatura || "—";
   const modFusivel = moduloProduto?.corrente_max_fusivel_a ? `${moduloProduto.corrente_max_fusivel_a} A` : "—";
   const modGarantia = moduloProduto?.garantia_anos ? `${moduloProduto.garantia_anos} anos` : "—";
@@ -365,7 +375,7 @@ function gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorPro
 
 <table>
   <tr><th colspan="2" style="background-color:#00b050;color:#fff;font-weight:bold;text-align:center;">Aspecto Físico do Painel Fotovoltaico</th></tr>
-  <tr><td style="background-color:#00b050;color:#fff;text-align:center;">Área dos Arranjos (m2)</td><td>${moduloProduto?.area_m2 ? (moduloProduto.area_m2 * qtdModulos).toFixed(2) : "—"}</td></tr>
+  <tr><td style="background-color:#00b050;color:#fff;text-align:center;">Área dos Arranjos (m2)</td><td>${(() => { const a = areaModuloM2(moduloProduto); return a ? (a * qtdModulos).toFixed(2) : "—"; })()}</td></tr>
   <tr><td style="background-color:#00b050;color:#fff;text-align:center;">Peso adicional (kg)</td><td>${moduloProduto?.peso && qtdModulos ? (moduloProduto.peso * Number(qtdModulos)).toFixed(1) : "—"}</td></tr>
 </table>
 
