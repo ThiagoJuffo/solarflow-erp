@@ -569,95 +569,275 @@ function gerarRelatorioEntrega({ projeto, uc, preProjeto, moduloProduto, inverso
 <meta charset="UTF-8">
 <style>
   @page { size: A4; margin: 0; }
-  * { box-sizing: border-box; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; color: #1a1a1a; }
-  .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 18mm 16mm; display: flex; flex-direction: column; }
-  .logo { text-align: center; font-size: 13pt; font-weight: 700; color: #008037; letter-spacing: 1px; margin-bottom: 8mm; }
-  .logo span { color: #f57c00; }
-  .hero { text-align: center; padding: 10mm 0 8mm; }
-  .hero h1 { font-size: 26pt; font-weight: 800; color: #008037; margin: 0 0 4mm; line-height: 1.1; }
-  .hero p { font-size: 11pt; color: #444; line-height: 1.6; margin: 0 auto; max-width: 150mm; }
-  .steps { display: flex; justify-content: space-between; align-items: flex-start; margin: 8mm 0 10mm; padding: 0 4mm; }
-  .step { text-align: center; width: 22%; }
-  .step-num { width: 14mm; height: 14mm; border-radius: 50%; background: #008037; color: #fff; font-size: 14pt; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 3mm; }
-  .step-title { font-size: 8.5pt; font-weight: 700; color: #008037; text-transform: uppercase; line-height: 1.3; margin-bottom: 1mm; }
-  .step-desc { font-size: 7.5pt; color: #666; line-height: 1.3; }
-  .step-arrow { color: #f57c00; font-size: 14pt; font-weight: 700; align-self: center; margin-top: 5mm; }
-  .card { background: #f7f7f7; border-radius: 4mm; padding: 7mm 8mm; margin-bottom: 6mm; border-left: 4mm solid #008037; }
-  .card-title { font-size: 13pt; font-weight: 700; color: #008037; margin: 0 0 5mm; text-transform: uppercase; letter-spacing: 0.5px; }
-  .field-row { display: flex; padding: 2.2mm 0; border-bottom: 1px solid #e0e0e0; font-size: 10.5pt; }
-  .field-row:last-child { border-bottom: none; }
-  .field-label { font-weight: 700; color: #555; width: 42mm; flex-shrink: 0; }
-  .field-value { color: #1a1a1a; flex: 1; }
-  .card.monitor { border-left-color: #f57c00; }
-  .card.monitor .card-title { color: #f57c00; }
-  .footer { margin-top: auto; text-align: center; padding-top: 8mm; border-top: 1px solid #e0e0e0; }
-  .footer-contacts { font-size: 9pt; color: #555; line-height: 1.7; }
-  .footer-contacts strong { color: #008037; }
-  .slogan { margin-top: 5mm; font-size: 10pt; font-weight: 700; color: #f57c00; letter-spacing: 1px; text-transform: uppercase; }
-  @media print { .page { width: auto; min-height: auto; padding: 15mm 12mm; } }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; color: #333; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page { width: 210mm; min-height: 297mm; margin: 0 auto; position: relative; overflow: hidden; background: #fff; }
+
+  /* Decorative dotted patterns */
+  .dot-tl { position: absolute; top: 0; left: 0; width: 45mm; height: 45mm;
+    background-image: radial-gradient(circle, #d1e0d9 1px, transparent 1.5px);
+    background-size: 5mm 5mm; opacity: 0.7; }
+  .dot-br { position: absolute; bottom: 0; right: 0; width: 45mm; height: 45mm;
+    background-image: radial-gradient(circle, #d1e0d9 1px, transparent 1.5px);
+    background-size: 5mm 5mm; opacity: 0.7; }
+
+  .content { position: relative; z-index: 1; padding: 14mm 16mm 10mm; }
+
+  /* Header */
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8mm; }
+  .logo { display: flex; align-items: center; gap: 2.5mm; }
+  .logo-icon { width: 9mm; height: 9mm; }
+  .logo-text { font-size: 13pt; font-weight: 700; color: #333; letter-spacing: 0.5px; }
+  .logo-text .eng { color: #007337; }
+  .sun-icon { width: 10mm; height: 10mm; }
+
+  /* Hero */
+  .hero { display: flex; gap: 8mm; margin-bottom: 8mm; align-items: center; }
+  .hero-left { flex: 1; }
+  .hero-left h1 { font-size: 24pt; font-weight: 800; color: #007337; line-height: 1.15; margin-bottom: 4mm; }
+  .hero-left p { font-size: 10pt; color: #555; line-height: 1.6; }
+  .hero-left p strong { color: #333; font-weight: 600; }
+  .hero-img { width: 55mm; height: 40mm; border-radius: 3mm; overflow: hidden; flex-shrink: 0; }
+  .hero-img img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* Steps */
+  .steps-section { text-align: center; margin-bottom: 9mm; }
+  .steps-title { font-size: 11pt; font-weight: 700; color: #333; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6mm; }
+  .steps { display: flex; justify-content: space-between; align-items: flex-start; position: relative; }
+  .step { text-align: center; width: 20%; position: relative; z-index: 2; }
+  .step-circle { width: 18mm; height: 18mm; border-radius: 50%; background: #f0f7f3; border: 2px solid #007337; margin: 0 auto 3mm; display: flex; align-items: center; justify-content: center; }
+  .step-circle svg { width: 10mm; height: 10mm; }
+  .step-num { position: absolute; top: -1mm; right: 30%; background: #007337; color: #fff; width: 6mm; height: 6mm; border-radius: 50%; font-size: 8pt; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .step-label { font-size: 7.5pt; font-weight: 700; color: #333; text-transform: uppercase; line-height: 1.3; }
+  .step-desc { font-size: 7pt; color: #666; margin-top: 1mm; line-height: 1.3; }
+  .step-arrow { position: absolute; top: 8mm; height: 2px; border-top: 2px dashed #b0c4b8; z-index: 1; }
+
+  /* Two columns */
+  .two-col { display: flex; gap: 6mm; margin-bottom: 8mm; }
+  .col { flex: 1; }
+  .col-badge { display: inline-flex; align-items: center; gap: 2mm; background: #007337; color: #fff; font-size: 9pt; font-weight: 700; padding: 2mm 4mm; border-radius: 2mm; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5mm; }
+  .col-badge svg { width: 4.5mm; height: 4.5mm; }
+  .field-line { display: flex; align-items: baseline; padding: 2.5mm 0; border-bottom: 1px solid #ccc; font-size: 9.5pt; }
+  .field-line .lbl { font-weight: 600; color: #555; white-space: nowrap; }
+  .field-line .val { flex: 1; color: #333; margin-left: 1.5mm; }
+
+  /* Monitor phone mockup */
+  .phone-mock { display: flex; gap: 4mm; align-items: flex-start; margin-bottom: 4mm; }
+  .phone { width: 20mm; height: 34mm; background: #007337; border-radius: 3mm; padding: 1.5mm; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .phone-screen { width: 100%; height: 100%; background: #fff; border-radius: 1.5mm; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5mm; }
+  .phone-screen .ps-logo { font-size: 5pt; font-weight: 700; color: #007337; }
+  .phone-screen .ps-house { width: 8mm; height: 6mm; }
+  .monitor-fields { flex: 1; }
+  .mf-row { display: flex; align-items: center; gap: 2mm; padding: 2mm 0; border-bottom: 1px solid #ccc; font-size: 9pt; }
+  .mf-row svg { width: 4mm; height: 4mm; flex-shrink: 0; color: #007337; }
+  .mf-row .lbl { font-weight: 600; color: #555; white-space: nowrap; }
+  .mf-row .val { color: #333; }
+
+  /* Footer */
+  .footer { display: flex; justify-content: space-between; align-items: flex-end; padding-top: 6mm; border-top: 1px solid #e0e0e0; position: relative; }
+  .footer-left { flex: 1; }
+  .footer-left .duvida { font-size: 9pt; font-weight: 600; color: #333; margin-bottom: 2.5mm; }
+  .footer-contact { display: flex; align-items: center; gap: 1.5mm; font-size: 8.5pt; color: #555; margin-bottom: 1mm; }
+  .footer-contact svg { width: 3.5mm; height: 3.5mm; color: #007337; }
+  .footer-center { text-align: center; flex: 0 0 auto; }
+  .footer-center .logo { justify-content: center; }
+  .footer-right { flex: 1; text-align: right; }
+  .footer-right .slogan { font-size: 8pt; font-weight: 700; color: #007337; text-transform: uppercase; line-height: 1.5; letter-spacing: 0.3px; }
+  .footer-illust { position: absolute; bottom: -2mm; left: 50%; transform: translateX(-50%); width: 30mm; opacity: 0.5; }
+
+  @media print { .page { width: auto; min-height: auto; } }
 </style>
 </head>
 <body>
 <div class="page">
+  <div class="dot-tl"></div>
+  <div class="dot-br"></div>
 
-  <div class="logo">ECOMAR <span>ENGENHARIA</span></div>
-
-  <div class="hero">
-    <h1>SEU SISTEMA ESTÁ PRONTO!</h1>
-    <p>Obrigado por confiar em nosso trabalho! Com a instalação do seu sistema concluída, o próximo passo é aguardar a vistoria e aprovação da EDP. Assim que o processo for concluído pela concessionária, você já poderá ligar o disjuntor do sistema solar.</p>
-  </div>
-
-  <div class="steps">
-    <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-title">Instalação<br>Concluída</div>
-      <div class="step-desc">Seu sistema já está pronto para gerar.</div>
+  <div class="content">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <svg class="logo-icon" viewBox="0 0 40 40" fill="none">
+          <path d="M20 4 L34 14 L34 32 L6 32 L6 14 Z" fill="#007337" opacity="0.15"/>
+          <path d="M20 4 L34 14 L34 32 L6 32 L6 14 Z" stroke="#007337" stroke-width="2"/>
+          <path d="M20 8 L30 15 L30 30 L10 30 L10 15 Z" fill="#007337"/>
+          <circle cx="20" cy="20" r="3" fill="#fff"/>
+        </svg>
+        <span class="logo-text">Ecomar <span class="eng">Engenharia</span></span>
+      </div>
+      <svg class="sun-icon" viewBox="0 0 40 40" fill="none" stroke="#007337" stroke-width="1.5">
+        <circle cx="20" cy="20" r="7"/>
+        <line x1="20" y1="4" x2="20" y2="9"/>
+        <line x1="20" y1="31" x2="20" y2="36"/>
+        <line x1="4" y1="20" x2="9" y2="20"/>
+        <line x1="31" y1="20" x2="36" y2="20"/>
+        <line x1="8" y1="8" x2="12" y2="12"/>
+        <line x1="28" y1="28" x2="32" y2="32"/>
+        <line x1="32" y1="8" x2="28" y2="12"/>
+        <line x1="12" y1="28" x2="8" y2="32"/>
+      </svg>
     </div>
-    <div class="step-arrow">›</div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-title">EDP<br>Solicitação da Vistoria</div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-left">
+        <h1>SEU SISTEMA<br>ESTÁ PRONTO!</h1>
+        <p>Obrigado por confiar em nosso trabalho! Com a instalação do seu sistema concluída, o próximo passo é aguardar a vistoria e aprovação da EDP. Assim que o processo for concluído pela concessionária, <strong>você já poderá ligar o disjuntor do sistema solar.</strong></p>
+      </div>
+      <div class="hero-img">
+        <img src="https://images.unsplash.com/photo-1508515044-3d7e8e4e4e4e?w=400" alt="Casa com painéis solares"/>
+      </div>
     </div>
-    <div class="step-arrow">›</div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <div class="step-title">Vistoria Realizada<br>pela EDP</div>
+
+    <!-- Steps -->
+    <div class="steps-section">
+      <div class="steps-title">Como Funciona:</div>
+      <div class="steps">
+        <div class="step-arrow" style="left: 18%; width: 64%;"></div>
+        <div class="step">
+          <div class="step-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#007337" stroke-width="1.5">
+              <rect x="3" y="8" width="18" height="12" rx="1"/>
+              <path d="M7 8 L7 5 L17 5 L17 8"/>
+              <path d="M10 14 L14 14 M12 12 L12 16"/>
+            </svg>
+            <div class="step-num">1</div>
+          </div>
+          <div class="step-label">Instalação<br>Concluída</div>
+          <div class="step-desc">Seu sistema já está<br>pronto para gerar.</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#007337" stroke-width="1.5">
+              <rect x="5" y="3" width="14" height="18" rx="1"/>
+              <line x1="8" y1="7" x2="16" y2="7"/>
+              <line x1="8" y1="11" x2="16" y2="11"/>
+              <line x1="8" y1="15" x2="13" y2="15"/>
+            </svg>
+            <div class="step-num">2</div>
+          </div>
+          <div class="step-label">EDP<br>Solicitação<br>da Vistoria</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#007337" stroke-width="1.5">
+              <rect x="4" y="4" width="16" height="14" rx="1"/>
+              <line x1="9" y1="20" x2="15" y2="20"/>
+              <line x1="12" y1="18" x2="12" y2="20"/>
+            </svg>
+            <div class="step-num">3</div>
+          </div>
+          <div class="step-label">Vistoria<br>Realizada<br>pela EDP</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#007337" stroke-width="1.5">
+              <path d="M12 3 L9 12 L15 12 L12 21"/>
+            </svg>
+            <div class="step-num">4</div>
+          </div>
+          <div class="step-label">Geração<br>Liberada</div>
+          <div class="step-desc">Pode ligar<br>o disjuntor.</div>
+        </div>
+      </div>
     </div>
-    <div class="step-arrow">›</div>
-    <div class="step">
-      <div class="step-num">4</div>
-      <div class="step-title">Geração<br>Liberada</div>
-      <div class="step-desc">Pode ligar o disjuntor.</div>
+
+    <!-- Two columns -->
+    <div class="two-col">
+      <div class="col">
+        <div class="col-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+            <path d="M6 3 L6 21 L18 21 L18 7 L14 3 Z"/>
+            <line x1="9" y1="9" x2="15" y2="9"/>
+            <line x1="9" y1="13" x2="15" y2="13"/>
+            <line x1="9" y1="17" x2="13" y2="17"/>
+          </svg>
+          Seu Sistema
+        </div>
+        <div class="field-line"><span class="lbl">Cliente:</span><span class="val">${nomeCliente}</span></div>
+        <div class="field-line"><span class="lbl">Endereço:</span><span class="val">${endereco}</span></div>
+        <div class="field-line"><span class="lbl">Cidade/UF:</span><span class="val">${cidadeUF}</span></div>
+        <div class="field-line"><span class="lbl">Potência do Sistema:</span><span class="val">${potKwp} kWp</span></div>
+        <div class="field-line"><span class="lbl">Inversor:</span><span class="val">${inversorDesc}</span></div>
+        <div class="field-line"><span class="lbl">Data da Instalação:</span><span class="val">${dataInstalacao}</span></div>
+      </div>
+
+      <div class="col">
+        <div class="col-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+            <line x1="5" y1="20" x2="19" y2="20"/>
+            <rect x="5" y="14" width="3" height="6"/>
+            <rect x="10" y="10" width="3" height="10"/>
+            <rect x="15" y="6" width="3" height="14"/>
+          </svg>
+          Acompanhe sua Geração
+        </div>
+        <p style="font-size:9pt;color:#555;margin-bottom:3mm;">Seu acesso ao aplicativo de <strong>monitoramento:</strong></p>
+        <div class="phone-mock">
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="ps-logo">ECOMAR</div>
+              <svg class="ps-house" viewBox="0 0 30 24" fill="none" stroke="#007337" stroke-width="1.5">
+                <path d="M3 12 L15 4 L27 12"/>
+                <path d="M6 12 L6 22 L24 22 L24 12"/>
+                <path d="M12 22 L12 16 L18 16 L18 22"/>
+              </svg>
+            </div>
+          </div>
+          <div class="monitor-fields">
+            <div class="mf-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>
+              <span class="lbl">APLICATIVO:</span><span class="val">${aplicativo}</span>
+            </div>
+            <div class="mf-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 22 C4 17 8 15 12 15 C16 15 20 17 20 22"/></svg>
+              <span class="lbl">LOGIN:</span><span class="val">${login}</span>
+            </div>
+            <div class="mf-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="6" y="10" width="12" height="11" rx="1"/><path d="M9 10 L9 7 C9 5 10 4 12 4 C14 4 15 5 15 7 L15 10"/></svg>
+              <span class="lbl">SENHA:</span><span class="val">${senha}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="footer-left">
+        <div class="duvida">Qualquer dúvida, fico à disposição!</div>
+        <div class="footer-contact">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4 L9 4 L11 9 L8 11 C9 14 11 16 14 17 L16 14 L21 16 L21 20 C21 21 20 22 19 22 C10 22 2 14 2 5 C2 4 3 4 5 4"/></svg>
+          (27) 3011-7819
+        </div>
+        <div class="footer-contact">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+          @ecomarengharia
+        </div>
+        <div class="footer-contact">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7 L12 13 L21 7"/></svg>
+          contato@ecomareng.com.br
+        </div>
+        <div class="footer-contact">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12 L21 12 M12 3 C15 7 15 17 12 21 M12 3 C9 7 9 17 12 21"/></svg>
+          ecomareng.com
+        </div>
+      </div>
+      <div class="footer-center">
+        <div class="logo" style="justify-content:center;">
+          <svg class="logo-icon" style="width:7mm;height:7mm;" viewBox="0 0 40 40" fill="none">
+            <path d="M20 4 L34 14 L34 32 L6 32 L6 14 Z" fill="#007337" opacity="0.15"/>
+            <path d="M20 4 L34 14 L34 32 L6 32 L6 14 Z" stroke="#007337" stroke-width="2"/>
+            <path d="M20 8 L30 15 L30 30 L10 30 L10 15 Z" fill="#007337"/>
+          </svg>
+          <span class="logo-text" style="font-size:10pt;">Ecomar <span class="eng">Engenharia</span></span>
+        </div>
+      </div>
+      <div class="footer-right">
+        <div class="slogan">Do Projeto<br>à Geração,<br>A Gente Cuida<br>de Tudo Para Você.</div>
+      </div>
     </div>
   </div>
-
-  <div class="card">
-    <div class="card-title">Seu Sistema</div>
-    <div class="field-row"><div class="field-label">Cliente:</div><div class="field-value">${nomeCliente}</div></div>
-    <div class="field-row"><div class="field-label">Endereço:</div><div class="field-value">${endereco}</div></div>
-    <div class="field-row"><div class="field-label">Cidade/UF:</div><div class="field-value">${cidadeUF}</div></div>
-    <div class="field-row"><div class="field-label">Potência do Sistema:</div><div class="field-value">${potKwp} kWp</div></div>
-    <div class="field-row"><div class="field-label">Inversor:</div><div class="field-value">${inversorDesc}</div></div>
-    <div class="field-row"><div class="field-label">Data da Instalação:</div><div class="field-value">${dataInstalacao}</div></div>
-  </div>
-
-  <div class="card monitor">
-    <div class="card-title">Acompanhe sua Geração</div>
-    <p style="font-size:9.5pt;color:#666;margin:0 0 4mm;">Seu acesso ao aplicativo de monitoramento:</p>
-    <div class="field-row"><div class="field-label">Aplicativo:</div><div class="field-value">${aplicativo}</div></div>
-    <div class="field-row"><div class="field-label">Login:</div><div class="field-value">${login}</div></div>
-    <div class="field-row"><div class="field-label">Senha:</div><div class="field-value">${senha}</div></div>
-  </div>
-
-  <div class="footer">
-    <p style="font-size:10pt;color:#444;margin:0 0 2mm;">Qualquer dúvida, fico à disposição!</p>
-    <div class="footer-contacts">
-      <strong>(27) 3011-7819</strong> &nbsp;·&nbsp; <strong>@ecomarengharia</strong> &nbsp;·&nbsp; <strong>contato@ecomareng.com.br</strong> &nbsp;·&nbsp; <strong>ecomareng.com</strong>
-    </div>
-    <div class="slogan">Do projeto à geração, a gente cuida de tudo para você.</div>
-  </div>
-
 </div>
 </body>
 </html>`;

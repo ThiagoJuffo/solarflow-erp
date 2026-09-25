@@ -1213,7 +1213,7 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
                   {tipo.fromPreProjeto && !preProjeto?.[tipo.fromPreProjeto] && !tipo.comSinalizacao && (
                     <span className="text-xs text-slate-500 italic">Não enviada pelo vendedor</span>
                   )}
-                  {doc?.url_gerado && (
+                  {doc?.url_gerado && tipo.key !== "relatorio_entrega" && (
                     <div className="flex items-center gap-1">
                       <a href={doc.url_gerado} target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:underline flex items-center gap-1">
                         <FileText size={12} /> Ver original
@@ -1259,7 +1259,8 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
                           <input type="file" className="hidden" accept=".pdf,image/*" onChange={e => e.target.files[0] && handleUpload(tipo.key, e.target.files[0])} />
                         </label>
                       ) : tipo.gerarivel ? (
-                        // Tipos geráveis: botão substituir (sem assinado) + botão upload assinado
+                        // Tipos geráveis: upload apenas para tipos que aceitam assinatura (relatorio_entrega é só gerado)
+                        tipo.key === "relatorio_entrega" ? null : (
                         <>
                           <label className="cursor-pointer">
                             <span className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1">
@@ -1277,6 +1278,7 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
                             </label>
                           )}
                         </>
+                        )
                       ) : (
                         // Tipos não-geráveis: upload vai direto como assinado
                         <>
