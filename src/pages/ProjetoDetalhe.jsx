@@ -1012,6 +1012,7 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
     { key: "procuracao", label: "Procuração", gerarivel: true },
     { key: "memorial_tecnico", label: "Memorial Técnico", gerarivel: true },
     { key: "solicitacao_art", label: "Solicitação ART", gerarivel: true },
+    { key: "relatorio_entrega", label: "Relatório de Entrega", gerarivel: true },
     { key: "formulario_creditos", label: "Form. Envio de Créditos", gerarivel: false },
     { key: "projeto_unifilar", label: "Projeto Unifilar", gerarivel: false },
     { key: "inmetro", label: "Certificado INMETRO", gerarivel: false, fromProduto: true },
@@ -1037,7 +1038,7 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
       const updated = await base44.entities.Documento.update(existing.id, { status: "gerado" });
       setDocumentos(prev => prev.map(d => d.id === existing.id ? updated : d));
     } else {
-      const TIPOS_LABELS = { procuracao: "Procuração", memorial_tecnico: "Memorial Técnico", solicitacao_art: "Solicitação ART" };
+      const TIPOS_LABELS = { procuracao: "Procuração", memorial_tecnico: "Memorial Técnico", solicitacao_art: "Solicitação ART", relatorio_entrega: "Relatório de Entrega" };
       const novo = await base44.entities.Documento.create({
         projeto_id: projetoId, tipo,
         status: "gerado",

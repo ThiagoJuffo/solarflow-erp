@@ -104,6 +104,8 @@ Deno.serve(async (req) => {
     htmlContent = gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorProdutos, RESP_TECNICO, CREA, RESP_ENDERECO, RESP_TELEFONE, RESP_EMAIL, dataExtenso, cidade, estado, EMPRESA });
   } else if (tipo === "solicitacao_art") {
     htmlContent = gerarSolicitacaoART({ projeto, uc, rt, preProjeto, moduloProduto, inversorProdutos, dataExtenso });
+  } else if (tipo === "relatorio_entrega") {
+    htmlContent = gerarRelatorioEntrega({ projeto, uc, preProjeto, moduloProduto, inversorProdutos });
   } else {
     return Response.json({ error: 'Tipo de documento não suportado' }, { status: 400 });
   }
@@ -530,6 +532,133 @@ function gerarSolicitacaoART({ projeto, uc, rt, preProjeto, moduloProduto, inver
 
 <br/><br/>
 <p>${dataExtenso}</p>
+</body>
+</html>`;
+}
+
+function gerarRelatorioEntrega({ projeto, uc, preProjeto, moduloProduto, inversorProdutos }) {
+  const nomeCliente = uc.titular || projeto.nome_cliente || "—";
+  const endereco = uc.endereco || "—";
+  const cidadeUF = `${uc.cidade || "—"} / ${uc.estado || "—"}`;
+
+  // Potência em kWp
+  const potWpModulo = moduloProduto?.potencia_wp || 0;
+  const qtdMod = preProjeto?.modulo_quantidade || 0;
+  const potKwpCalc = (potWpModulo && qtdMod) ? ((potWpModulo * qtdMod) / 1000).toFixed(2) : null;
+  const potKwp = potKwpCalc || preProjeto?.potencia_pico_kwp || "—";
+
+  // Inversores
+  const inversoresArr = inversorProdutos.length ? inversorProdutos : [];
+  const inversorDesc = inversoresArr.length > 0
+    ? inversoresArr.map(inv => `${inv.quantidade}x ${inv.marca_modelo}`).join(" + ")
+    : preProjeto?.inversor_marca_modelo || "—";
+
+  // Data da instalação
+  const dataInstalacao = projeto.data_instalacao
+    ? new Date(projeto.data_instalacao + "T12:00:00").toLocaleDateString("pt-BR")
+    : "—";
+
+  // Monitoramento
+  const aplicativo = projeto.monitoramento_portal || "—";
+  const login = projeto.monitoramento_login || "—";
+  const senha = projeto.monitoramento_senha_encrypted || "—";
+
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; color: #1a1a1a; }
+  .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 18mm 16mm; display: flex; flex-direction: column; }
+  .logo { text-align: center; font-size: 13pt; font-weight: 700; color: #008037; letter-spacing: 1px; margin-bottom: 8mm; }
+  .logo span { color: #f57c00; }
+  .hero { text-align: center; padding: 10mm 0 8mm; }
+  .hero h1 { font-size: 26pt; font-weight: 800; color: #008037; margin: 0 0 4mm; line-height: 1.1; }
+  .hero p { font-size: 11pt; color: #444; line-height: 1.6; margin: 0 auto; max-width: 150mm; }
+  .steps { display: flex; justify-content: space-between; align-items: flex-start; margin: 8mm 0 10mm; padding: 0 4mm; }
+  .step { text-align: center; width: 22%; }
+  .step-num { width: 14mm; height: 14mm; border-radius: 50%; background: #008037; color: #fff; font-size: 14pt; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 3mm; }
+  .step-title { font-size: 8.5pt; font-weight: 700; color: #008037; text-transform: uppercase; line-height: 1.3; margin-bottom: 1mm; }
+  .step-desc { font-size: 7.5pt; color: #666; line-height: 1.3; }
+  .step-arrow { color: #f57c00; font-size: 14pt; font-weight: 700; align-self: center; margin-top: 5mm; }
+  .card { background: #f7f7f7; border-radius: 4mm; padding: 7mm 8mm; margin-bottom: 6mm; border-left: 4mm solid #008037; }
+  .card-title { font-size: 13pt; font-weight: 700; color: #008037; margin: 0 0 5mm; text-transform: uppercase; letter-spacing: 0.5px; }
+  .field-row { display: flex; padding: 2.2mm 0; border-bottom: 1px solid #e0e0e0; font-size: 10.5pt; }
+  .field-row:last-child { border-bottom: none; }
+  .field-label { font-weight: 700; color: #555; width: 42mm; flex-shrink: 0; }
+  .field-value { color: #1a1a1a; flex: 1; }
+  .card.monitor { border-left-color: #f57c00; }
+  .card.monitor .card-title { color: #f57c00; }
+  .footer { margin-top: auto; text-align: center; padding-top: 8mm; border-top: 1px solid #e0e0e0; }
+  .footer-contacts { font-size: 9pt; color: #555; line-height: 1.7; }
+  .footer-contacts strong { color: #008037; }
+  .slogan { margin-top: 5mm; font-size: 10pt; font-weight: 700; color: #f57c00; letter-spacing: 1px; text-transform: uppercase; }
+  @media print { .page { width: auto; min-height: auto; padding: 15mm 12mm; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="logo">ECOMAR <span>ENGENHARIA</span></div>
+
+  <div class="hero">
+    <h1>SEU SISTEMA ESTÁ PRONTO!</h1>
+    <p>Obrigado por confiar em nosso trabalho! Com a instalação do seu sistema concluída, o próximo passo é aguardar a vistoria e aprovação da EDP. Assim que o processo for concluído pela concessionária, você já poderá ligar o disjuntor do sistema solar.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-title">Instalação<br>Concluída</div>
+      <div class="step-desc">Seu sistema já está pronto para gerar.</div>
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-title">EDP<br>Solicitação da Vistoria</div>
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-title">Vistoria Realizada<br>pela EDP</div>
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-title">Geração<br>Liberada</div>
+      <div class="step-desc">Pode ligar o disjuntor.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Seu Sistema</div>
+    <div class="field-row"><div class="field-label">Cliente:</div><div class="field-value">${nomeCliente}</div></div>
+    <div class="field-row"><div class="field-label">Endereço:</div><div class="field-value">${endereco}</div></div>
+    <div class="field-row"><div class="field-label">Cidade/UF:</div><div class="field-value">${cidadeUF}</div></div>
+    <div class="field-row"><div class="field-label">Potência do Sistema:</div><div class="field-value">${potKwp} kWp</div></div>
+    <div class="field-row"><div class="field-label">Inversor:</div><div class="field-value">${inversorDesc}</div></div>
+    <div class="field-row"><div class="field-label">Data da Instalação:</div><div class="field-value">${dataInstalacao}</div></div>
+  </div>
+
+  <div class="card monitor">
+    <div class="card-title">Acompanhe sua Geração</div>
+    <p style="font-size:9.5pt;color:#666;margin:0 0 4mm;">Seu acesso ao aplicativo de monitoramento:</p>
+    <div class="field-row"><div class="field-label">Aplicativo:</div><div class="field-value">${aplicativo}</div></div>
+    <div class="field-row"><div class="field-label">Login:</div><div class="field-value">${login}</div></div>
+    <div class="field-row"><div class="field-label">Senha:</div><div class="field-value">${senha}</div></div>
+  </div>
+
+  <div class="footer">
+    <p style="font-size:10pt;color:#444;margin:0 0 2mm;">Qualquer dúvida, fico à disposição!</p>
+    <div class="footer-contacts">
+      <strong>(27) 3011-7819</strong> &nbsp;·&nbsp; <strong>@ecomarengharia</strong> &nbsp;·&nbsp; <strong>contato@ecomareng.com.br</strong> &nbsp;·&nbsp; <strong>ecomareng.com</strong>
+    </div>
+    <div class="slogan">Do projeto à geração, a gente cuida de tudo para você.</div>
+  </div>
+
+</div>
 </body>
 </html>`;
 }

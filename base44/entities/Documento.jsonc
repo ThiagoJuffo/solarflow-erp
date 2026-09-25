@@ -15,7 +15,8 @@
         "inmetro",
         "requerimento",
         "conta_energia",
-        "outros_anexos"
+        "outros_anexos",
+        "relatorio_entrega"
       ]
     },
     "titulo": {
