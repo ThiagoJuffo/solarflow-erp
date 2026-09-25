@@ -1025,12 +1025,26 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
   const handleGerar = async (tipo) => {
     setGerando(tipo);
     const response = await base44.functions.invoke('gerarDocumento', { tipo, projeto_id: projetoId });
-    const { html } = response.data;
+    const { html, pdf_base64, filename } = response.data;
 
-    // Abrir HTML em nova aba para visualizar/imprimir
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    if (pdf_base64) {
+      // PDF gerado sobre o modelo oficial (ex.: Relatório de Entrega): baixa com nome e abre em nova aba
+      const bytes = Uint8Array.from(atob(pdf_base64), c => c.charCodeAt(0));
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || `${tipo}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.open(url, '_blank');
+    } else {
+      // Abrir HTML em nova aba para visualizar/imprimir
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    }
 
     // Salvar como gerado
     const existing = getDoc(tipo);
