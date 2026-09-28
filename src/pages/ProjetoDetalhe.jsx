@@ -1024,6 +1024,7 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
 
   const handleGerar = async (tipo) => {
     setGerando(tipo);
+    try {
     const response = await base44.functions.invoke('gerarDocumento', { tipo, projeto_id: projetoId });
     const { html, pdf_base64, filename } = response.data;
 
@@ -1060,7 +1061,13 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
       });
       setDocumentos(prev => [...prev, novo]);
     }
-    setGerando(null);
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || 'Erro desconhecido';
+      console.error('Erro ao gerar documento', err);
+      alert(`Não foi possível gerar o documento: ${msg}`);
+    } finally {
+      setGerando(null);
+    }
   };
 
   // Tipos que pulam diretamente para "assinado" no upload (não passam por "gerado")
