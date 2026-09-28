@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { PDFDocument, StandardFonts, rgb } from 'npm:pdf-lib@1.17.1';
 
 // Modelo oficial (PDF estático) do Relatório de Entrega — os campos são escritos por cima
+// Reimplantado em 2026-09-28 para incluir branch relatorio_entrega (pdf-lib)
 const MODELO_RELATORIO_ENTREGA_URL = "https://media.base44.com/files/public/69a4e8e0a7fedaf0ea728241/1889369a6_modelo_relatorio_entrega.pdf";
 
 Deno.serve(async (req) => {
