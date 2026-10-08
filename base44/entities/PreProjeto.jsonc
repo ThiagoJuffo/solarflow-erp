@@ -192,6 +192,15 @@
     "vendedor_nome": {
       "type": "string"
     },
+    "origem_cliente": {
+      "type": "string",
+      "enum": [
+        "lead",
+        "indicacao_cliente",
+        "captacao_externa"
+      ],
+      "description": "Como o cliente foi captado"
+    },
     "observacoes": {
       "type": "string"
     },

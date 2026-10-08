@@ -118,6 +118,7 @@ export default function NovoPréProjeto() {
     original_uc_holder_name: cpfDivergenceOption === "different_holder" ? extraido?.titular : null,
     ownership_change_pending: cpfDivergenceOption === "ownership_change_pending",
     vendedor_id: form.vendedor_id || null,
+    origem_cliente: form.origem_cliente || null,
     vendedor_nome: vendedores.find(v => v.id === form.vendedor_id)?.nome || null,
     status: statusFinal,
   });
@@ -168,6 +169,7 @@ export default function NovoPréProjeto() {
       valor_projeto: r.valor_projeto || "",
       forma_pagamento: r.forma_pagamento || "",
       vendedor_id: r.vendedor_id || "",
+      origem_cliente: r.origem_cliente || "",
     });
     setContaEnergiaUrl(r.conta_energia_url || "");
     setDocFotoUrl(r.documento_foto_url || "");
@@ -470,6 +472,16 @@ Retorne apenas o JSON.`;
                   className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors">
                   <option value="">Selecionar vendedor...</option>
                   {vendedores.map(v => <option key={v.id} value={v.id}>{v.nome}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-slate-400 text-xs font-medium block mb-1.5">Origem do Cliente</label>
+                <select value={form.origem_cliente || ""} onChange={e => set("origem_cliente", e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition-colors">
+                  <option value="">Selecionar...</option>
+                  <option value="lead">Lead</option>
+                  <option value="indicacao_cliente">Indicação de nossos clientes</option>
+                  <option value="captacao_externa">Captação externa</option>
                 </select>
               </div>
             </div>
