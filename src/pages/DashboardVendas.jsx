@@ -225,6 +225,7 @@ export default function DashboardVendas() {
               <tr className="text-slate-400 text-xs uppercase tracking-wide border-b border-slate-800">
                 <th className="text-left py-2 pb-3">Cliente</th>
                 <th className="text-left py-2 pb-3">Vendedor</th>
+                <th className="text-left py-2 pb-3">Origem</th>
                 <th className="text-left py-2 pb-3">Pagamento</th>
                 <th className="text-right py-2 pb-3">Valor</th>
               </tr>
@@ -234,6 +235,7 @@ export default function DashboardVendas() {
                 <tr key={pp.id} className="border-b border-slate-800/50 text-white hover:bg-slate-800/30">
                   <td className="py-2.5">{pp.nome_cliente}</td>
                   <td className="py-2.5 text-slate-400">{pp.vendedor_nome || "—"}</td>
+                  <td className="py-2.5 text-slate-400">{{ lead: "Lead", indicacao_cliente: "Indicação de cliente", captacao_externa: "Captação externa" }[pp.origem_cliente] || "—"}</td>
                   <td className="py-2.5 text-slate-400">{FORMA_LABELS[pp.forma_pagamento] || "—"}</td>
                   <td className="text-right text-amber-400 font-medium">{pp.valor_projeto ? formatMoeda(parseMoeda(pp.valor_projeto)) : "—"}</td>
                 </tr>
@@ -241,7 +243,7 @@ export default function DashboardVendas() {
             </tbody>
             <tfoot>
               <tr className="text-amber-400 font-semibold border-t border-slate-700">
-                <td className="pt-3" colSpan={3}>Total</td>
+                <td className="pt-3" colSpan={4}>Total</td>
                 <td className="text-right pt-3">{formatMoeda(valorTotalMes)}</td>
               </tr>
             </tfoot>
