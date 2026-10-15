@@ -11,6 +11,7 @@ import PlanejamentoTelhado from './pages/PlanejamentoTelhado';
 import ManutencaoDetalhe from './pages/ManutencaoDetalhe';
 import Agenda from './pages/Agenda';
 import PublicAgenda from './pages/PublicAgenda';
+import OAuthConsent from './pages/OAuthConsent';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -80,6 +81,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/public/agenda" element={<PublicAgenda />} />
+            <Route path="/oauth/consent" element={<OAuthConsent />} />
             <Route path="/*" element={<AuthenticatedApp />} />
           </Routes>
         </Router>
