@@ -11,6 +11,7 @@ import PlanejamentoTelhado from './pages/PlanejamentoTelhado';
 import ManutencaoDetalhe from './pages/ManutencaoDetalhe';
 import Agenda from './pages/Agenda';
 import Garantias from './pages/Garantias';
+import GarantiaDetalhe from './pages/GarantiaDetalhe';
 import PublicAgenda from './pages/PublicAgenda';
 import OAuthConsent from './pages/OAuthConsent';
 
@@ -67,6 +68,7 @@ const AuthenticatedApp = () => {
       <Route path="/Manutencoes" element={<LayoutWrapper currentPageName="Manutencoes"><Manutencoes /></LayoutWrapper>} />
       <Route path="/ManutencaoDetalhe" element={<LayoutWrapper currentPageName="ManutencaoDetalhe"><ManutencaoDetalhe /></LayoutWrapper>} />
       <Route path="/PlanejamentoTelhado" element={<LayoutWrapper currentPageName="PlanejamentoTelhado"><PlanejamentoTelhado /></LayoutWrapper>} />
+      <Route path="/GarantiaDetalhe" element={<LayoutWrapper currentPageName="GarantiaDetalhe"><GarantiaDetalhe /></LayoutWrapper>} />
       <Route path="/Garantias" element={<LayoutWrapper currentPageName="Garantias"><Garantias /></LayoutWrapper>} />
       <Route path="/Agenda" element={<LayoutWrapper currentPageName="Agenda"><Agenda /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />

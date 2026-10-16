@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 import GarantiaModal from "@/components/garantias/GarantiaModal";
 
 const STATUS = {
@@ -37,25 +38,23 @@ export default function Garantias() {
       <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="text-slate-400 border-b border-slate-800">
-            <tr>{["Nome", "SN", "Tipo", "Marca", "Status", "Início tratativas", "Protocolo"].map(h => <th key={h} className="text-left p-3">{h}</th>)}</tr>
+            <tr>{["Nome", "Marca", "SN", "Protocolo", "Status"].map(h => <th key={h} className="text-left p-3">{h}</th>)}</tr>
           </thead>
           <tbody>
             {itens === null && <tr><td colSpan={7} className="p-6 text-center text-slate-500">Carregando...</td></tr>}
             {itens?.length === 0 && <tr><td colSpan={7} className="p-6 text-center text-slate-500">Nenhuma garantia cadastrada</td></tr>}
             {itens?.map(g => (
               <tr key={g.id} className="border-b border-slate-800/60">
-                <td className="p-3">{g.nome}</td>
-                <td className="p-3 text-slate-300">{g.sn || "—"}</td>
-                <td className="p-3 capitalize">{g.tipo}</td>
+                <td className="p-3"><Link to={`/GarantiaDetalhe?id=${g.id}`} className="text-amber-400 hover:underline">{g.nome}</Link></td>
                 <td className="p-3 text-slate-300">{g.marca || "—"}</td>
+                <td className="p-3 text-slate-300">{g.sn || "—"}</td>
+                <td className="p-3 text-slate-300">{g.numero_protocolo || "—"}</td>
                 <td className="p-3">
                   <select value={g.status} onChange={e => mudarStatus(g.id, e.target.value)}
                     className={`rounded-md px-2 py-1 text-xs border-0 ${STATUS[g.status]?.[1]}`}>
                     {Object.entries(STATUS).map(([k, [l]]) => <option key={k} value={k} className="bg-slate-900 text-white">{l}</option>)}
                   </select>
                 </td>
-                <td className="p-3 text-slate-300">{g.inicio_tratativas ? new Date(g.inicio_tratativas + "T12:00:00").toLocaleDateString("pt-BR") : "—"}</td>
-                <td className="p-3 text-slate-300">{g.numero_protocolo || "—"}</td>
               </tr>
             ))}
           </tbody>

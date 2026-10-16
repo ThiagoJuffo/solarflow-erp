@@ -34,6 +34,12 @@
     },
     "numero_protocolo": {
       "type": "string"
+    },
+    "endereco": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
     }
   },
   "required": [
