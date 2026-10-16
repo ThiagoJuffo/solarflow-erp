@@ -1,0 +1,43 @@
+{
+  "name": "Garantia",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string"
+    },
+    "sn": {
+      "type": "string"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "inversor",
+        "antena"
+      ]
+    },
+    "marca": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "aberto",
+        "aprovado",
+        "recusado",
+        "concluido"
+      ],
+      "default": "aberto"
+    },
+    "inicio_tratativas": {
+      "type": "string",
+      "format": "date"
+    },
+    "numero_protocolo": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "nome",
+    "tipo"
+  ]
+}

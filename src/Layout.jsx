@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { label: "Financeiro", page: "FluxoCaixa", icon: DollarSign, roles: ["admin","financeiro"] },
   { label: "DRE por Projeto", page: "DREProjeto", icon: BarChart2, roles: ["admin","financeiro","engenharia"] },
   { label: "Manutenções", page: "Manutencoes", icon: Wrench, roles: ["admin","financeiro","engenharia"] },
+  { label: "Garantias", page: "Garantias", icon: ShieldCheck, roles: ["admin","engenharia","instalacao"] },
   { label: "Agenda", page: "Agenda", icon: Calendar, roles: ["admin","engenharia","instalacao"] },
   { label: "Planej. Telhado", page: "PlanejamentoTelhado", icon: Sun, roles: ["admin","engenharia","instalacao"] },
   { label: "Usuários", page: "Usuarios", icon: Users, roles: ["admin"] },
