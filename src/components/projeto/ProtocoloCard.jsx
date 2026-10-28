@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import ConsultaEDP from "@/components/projeto/ConsultaEDP";
 import { FileText, Plus, CheckCircle, AlertTriangle, Clock, XCircle, Loader2, Copy, Check } from "lucide-react";
 
 const STATUS_ICONS = {
@@ -224,8 +225,11 @@ export default function ProtocoloCard({ projetoId, protocolos = [], onUpdate }) 
                      </div>
                    </div>
                  ) : null}
-               </div>
-             )}
+                 {p.tipo === "PROJETO" && (
+                   <ConsultaEDP protocolo={p} onSalvo={d => setListaProtocolos(prev => prev.map(x => x.id === p.id ? { ...x, edp_consulta: d } : x))} />
+                 )}
+                 </div>
+                 )}
            </div>
          ))}
        </div>

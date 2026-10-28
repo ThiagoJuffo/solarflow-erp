@@ -71,6 +71,10 @@
     },
     "observacoes": {
       "type": "string"
+    },
+    "edp_consulta": {
+      "type": "object",
+      "description": "\u00daltimo resultado da consulta no EDP Online via extens\u00e3o"
     }
   },
   "required": [
