@@ -11,6 +11,6 @@ export function consultarEDP(protocolo) {
     };
     window.addEventListener("message", h);
     window.postMessage({ type: "EDP_CONSULTA", id, protocolo }, "*");
-    const t = setTimeout(() => { window.removeEventListener("message", h); reject(new Error("Tempo esgotado")); }, 60000);
+    const t = setTimeout(() => { window.removeEventListener("message", h); reject(new Error("A extensão não respondeu. Verifique se você está logado no EDP Online e tente novamente (no app publicado, fora do preview).")); }, 20000);
   });
 }
