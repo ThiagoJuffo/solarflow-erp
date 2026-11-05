@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { parseKwh } from "@/lib/parseKwh";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Upload, User, FileText, CheckCircle, AlertTriangle, Loader2, ChevronRight, Zap, PartyPopper, Plus, Trash2, Save, Clock, X } from "lucide-react";
@@ -90,8 +91,13 @@ export default function NovoPréProjeto() {
     usina_fechada: form.usina_fechada,
     valor_projeto: form.valor_projeto,
     forma_pagamento: form.forma_pagamento,
-    potencia_pico_kwp: form.potencia_pico_kwp ? Number(form.potencia_pico_kwp) : null,
-    kwh_prometidos: form.kwh_prometidos ? Number(form.kwh_prometidos) : null,
+    potencia_pico_kwp: (() => {
+      const mod = modulos.find(p => `${p.fabricante} ${p.modelo}` === form.modulo_marca_modelo);
+      const qtd = Number(form.modulo_quantidade) || 0;
+      if (mod?.potencia_wp && qtd) return Number(((mod.potencia_wp * qtd) / 1000).toFixed(2));
+      return form.potencia_pico_kwp ? Number(form.potencia_pico_kwp) : null;
+    })(),
+    kwh_prometidos: parseKwh(form.kwh_prometidos),
     inversores: (form.inversores || []).filter(i => i.marca_modelo).map(i => ({ marca_modelo: i.marca_modelo, quantidade: Number(i.quantidade) || 1 })),
     inversor_marca_modelo: form.inversores?.[0]?.marca_modelo || "",
     inversor_quantidade: form.inversores?.[0]?.quantidade ? Number(form.inversores[0].quantidade) : null,
@@ -494,7 +500,7 @@ Retorne apenas o JSON.`;
 
               <div>
                 <label className="text-slate-400 text-xs font-medium block mb-1.5">kWh prometidos na venda *</label>
-                <input type="number" value={form.kwh_prometidos || ""} onChange={e => set("kwh_prometidos", e.target.value)} placeholder="ex: 600"
+                <input type="text" inputMode="decimal" value={form.kwh_prometidos || ""} onChange={e => set("kwh_prometidos", e.target.value)} placeholder="ex: 600"
                   className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-colors" />
               </div>
             </div>

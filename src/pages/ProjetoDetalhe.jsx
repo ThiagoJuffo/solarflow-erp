@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { parseKwh } from "@/lib/parseKwh";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import StatusTimeline from "../components/projeto/StatusTimeline";
@@ -586,7 +587,7 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
       modulo_marca_modelo: eqForm.modulo_marca_modelo,
       modulo_quantidade: eqForm.modulo_quantidade ? Number(eqForm.modulo_quantidade) : null,
       potencia_pico_kwp: eqForm.potencia_pico_kwp ? Number(eqForm.potencia_pico_kwp) : null,
-      kwh_prometidos: eqForm.kwh_prometidos ? Number(eqForm.kwh_prometidos) : null,
+      kwh_prometidos: parseKwh(eqForm.kwh_prometidos),
     });
     setSavingEq(false);
     setEditandoEq(false);
@@ -745,7 +746,7 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
                 </div>
                 <div>
                   <label className="text-slate-400 text-xs mb-1.5 block">kWh prometidos</label>
-                  <input type="number" value={eqForm.kwh_prometidos} onChange={e => setEqForm(f => ({ ...f, kwh_prometidos: e.target.value }))}
+                  <input type="text" inputMode="decimal" value={eqForm.kwh_prometidos} onChange={e => setEqForm(f => ({ ...f, kwh_prometidos: e.target.value }))}
                     className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" />
                 </div>
               </div>
