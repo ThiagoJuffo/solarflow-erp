@@ -65,5 +65,93 @@
   },
   "required": [
     "nome_cliente"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "engenharia"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "instalacao"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "engenharia"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "instalacao"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "engenharia"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "instalacao"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        }
+      ]
+    }
+  }
 }

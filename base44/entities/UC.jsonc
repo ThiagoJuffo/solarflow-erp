@@ -97,5 +97,93 @@
   },
   "required": [
     "numero_uc"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "vendas"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "engenharia"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "vendas"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "engenharia"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "suprimentos"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "instalacao"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "vendas"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "engenharia"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "engenharia"
+          }
+        }
+      ]
+    }
+  }
 }

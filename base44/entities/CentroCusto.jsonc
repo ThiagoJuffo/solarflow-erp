@@ -57,7 +57,20 @@
         }
       ]
     },
-    "read": true,
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "financeiro"
+          }
+        }
+      ]
+    },
     "update": {
       "$or": [
         {
@@ -72,7 +85,11 @@
         }
       ]
     },
-    "delete": false
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
   },
   "required": [
     "nome",
