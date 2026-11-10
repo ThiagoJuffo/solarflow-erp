@@ -9,12 +9,15 @@ import {
   unmarkOrphan,
   extractDateFromEventStart,
 } from '../../shared/syncCalendario.ts';
+import { requireRole } from '../../shared/auth.ts';
 
 // Polling de segurança — executa a cada 15 min via automação agendada
 // Compara todos os eventos do Google com os registros do banco e corrige divergências
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
+    const { error: authError } = await requireRole(base44, ['admin']);
+    if (authError) return authError;
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlecalendar');
     const authHeader = { Authorization: `Bearer ${accessToken}` };

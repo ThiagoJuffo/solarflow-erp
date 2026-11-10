@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { PDFDocument, StandardFonts, rgb } from 'npm:pdf-lib@1.17.1';
+import { requireRole, ROLES_INTERNOS } from '../../shared/auth.ts';
 
 // Modelo oficial (PDF estático) do Relatório de Entrega — os campos são escritos por cima
 // Reimplantado em 2026-09-28 para incluir branch relatorio_entrega (pdf-lib)
@@ -8,11 +9,16 @@ const MODELO_RELATORIO_ENTREGA_URL = "https://media.base44.com/files/public/69a4
 Deno.serve(async (req) => {
   try {
   const base44 = createClientFromRequest(req);
-  const user = await base44.auth.me();
-  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  const { user, error: authError } = await requireRole(base44, ROLES_INTERNOS);
+  if (authError) return authError;
 
-  const body = await req.json();
+  const body = await req.json().catch(() => ({}));
   const { tipo, projeto_id } = body;
+  if (!projeto_id) return Response.json({ error: 'projeto_id obrigatório' }, { status: 400 });
+  // O relatório de entrega inclui credenciais de monitoramento: só quem pode criar documentos
+  if (tipo === 'relatorio_entrega' && !['admin', 'engenharia', 'financeiro'].includes(user.role)) {
+    return Response.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   // Buscar dados do projeto
   const [ucs, resumos] = await Promise.all([
@@ -22,7 +28,8 @@ Deno.serve(async (req) => {
 
   let projeto = null;
   try {
-    projeto = await base44.asServiceRole.entities.Projeto.get(projeto_id);
+    // Leitura com o usuário logado: aplica as regras de acesso do Projeto
+    projeto = await base44.entities.Projeto.get(projeto_id);
   } catch (_e) {
     // projeto não encontrado
   }

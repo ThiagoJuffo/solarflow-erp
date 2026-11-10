@@ -225,41 +225,9 @@ export default function NovoPréProjeto() {
   const handleExtrair = async () => {
     setExtracting(true);
     try {
-      const prompt = `Analise os documentos fornecidos (conta de energia e documento de identidade) e extraia as seguintes informações em JSON:
-- numero_uc: número da unidade consumidora / instalação
-- titular: nome do titular na conta
-- cpf_extraido: CPF encontrado
-- endereco: endereço completo da UC
-- cidade: cidade
-- estado: UF
-- cep: CEP
-- tipo_ligacao: monofasico/bifasico/trifasico (se identificado)
-- concessionaria: nome da concessionária
-- classe_consumo: residencial/comercial/industrial (se identificado)
-- score_confianca: objeto com score 0-1 para cada campo extraído
-
-Retorne apenas o JSON.`;
-
-      const urls = [contaEnergiaUrl, docFotoUrl].filter(Boolean);
-      const resultado = await base44.integrations.Core.InvokeLLM({
-        prompt,
-        file_urls: urls,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            numero_uc: { type: "string" },
-            titular: { type: "string" },
-            cpf_extraido: { type: "string" },
-            endereco: { type: "string" },
-            cidade: { type: "string" },
-            estado: { type: "string" },
-            cep: { type: "string" },
-            tipo_ligacao: { type: "string" },
-            concessionaria: { type: "string" },
-            classe_consumo: { type: "string" },
-            score_confianca: { type: "object" }
-          }
-        }
+      const { data: resultado } = await base44.functions.invoke("extrairDadosCliente", {
+        conta_url: contaEnergiaUrl || null,
+        documento_url: docFotoUrl || null,
       });
 
       setExtraido(resultado);

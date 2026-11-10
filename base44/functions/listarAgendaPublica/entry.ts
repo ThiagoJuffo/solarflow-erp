@@ -52,12 +52,19 @@ export default async function (req) {
       eventosGoogle = [];
     }
 
+    // Resposta pública mínima: só os campos que a agenda pública exibe/usa para vincular eventos
     return Response.json({
-      manutencoes,
-      projetos,
-      ucs,
-      preProjetos,
-      eventosGoogle,
+      manutencoes: manutencoes.map((m) => ({
+        id: m.id, nome_cliente: m.nome_cliente, data_agendamento: m.data_agendamento, status: m.status,
+      })),
+      projetos: projetos.map((p) => ({
+        id: p.id, nome_cliente: p.nome_cliente, status: p.status, sistema_instalado: p.sistema_instalado,
+        data_instalacao: p.data_instalacao, pre_projeto_id: p.pre_projeto_id,
+        google_calendar_event_id: p.google_calendar_event_id, google_calendar_event_ids: p.google_calendar_event_ids,
+      })),
+      ucs: ucs.map((u) => ({ projeto_id: u.projeto_id, cidade: u.cidade })),
+      preProjetos: preProjetos.map((pp) => ({ id: pp.id, projeto_id: pp.projeto_id, modulo_quantidade: pp.modulo_quantidade })),
+      eventosGoogle: eventosGoogle.map((e) => ({ id: e.id, summary: e.summary, start: e.start, end: e.end })),
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import safeUrl from "@/lib/safeUrl";
 import ManutencaoStatusTimeline from "../components/manutencao/ManutencaoStatusTimeline";
 import {
   Wrench, ChevronLeft, Calendar, DollarSign, MapPin, Package,
@@ -355,7 +356,7 @@ export default function ManutencaoDetalhe() {
               <MapPin size={13} className="text-amber-400 shrink-0" />
               <div className="min-w-0">
                 <p className="text-slate-400 text-xs mb-0.5">Localização</p>
-                <a href={manutencao.google_maps_url} target="_blank" rel="noreferrer"
+                <a href={safeUrl(manutencao.google_maps_url)} target="_blank" rel="noreferrer"
                   className="text-amber-400 hover:text-amber-300 text-xs truncate flex items-center gap-1 transition-colors">
                   <ExternalLink size={11} /> Ver no Google Maps
                 </a>

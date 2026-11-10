@@ -4,13 +4,16 @@ import {
   loadSyncableRecords,
   processGoogleEvent,
 } from '../../shared/syncCalendario.ts';
+import { requireRole } from '../../shared/auth.ts';
 
 // Handler do webhook do Google Calendar — sincronização incremental via syncToken
 // Chamado pela plataforma (não pelo Google diretamente) quando o Google notifica mudanças
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
-    const body = await req.json();
+    const { error: authError } = await requireRole(base44, ['admin']);
+    if (authError) return authError;
+    const body = await req.json().catch(() => ({}));
     const state = body?.data?._provider_meta?.['x-goog-resource-state'];
     if (state === 'sync') return Response.json({ status: 'sync_ack' });
 

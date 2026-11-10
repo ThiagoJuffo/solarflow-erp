@@ -6,6 +6,7 @@ import { createPageUrl } from "@/utils";
 import StatusTimeline from "../components/projeto/StatusTimeline";
 import DossieChecklist from "../components/projeto/DossieChecklist";
 import ProtocoloCard from "../components/projeto/ProtocoloCard";
+import safeUrl from "@/lib/safeUrl";
 import {
   ChevronLeft, Sun, MapPin, Zap, FileText, Camera, Package,
   Settings, Eye, EyeOff, CheckCircle, AlertTriangle, Loader2,
@@ -1154,7 +1155,7 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
                     </button>
                   )}
                   {tipo.fromProduto && inversorProduto?.inmetro_url && (
-                    <a href={inversorProduto.inmetro_url} target="_blank" rel="noreferrer" className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-all flex items-center gap-1">
+                    <a href={safeUrl(inversorProduto.inmetro_url)} target="_blank" rel="noreferrer" className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-all flex items-center gap-1">
                       <FileText size={12} /> Download INMETRO ({preProjeto?.inversor_marca_modelo})
                     </a>
                   )}
@@ -1162,7 +1163,7 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
                     <span className="text-xs text-slate-500 italic">Certificado não cadastrado para este inversor</span>
                   )}
                   {tipo.fromPreProjeto && preProjeto?.[tipo.fromPreProjeto] && (
-                    <a href={preProjeto[tipo.fromPreProjeto]} target="_blank" rel="noreferrer" className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1.5 rounded-lg hover:bg-blue-500/20 transition-all flex items-center gap-1">
+                    <a href={safeUrl(preProjeto[tipo.fromPreProjeto])} target="_blank" rel="noreferrer" className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1.5 rounded-lg hover:bg-blue-500/20 transition-all flex items-center gap-1">
                       <FileText size={12} /> Download Conta de Energia
                     </a>
                   )}
@@ -1237,7 +1238,7 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
                   )}
                   {doc?.url_gerado && tipo.key !== "relatorio_entrega" && (
                     <div className="flex items-center gap-1">
-                      <a href={doc.url_gerado} target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:underline flex items-center gap-1">
+                      <a href={safeUrl(doc.url_gerado)} target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:underline flex items-center gap-1">
                         <FileText size={12} /> Ver original
                       </a>
                       {canEdit && (
@@ -1254,7 +1255,7 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
                   )}
                   {doc?.url_assinado && (
                     <div className="flex items-center gap-1">
-                      <a href={doc.url_assinado} target="_blank" rel="noreferrer" className="text-xs text-emerald-400 hover:underline flex items-center gap-1">
+                      <a href={safeUrl(doc.url_assinado)} target="_blank" rel="noreferrer" className="text-xs text-emerald-400 hover:underline flex items-center gap-1">
                         <CheckCircle size={12} /> Ver assinado
                       </a>
                       {canEdit && (
@@ -1395,7 +1396,7 @@ function VisitaTab({ projetoId, visita, setVisita, canEdit, preProjeto }) {
         </h4>
         <div className="flex flex-wrap gap-2">
           {preProjeto?.conta_energia_url ? (
-            <a href={preProjeto.conta_energia_url} target="_blank" rel="noreferrer"
+            <a href={safeUrl(preProjeto.conta_energia_url)} target="_blank" rel="noreferrer"
               className="text-xs bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
               <FileText size={12} /> Ver Conta de Energia
             </a>
@@ -1403,7 +1404,7 @@ function VisitaTab({ projetoId, visita, setVisita, canEdit, preProjeto }) {
             <span className="text-xs text-slate-500 italic">Conta de energia não enviada</span>
           )}
           {preProjeto?.documento_foto_url ? (
-            <a href={preProjeto.documento_foto_url} target="_blank" rel="noreferrer"
+            <a href={safeUrl(preProjeto.documento_foto_url)} target="_blank" rel="noreferrer"
               className="text-xs bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
               <FileText size={12} /> Ver CNH / Documento
             </a>

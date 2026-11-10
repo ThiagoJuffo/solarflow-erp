@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import safeUrl from "@/lib/safeUrl";
 import { Package, Plus, Search, Upload, FileText, CheckCircle, Loader2, X, Filter, Sparkles } from "lucide-react";
 
 const TIPOS = {
@@ -86,55 +87,9 @@ export default function Produtos() {
   const handlePreencherIA = async () => {
     if (!form.fabricante || !form.modelo) return;
     setPreenchendoIA(true);
-    const isModulo = form.tipo === "modulo_fv";
-    const prompt = isModulo
-      ? `Busque as especificações técnicas completas do módulo fotovoltaico: Fabricante: ${form.fabricante}, Modelo: ${form.modelo}.
-Retorne os dados em JSON com os campos: potencia_wp (Ppeak), vmp (Tensão Vmp), imp (Corrente Imp), voc (Tensão Voc), isc (Corrente Isc), eficiencia_modulo (% eficiência), corrente_max_fusivel_a (corrente máx fusível série), coef_temperatura (ex: "-0.35%/°C"), area_m2, dimensoes, peso, garantia_anos.
-Preencha apenas os campos que encontrar com certeza. Deixe null para os demais.`
-      : `Busque as especificações técnicas completas do inversor/microinversor solar: Fabricante: ${form.fabricante}, Modelo: ${form.modelo}.
-Retorne os dados em JSON com os campos: potencia_kva, potencia_ac_w, tensao_nominal_ac_v (string com range, ex: "220 V (176/224V)"), corrente_max_ac_a, frequencia_operacao_hz, range_frequencia_hz, fator_potencia, corrente_max_dc_a, tensao_min_dc_v, tensao_max_dc_v, num_mppt, entradas_por_mppt, range_temperatura, eficiencia, peso, dimensoes, garantia_anos.
-Preencha apenas os campos que encontrar com certeza. Deixe null para os demais.`;
-
-    const response_json_schema = isModulo ? {
-      type: "object",
-      properties: {
-        potencia_wp: { type: "number" },
-        vmp: { type: "number" },
-        imp: { type: "number" },
-        voc: { type: "number" },
-        isc: { type: "number" },
-        eficiencia_modulo: { type: "number" },
-        corrente_max_fusivel_a: { type: "number" },
-        coef_temperatura: { type: "string" },
-        area_m2: { type: "number" },
-        dimensoes: { type: "string" },
-        peso: { type: "number" },
-        garantia_anos: { type: "number" }
-      }
-    } : {
-      type: "object",
-      properties: {
-        potencia_kva: { type: "number" },
-        potencia_ac_w: { type: "number" },
-        tensao_nominal_ac_v: { type: "string" },
-        corrente_max_ac_a: { type: "number" },
-        frequencia_operacao_hz: { type: "number" },
-        range_frequencia_hz: { type: "string" },
-        fator_potencia: { type: "number" },
-        corrente_max_dc_a: { type: "number" },
-        tensao_min_dc_v: { type: "number" },
-        tensao_max_dc_v: { type: "number" },
-        num_mppt: { type: "number" },
-        entradas_por_mppt: { type: "number" },
-        range_temperatura: { type: "string" },
-        eficiencia: { type: "number" },
-        peso: { type: "number" },
-        dimensoes: { type: "string" },
-        garantia_anos: { type: "number" }
-      }
-    };
-
-    const resultado = await base44.integrations.Core.InvokeLLM({ prompt, add_context_from_internet: true, response_json_schema });
+    const { data: resultado } = await base44.functions.invoke("buscarSpecsProduto", {
+      fabricante: form.fabricante, modelo: form.modelo, tipo: form.tipo,
+    });
     if (resultado) {
       setForm(f => {
         const updated = { ...f };
@@ -163,29 +118,7 @@ Preencha apenas os campos que encontrar com certeza. Deixe null para os demais.`
     if (!file) return;
     setLoading(true);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-      file_url,
-      json_schema: {
-        type: "object",
-        properties: {
-          items: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                tipo: { type: "string" },
-                fabricante: { type: "string" },
-                modelo: { type: "string" },
-                potencia_wp: { type: "number" },
-                potencia_kva: { type: "number" },
-                eficiencia: { type: "number" },
-                garantia_anos: { type: "number" }
-              }
-            }
-          }
-        }
-      }
-    });
+    const { data: result } = await base44.functions.invoke("importarPlanilhaProdutos", { file_url });
     if (result.status === "success" && result.output?.items) {
       const criados = await base44.entities.Produto.bulkCreate(
         result.output.items.map(item => ({ ...item, ativo: true }))
@@ -450,7 +383,7 @@ Preencha apenas os campos que encontrar com certeza. Deixe null para os demais.`
                   </div>
                   {form.inmetro_url && (
                     <a
-                      href={form.inmetro_url}
+                      href={safeUrl(form.inmetro_url)}
                       target="_blank"
                       rel="noreferrer"
                       className="flex items-center justify-center gap-2 w-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 py-2.5 rounded-xl text-xs font-medium transition-all"

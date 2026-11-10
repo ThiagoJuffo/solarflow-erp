@@ -66,27 +66,8 @@ export default function PlanejamentoTelhado() {
     if (!dadosSolar?.staticMapUrl) return;
     setIdentificandoTelhado(true);
     setTelhadoIdentificado(false);
-    const res = await base44.integrations.Core.InvokeLLM({
-      prompt: `Esta é uma imagem de satélite com zoom máximo (zoom 20) de uma edificação.
-Identifique o telhado principal visível e estime suas dimensões reais em metros.
-O Google Solar API informou área total do telhado de ${dadosSolar.buildingArea?.toFixed(0)} m².
-Retorne:
-- largura_m: largura do maior plano utilizável do telhado (número, em metros)
-- comprimento_m: comprimento do maior plano utilizável (número, em metros)
-- inclinacao_graus: inclinação estimada (0 para laje plana, 15-30 para telha comum)
-- tipo_telhado: tipo (laje, ceramica, metalico, fibrocimento, outro)
-- observacoes: sombreamentos, obstáculos, múltiplos planos relevantes`,
-      file_urls: [dadosSolar.staticMapUrl],
-      response_json_schema: {
-        type: "object",
-        properties: {
-          largura_m: { type: "number" },
-          comprimento_m: { type: "number" },
-          inclinacao_graus: { type: "number" },
-          tipo_telhado: { type: "string" },
-          observacoes: { type: "string" }
-        }
-      }
+    const { data: res } = await base44.functions.invoke("analisarTelhado", {
+      modo: "satelite", image_url: dadosSolar.staticMapUrl, area_m2: dadosSolar.buildingArea,
     });
     if (res.largura_m) setDimensoes(d => ({ ...d, largura: String(res.largura_m) }));
     if (res.comprimento_m) setDimensoes(d => ({ ...d, comprimento: String(res.comprimento_m) }));
@@ -149,27 +130,7 @@ Retorne:
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setDroneUrl(file_url);
 
-    const analise = await base44.integrations.Core.InvokeLLM({
-      prompt: `Analise esta foto de drone de um telhado residencial/comercial e estime:
-- largura_m: largura útil do telhado em metros (número)
-- comprimento_m: comprimento útil do telhado em metros (número)  
-- inclinacao_graus: inclinação estimada do telhado em graus (número, ex: 15, 30)
-- tipo_telhado: tipo (ceramica, fibrocimento, metalico, laje, outro)
-- observacoes: observações importantes sobre sombreamento ou obstáculos
-
-Retorne apenas JSON com esses campos. Se não conseguir identificar, use null.`,
-      file_urls: [file_url],
-      response_json_schema: {
-        type: "object",
-        properties: {
-          largura_m: { type: "number" },
-          comprimento_m: { type: "number" },
-          inclinacao_graus: { type: "number" },
-          tipo_telhado: { type: "string" },
-          observacoes: { type: "string" }
-        }
-      }
-    });
+    const { data: analise } = await base44.functions.invoke("analisarTelhado", { modo: "drone", image_url: file_url });
 
     setAnaliseIA(analise);
     if (analise.largura_m) setDimensoes(d => ({ ...d, largura: String(analise.largura_m) }));

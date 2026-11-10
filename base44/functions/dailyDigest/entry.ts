@@ -1,8 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { requireRole } from '../../shared/auth.ts';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const { error: authError } = await requireRole(base44, ['admin']);
+    if (authError) return authError;
+    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
     // Buscar todos os projetos e manutenções em paralelo
     const [todosProjetos, todasManutencoes] = await Promise.all([
@@ -36,7 +40,7 @@ Deno.serve(async (req) => {
     // Função para formatar lista de clientes (máx 5)
     const listarClientes = (items, campo = 'nome_cliente') => {
       const top5 = items.slice(0, 5);
-      const linhas = top5.map(i => `<li style="margin:4px 0; color:#334155;">${i[campo] || '(sem nome)'}</li>`).join('');
+      const linhas = top5.map(i => `<li style="margin:4px 0; color:#334155;">${esc(i[campo] || '(sem nome)')}</li>`).join('');
       const extra = items.length > 5 ? `<li style="color:#94a3b8; font-style:italic;">+ ${items.length - 5} mais...</li>` : '';
       return `<ul style="margin:8px 0 0 0; padding-left:18px; font-size:14px;">${linhas}${extra}</ul>`;
     };

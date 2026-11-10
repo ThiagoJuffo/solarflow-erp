@@ -242,34 +242,7 @@ export default function ConciliacaoBancaria({
         arquivo_hash: arquivoHash,
         status: "processando",
       });
-      const { signed_url } = await base44.integrations.Core.CreateFileSignedUrl({ file_uri, expires_in: 3600 });
-      const resultado = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url: signed_url,
-        json_schema: {
-          type: "object",
-          properties: {
-            banco: { type: "string" },
-            periodo_inicio: { type: "string", format: "date" },
-            periodo_fim: { type: "string", format: "date" },
-            movimentos: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  data: { type: "string", format: "date" },
-                  descricao: { type: "string" },
-                  documento: { type: "string" },
-                  tipo: { type: "string", enum: ["credito", "debito"] },
-                  valor: { type: "number" },
-                  saldo: { type: "number" }
-                },
-                required: ["data", "descricao", "tipo", "valor"]
-              }
-            }
-          },
-          required: ["movimentos"]
-        }
-      });
+      const { data: resultado } = await base44.functions.invoke("extrairExtratoBancario", { importacao_id: importacao.id });
 
       const dados = resultado?.output || resultado;
       if (resultado?.status && resultado.status !== "success") throw new Error("Não foi possível interpretar o PDF.");

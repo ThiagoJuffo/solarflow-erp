@@ -1,12 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { createCalendarEvent } from '../../shared/googleCalendar.ts';
+import { requireRole, ROLES_AGENDAMENTO } from '../../shared/auth.ts';
 
 // Agendamento automático de instalação no SolarFlow + espelho no Google Calendar.
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const { user, error: authError } = await requireRole(base44, ROLES_AGENDAMENTO);
+    if (authError) return authError;
 
     const body = await req.json();
     const projetoId = body.event?.entity_id || body.data?.id;

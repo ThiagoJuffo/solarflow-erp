@@ -1,13 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from '../../shared/googleCalendar.ts';
+import { requireRole } from '../../shared/auth.ts';
 
 // Gerencia agendamentos de manutenção no SolarFlow (fonte da verdade) e espelha no Google Calendar.
 // Self-contained: atualiza a entidade Manutencao em todas as ações.
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const { error: authError } = await requireRole(base44, ['admin', 'engenharia', 'financeiro', 'instalacao']);
+    if (authError) return authError;
 
     const { action, manutencao_id, data_agendamento } = await req.json();
 
@@ -37,11 +38,12 @@ export default async function(req) {
       const start = new Date(data_agendamento);
       if (isNaN(start.getTime())) return Response.json({ error: 'Data inválida' }, { status: 400 });
 
+      const fresh = await base44.entities.Manutencao.get(manutencao_id).catch((e) => (e?.status === 404 ? null : Promise.reject(e)));
+      if (!fresh) return Response.json({ error: 'Manutenção não encontrada' }, { status: 404 });
+
       await base44.asServiceRole.entities.Manutencao.update(manutencao_id, {
         data_agendamento: start.toISOString(), status: 'agendada', sync_origem: 'app'
       });
-
-      const fresh = await base44.entities.Manutencao.get(manutencao_id);
       if (fresh?.google_calendar_event_id) {
         try {
           const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlecalendar');
