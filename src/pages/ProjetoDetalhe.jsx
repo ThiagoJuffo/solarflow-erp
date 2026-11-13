@@ -783,6 +783,12 @@ function UCTecnicoTab({ uc, resumoTec, saveUC, saveResumo, canEdit, preProjeto, 
                 <p className="text-slate-400 text-xs mb-1">kWh prometidos</p>
                 <p className="text-white text-sm font-medium">{preProjeto.kwh_prometidos ? `${preProjeto.kwh_prometidos} kWh/mês` : "—"}</p>
               </div>
+              <div className="bg-slate-800/60 rounded-xl p-3">
+                <p className="text-slate-400 text-xs mb-1">Tipo de telhado</p>
+                <p className="text-white text-sm font-medium">
+                  {{ ceramica: "Cerâmica", fibrocimento: "Fibrocimento", metalico: "Metálico", laje: "Laje", sanduiche: "Sanduíche", outro: "Outro" }[preProjeto.tipo_telhado] || "—"}
+                </p>
+              </div>
             </div>
           )}
 
