@@ -1018,12 +1018,12 @@ function DocumentosTab({ projetoId, documentos, setDocumentos, canEdit, preProje
 
   const TIPOS = [
     { key: "procuracao", label: "Procuração", gerarivel: true },
-    { key: "memorial_tecnico", label: "Memorial Técnico", gerarivel: true },
     { key: "solicitacao_art", label: "Solicitação ART", gerarivel: true },
-    { key: "relatorio_entrega", label: "Relatório de Entrega", gerarivel: true },
-    { key: "formulario_creditos", label: "Form. Envio de Créditos", gerarivel: false },
     { key: "projeto_unifilar", label: "Projeto Unifilar", gerarivel: false },
+    { key: "memorial_tecnico", label: "Memorial Técnico", gerarivel: true },
+    { key: "relatorio_entrega", label: "Relatório de Entrega", gerarivel: true },
     { key: "inmetro", label: "Certificado INMETRO", gerarivel: false, fromProduto: true },
+    { key: "formulario_creditos", label: "Form. Envio de Créditos", gerarivel: false },
     { key: "conta_energia", label: "Conta de Energia", gerarivel: false, fromPreProjeto: "conta_energia_url", comSinalizacao: true },
     { key: "outros_anexos", label: "Outros Anexos", gerarivel: false },
   ];
