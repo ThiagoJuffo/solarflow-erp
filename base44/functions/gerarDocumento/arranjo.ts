@@ -1,6 +1,5 @@
 // Sugere a disposição dos módulos nas entradas de cada inversor quando o arranjo
-// não foi informado manualmente. Retorna uma tabela por inversor (inversores com
-// a mesma disposição são agrupados).
+// não foi informado manualmente. Retorna uma tabela para cada inversor.
 const T_MIN = 10, T_STC = 25; // °C
 
 export function sugerirArranjo({ modulo, qtdModulos, inversores }) {
@@ -29,13 +28,8 @@ export function sugerirArranjo({ modulo, qtdModulos, inversores }) {
       String(Math.floor(n / numStrings) + (s < n % numStrings ? 1 : 0)),
       `Entrada ${s + 1}`,
     ]);
-    const anterior = tabelas[tabelas.length - 1];
-    if (anterior && JSON.stringify(anterior.linhas) === JSON.stringify(linhas)) anterior.ate = i + 1;
-    else tabelas.push({ de: i + 1, ate: i + 1, linhas });
+    tabelas.push({ titulo: `Arranjo dos Painéis Inversor ${i + 1}`, linhas });
   });
 
-  return tabelas.map(t => ({
-    titulo: t.de === t.ate ? `Arranjo dos Painéis Inversor ${t.de}` : `Arranjo dos Painéis Inversores ${t.de} ${t.ate - t.de === 1 ? "e" : "a"} ${t.ate}`,
-    linhas: t.linhas,
-  }));
+  return tabelas;
 }
