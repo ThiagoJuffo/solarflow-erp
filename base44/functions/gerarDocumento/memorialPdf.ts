@@ -90,6 +90,7 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
   }));
 
   const capa = pdf.addPage(A4);
+  const folhaSumario = pdf.addPage(A4);
   const sumario = [];
   let page, y;
   const novaPagina = () => { page = pdf.addPage(A4); y = A4[1] - MT; };
@@ -381,7 +382,7 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
   }
 
   // ---------- Capa e sumário ----------
-  let yc = A4[1] - MT - 30;
+  let yc = A4[1] / 2 + 90; // capa centralizada na folha
   for (const linha of quebrar("MEMORIAL TÉCNICO DESCRITIVO – MICRO GERAÇÃO DISTRIBUIDA EM BAIXA TENSÃO", bold, 16, LARG)) {
     centro(capa, linha, yc, 16, bold);
     yc -= 22;
@@ -395,19 +396,21 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
   centro(capa, dataExtenso, yc, 12);
   yc -= 18;
   centro(capa, cidadeEstado, yc, 12);
-  yc -= 50;
-  texto(capa, "Sumário", ML, yc, 14, bold);
+
+  // Sumário em folha própria
+  yc = A4[1] - MT - 14;
+  texto(folhaSumario, "Sumário", ML, yc, 14, bold);
   yc -= 10;
   for (const item of sumario) {
     yc -= 16;
     const x = ML + (item.nivel - 1) * 12;
     const pagina = String(item.pagina);
     const xPagina = ML + LARG - font.widthOfTextAtSize(pagina, 10);
-    texto(capa, item.rotulo, x, yc, 10);
+    texto(folhaSumario, item.rotulo, x, yc, 10);
     const inicio = x + font.widthOfTextAtSize(limpo(item.rotulo), 10) + 4;
     const pontos = Math.floor((xPagina - 4 - inicio) / font.widthOfTextAtSize(".", 10));
-    if (pontos > 0) texto(capa, ".".repeat(pontos), inicio, yc, 10);
-    texto(capa, pagina, xPagina, yc, 10);
+    if (pontos > 0) texto(folhaSumario, ".".repeat(pontos), inicio, yc, 10);
+    texto(folhaSumario, pagina, xPagina, yc, 10);
   }
 
   // Numeração das páginas no rodapé
