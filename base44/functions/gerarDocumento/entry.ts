@@ -111,7 +111,9 @@ Deno.serve(async (req) => {
   let htmlContent = "";
 
   if (tipo === "procuracao") {
-    htmlContent = gerarProcuracao({ projeto, uc, rt, RESP_TECNICO, RESP_CPF, RESP_RG, RESP_ENDERECO, dataExtenso, cidade, estado });
+    const pdfBytes = await gerarProcuracaoPDF({ projeto, uc, RESP_TECNICO, RESP_CPF, RESP_RG, RESP_ENDERECO, dataExtenso, cidade, estado });
+    const nomeArquivo = `Procuracao_${String(uc.titular || projeto.nome_cliente || "cliente").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9]+/g, "_")}.pdf`;
+    return Response.json({ pdf_base64: bytesToBase64(pdfBytes), filename: nomeArquivo, tipo, projeto_id });
   } else if (tipo === "memorial_tecnico") {
     htmlContent = gerarMemorial({ projeto, uc, rt, preProjeto, moduloProduto, inversorProdutos, RESP_TECNICO, CREA, RESP_ENDERECO, RESP_TELEFONE, RESP_EMAIL, dataExtenso, cidade, estado, EMPRESA });
   } else if (tipo === "solicitacao_art") {
@@ -130,52 +132,84 @@ Deno.serve(async (req) => {
   }
 });
 
-function gerarProcuracao({ projeto, uc, rt, RESP_TECNICO, RESP_CPF, RESP_RG, RESP_ENDERECO, dataExtenso, cidade, estado }) {
-  const nomeCliente = uc.titular || projeto.nome_cliente;
-  const cpfCliente = uc.cpf || projeto.cpf;
-  const endereco = uc.endereco || "—";
-  const cep = uc.cep || "—";
-  const cidadeUF = `${uc.cidade || cidade} – ${estado}`;
+async function gerarProcuracaoPDF({ projeto, uc, RESP_TECNICO, RESP_CPF, RESP_RG, RESP_ENDERECO, dataExtenso, cidade, estado }) {
+  // Remove caracteres que as fontes padrão do PDF não conseguem escrever
+  const limpo = (s) => String(s ?? "").replace(/[^\x20-\x7E\u00A0-\u00FF–—]/g, "");
+  const nomeCliente = limpo(uc.titular || projeto.nome_cliente);
+  const cpfCliente = limpo(uc.cpf || projeto.cpf);
+  const endereco = limpo(uc.endereco || "—");
+  const cep = limpo(uc.cep || "—");
+  const cidadeUF = limpo(`${uc.cidade || cidade} – ${estado}`);
 
-  return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<style>
-  body { font-family: Arial, sans-serif; font-size: 12pt; margin: 3cm 3cm 2cm 3cm; color: #000; line-height: 1.6; }
-  h1 { text-align: center; font-size: 16pt; margin-bottom: 2em; }
-  .section-title { font-weight: bold; font-size: 13pt; margin-top: 1.5em; }
-  .signature-area { margin-top: 4em; display: flex; justify-content: space-between; }
-  .sig-line { text-align: center; width: 45%; }
-  .sig-line hr { border: none; border-top: 1px solid #000; margin-bottom: 0.3em; }
-  p { margin-bottom: 0.8em; text-align: justify; }
-</style>
-</head>
-<body>
-<h1>PROCURAÇÃO</h1>
+  const pdf = await PDFDocument.create();
+  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const page = pdf.addPage([595.28, 841.89]); // A4
+  const margem = 85; // 3 cm
+  const largura = 595.28 - margem * 2;
+  const tamanho = 12;
+  const entrelinha = 19;
+  let y = 841.89 - margem;
 
-<p class="section-title">Outorgante</p>
-<p>${nomeCliente}, CPF: ${cpfCliente}, estabelecido na ${endereco}, ${cidadeUF}. CEP: ${cep}</p>
+  // Parágrafo justificado com quebra automática de linha
+  const paragrafo = (texto) => {
+    const palavras = limpo(texto).split(/\s+/).filter(Boolean);
+    const linhas = [];
+    let atual = [];
+    for (const p of palavras) {
+      if (atual.length && font.widthOfTextAtSize([...atual, p].join(" "), tamanho) > largura) {
+        linhas.push(atual);
+        atual = [];
+      }
+      atual.push(p);
+    }
+    if (atual.length) linhas.push(atual);
+    linhas.forEach((linha, i) => {
+      const ultima = i === linhas.length - 1;
+      const larguraPalavras = linha.reduce((s, p) => s + font.widthOfTextAtSize(p, tamanho), 0);
+      const espaco = ultima || linha.length === 1
+        ? font.widthOfTextAtSize(" ", tamanho)
+        : (largura - larguraPalavras) / (linha.length - 1);
+      let x = margem;
+      for (const p of linha) {
+        page.drawText(p, { x, y, size: tamanho, font, color: rgb(0, 0, 0) });
+        x += font.widthOfTextAtSize(p, tamanho) + espaco;
+      }
+      y -= entrelinha;
+    });
+    y -= 8;
+  };
+  const titulo = (texto) => {
+    y -= 10;
+    page.drawText(texto, { x: margem, y, size: 13, font: bold, color: rgb(0, 0, 0) });
+    y -= entrelinha + 4;
+  };
 
-<p class="section-title">Outorgado</p>
-<p>${RESP_TECNICO}, brasileiro, Casado(a), engenheiro eletricista, portador do RG nº ${RESP_RG}, expedido pelo SPTC - ES, inscrito no CPF sob o nº ${RESP_CPF}, residente e domiciliado(a) na ${RESP_ENDERECO}.</p>
+  const cabecalho = "PROCURAÇÃO";
+  page.drawText(cabecalho, { x: (595.28 - bold.widthOfTextAtSize(cabecalho, 16)) / 2, y, size: 16, font: bold, color: rgb(0, 0, 0) });
+  y -= 45;
 
-<p class="section-title">Poderes</p>
-<p>Concede plenos poderes ao(à) OUTORGADO, a fim de que possa defender os direitos e interesses do(a) OUTORGANTE, podendo assinar requerimentos, ofícios, termos e compromissos, concordar e discordar de declarações, solicitar, providenciar e ter acesso a documentos, além de poder formular reclamações eventualmente necessárias. Todos os poderes acima citados em relação ao processo de microgeração durante o processo junto à EDP ESCELSA.</p>
+  titulo("Outorgante");
+  paragrafo(`${nomeCliente}, CPF: ${cpfCliente}, estabelecido na ${endereco}, ${cidadeUF}. CEP: ${cep}`);
+  titulo("Outorgado");
+  paragrafo(`${RESP_TECNICO}, brasileiro, Casado(a), engenheiro eletricista, portador do RG nº ${RESP_RG}, expedido pelo SPTC - ES, inscrito no CPF sob o nº ${RESP_CPF}, residente e domiciliado(a) na ${RESP_ENDERECO}.`);
+  titulo("Poderes");
+  paragrafo("Concede plenos poderes ao(à) OUTORGADO, a fim de que possa defender os direitos e interesses do(a) OUTORGANTE, podendo assinar requerimentos, ofícios, termos e compromissos, concordar e discordar de declarações, solicitar, providenciar e ter acesso a documentos, além de poder formular reclamações eventualmente necessárias. Todos os poderes acima citados em relação ao processo de microgeração durante o processo junto à EDP ESCELSA.");
+  titulo("Validade");
+  paragrafo("Esta procuração tem validade de 200 dias, a contar da data de sua assinatura.");
+  paragrafo(`${cidade} / ${estado}, ${dataExtenso}.`);
 
-<p class="section-title">Validade</p>
-<p>Esta procuração tem validade de 200 dias, a contar da data de sua assinatura.</p>
+  // Área de assinatura
+  y -= 55;
+  const larguraAssinatura = 230;
+  page.drawLine({ start: { x: margem, y }, end: { x: margem + larguraAssinatura, y }, thickness: 1, color: rgb(0, 0, 0) });
+  for (const linha of [nomeCliente, `CPF: ${cpfCliente}`]) {
+    y -= entrelinha - 2;
+    const w = font.widthOfTextAtSize(linha, tamanho);
+    page.drawText(linha, { x: margem + Math.max(0, (larguraAssinatura - w) / 2), y, size: tamanho, font, color: rgb(0, 0, 0) });
+  }
 
-<p>${cidade} / ${estado}, ${dataExtenso}.</p>
-
-<div class="signature-area">
-  <div class="sig-line">
-    <hr />
-    <p>${nomeCliente}<br>CPF: ${cpfCliente}</p>
-  </div>
-</div>
-</body>
-</html>`;
+  return await pdf.save();
 }
 
 // Fatores mensais de irradiação (% relativa à média anual) para ES/Serra
