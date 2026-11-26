@@ -170,6 +170,14 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
     y -= 14;
   };
 
+  // Título + texto de introdução + tabela sempre juntos na mesma página
+  const altParagrafo = (t) => quebrar(t, font, 11, LARG).length * 16 + 8;
+  const secaoTabela = (numero, t, intro, cab, linhas, colunas, verde) => {
+    titulo(numero, t, altParagrafo(intro) + tabela(cab, linhas, colunas, verde, true) + 50);
+    paragrafo(intro);
+    tabela(cab, linhas, colunas, verde);
+  };
+
   const imagem = (img, w, h) => {
     garantir(h + 12);
     y -= h;
@@ -218,9 +226,7 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
   paragrafo("O Sistema de Compensação de Energia Elétrica é regulamentado pela Agência Nacional De Energia Elétrica (ANEEL), através da Resolução Normativa 482 de 17 de Abril de 2012; o projeto aqui apresentado segue as determinações desta resolução normativa, bem como os Procedimentos de Distribuição de Energia Elétrica (PRODIST), as normas técnicas vigentes para instalações elétricas em baixa tensão (NBR-5410), proteção de estruturas contra descargas atmosféricas (NBR-5419).");
   paragrafo("O projeto elétrico segue à risca as determinações da concessionaria de energia elétrica local, a EDP Escelsa, através da observância da norma interna de CONEXÃO DE MINI E MICROGERADORES AO SISTEMA DE DISTRIBUIÇÃO EM BAIXA TENSÃO (PR.DT.PDN.03.14.002), vigente na data de apresentação deste projeto.");
 
-  titulo("3", "Dados Preliminares");
-  paragrafo("A tabela abaixo demonstra as informações preliminares sobre os sistemas fotovoltaicos conectados à rede, a potência nominal máxima (em condições ideais de funcionamento), os dispositivos utilizados para a concepção do sistema fotovoltaico e seus respectivos fabricantes e modelos.");
-  tabela(`Nome para Registro:\n${nomeCliente}`, [
+  secaoTabela("3", "Dados Preliminares", "A tabela abaixo demonstra as informações preliminares sobre os sistemas fotovoltaicos conectados à rede, a potência nominal máxima (em condições ideais de funcionamento), os dispositivos utilizados para a concepção do sistema fotovoltaico e seus respectivos fabricantes e modelos.", `Nome para Registro:\n${nomeCliente}`, [
     ["Potência-pico do Sistema Fotovoltaico conectado à rede (kWp)", num(potKwp)],
     ["Fabricante dos módulos", ou(m.fabricante)],
     ["Modelo dos módulos", m.modelo || modDescricao],
@@ -235,9 +241,7 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
   ]);
   paragrafo("As folhas de dados (datasheets) dos componentes fazem parte dos anexos deste documento.");
 
-  titulo("3.1", "Identificação do Proprietário e Local de Instalação");
-  paragrafo("O responsável pela operação e manutenção do sistema fotovoltaico conectado à rede para geração própria é o seu proprietário, identificado na tabela abaixo:");
-  tabela("Identificação da Unidade Consumidora", [
+  secaoTabela("3.1", "Identificação do Proprietário e Local de Instalação", "O responsável pela operação e manutenção do sistema fotovoltaico conectado à rede para geração própria é o seu proprietário, identificado na tabela abaixo:", "Identificação da Unidade Consumidora", [
     ["Proprietário", nomeCliente],
     ["Número da Unidade Consumidora", ou(uc.numero_uc)],
     ["Endereço", ou(uc.endereco)],
@@ -275,9 +279,7 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
   paragrafo("2. Inversor Interativo: subsistema de condicionamento de potência, responsável pela proteção do gerador e da rede de distribuição, qualidade de energia e coleta de dados operacionais.", 18);
   paragrafo("3. Dispositivo de Acoplamento à Rede: composto pelo sistema de medição bidirecional (para medição da energia consumida e da energia gerada)", 18);
 
-  titulo("4.2", "Gerador (Arranjo) Fotovoltaico");
-  paragrafo(`O gerador (arranjo) fotovoltaico é composto por módulos fotovoltaicos de fabricante ${ou(m.fabricante)} modelo ${m.modelo || modDescricao} conforme a tabela abaixo:`);
-  tabela("Características Elétricas - Modelos Fotovoltaicos", [
+  secaoTabela("4.2", "Gerador (Arranjo) Fotovoltaico", `O gerador (arranjo) fotovoltaico é composto por módulos fotovoltaicos de fabricante ${ou(m.fabricante)} modelo ${m.modelo || modDescricao} conforme a tabela abaixo:`, "Características Elétricas - Modelos Fotovoltaicos", [
     ["Fabricante", ou(m.fabricante), ""],
     ["Modelo", m.modelo || modDescricao, ""],
     ["Tensão de funcionamento Ótima (Vmp)", ou(m.vmp), "V"],
@@ -293,9 +295,7 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
     ["Isc", ou(m.coef_temp_isc), "/C°"],
   ], [0.55, 0.33, 0.12]);
 
-  titulo("4.2.1", "Aspecto Físico do Painel Fotovoltaico e Arranjo dos Painéis");
-  paragrafo("Os painéis fotovoltaicos serão montados rente às telhas, sem ângulo de inclinação em relação à face do telhado, não foi previsto carga adicional provocada pela ação do vento.");
-  tabela("Aspecto Físico do Painel Fotovoltaico", [
+  secaoTabela("4.2.1", "Aspecto Físico do Painel Fotovoltaico e Arranjo dos Painéis", "Os painéis fotovoltaicos serão montados rente às telhas, sem ângulo de inclinação em relação à face do telhado, não foi previsto carga adicional provocada pela ação do vento.", "Aspecto Físico do Painel Fotovoltaico", [
     ["Área dos Arranjos (m2)", num(areaModulo * qtdModulos)],
     ["Peso adicional (kg)", num(m.peso * qtdModulos, 1)],
   ]);
@@ -321,11 +321,10 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
   titulo("4.2.5", "String Box");
   paragrafo("A proteção do circuito de corrente contínua será através de String Box Externa. A proteção de cada String é feita através de fusível de 15A montado em Porta fusível, um Disjuntor de 20 A e um DPS de 1000V.");
 
-  titulo("4.3", "Inversor Interativo à Rede");
-  paragrafo("Serão utilizados inversor(es) conforme a tabela abaixo:");
-  for (const inv of (inversores.length ? inversores : [{ quantidade: null, marca_modelo: "" }])) {
+  const listaInversores = inversores.length ? inversores : [{ quantidade: null, marca_modelo: "" }];
+  const tabelaInversor = (inv, medir = false) => {
     const p = inv.produto || {};
-    tabela("Especificações Técnicas do Inversor", [
+    return tabela("Especificações Técnicas do Inversor", [
       ["Fabricante do(s) Inversor(es)", p.fabricante || String(inv.marca_modelo || "").split(" ")[0] || "—"],
       ["Modelo do(s) Inversor(es)", p.modelo || inv.marca_modelo || "—"],
       ["Potência Nominal dos(s) Inversor(es)", p.potencia_ac_w ? `${p.potencia_ac_w} W` : ou(p.potencia_kva, " kVA")],
@@ -341,8 +340,12 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
       ["Tensão Máxima Entrada do Inversor", ou(p.tensao_max_dc_v, " V")],
       ["Tensão Mínima Entrada do Inversor", ou(p.tensao_min_dc_v, " V")],
       ["Rendimento do Inversor", ou(p.eficiencia, "%")],
-    ]);
-  }
+    ], undefined, undefined, medir);
+  };
+  const introInversor = "Serão utilizados inversor(es) conforme a tabela abaixo:";
+  titulo("4.3", "Inversor Interativo à Rede", altParagrafo(introInversor) + tabelaInversor(listaInversores[0], true) + 50);
+  paragrafo(introInversor);
+  for (const inv of listaInversores) tabelaInversor(inv);
   paragrafo("As funções de manutenção e proteção do inversor estão de acordo com os requisitos mínimos em função da potência instalada, presente na Seção 3.7 do PRODIST da ANEEL, requisitos estes indicados na Tabela a seguir");
   imagem(imgProtecoes, 425, 353);
 
@@ -356,9 +359,7 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
   paragrafo("Será afixada, no poste-padrão do ramal de entrada, uma placa indicativa de que a unidade consumidora possui sistema de geração própria, conforme definição da norma \"Conexão de Micro e Minigeração Distribuída Sob Sistema de Compensação de Energia Elétrica\" (GED-15303). A placa sinalizadora é composta de acrílico, com formato, dimensões e conteúdo conforme imagem abaixo:");
   imagem(imgPlaca, 283, 205);
 
-  titulo("5", "Estimativa de geração e Considerações Gerais");
-  paragrafo("Este projeto foi elaborado com base nas informações fornecidas pelos fabricantes de cada equipamento, com os dados de placa dos mesmos, e a partir dessas informações foi feito o dimensionamento do sistema de geração solar fotovoltaico com as seguintes características:");
-  tabela("Estimativa de geração e Considerações Gerais", [
+  secaoTabela("5", "Estimativa de geração e Considerações Gerais", "Este projeto foi elaborado com base nas informações fornecidas pelos fabricantes de cada equipamento, com os dados de placa dos mesmos, e a partir dessas informações foi feito o dimensionamento do sistema de geração solar fotovoltaico com as seguintes características:", "Estimativa de geração e Considerações Gerais", [
     ["Potência instalada do circuito DC (kWp)", num(potKwp)],
     ["Potência instalada do circuito AC (kW)", num(potInversorKw)],
     ["Hora de Sol Pico", (kwhMedio && potKwp) ? `${num(kwhMedio / potKwp / 30)} h` : "—"],
