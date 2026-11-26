@@ -1,4 +1,5 @@
 import { PDFDocument, StandardFonts, rgb } from 'npm:pdf-lib@1.17.1';
+import { sugerirArranjo } from './arranjo.ts';
 
 // Imagens fixas do modelo oficial do memorial
 const IMG_PROTECOES = "https://base44.app/api/apps/69a4e8e0a7fedaf0ea728241/files/mp/public/69a4e8e0a7fedaf0ea728241/2c0c46125b3c501e06d003e7babb5658_memorial_image1.png";
@@ -121,10 +122,10 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
   };
 
   // Título numerado (entra no sumário)
-  const titulo = (numero, t) => {
+  const titulo = (numero, t, reserva = 120) => {
     const nivel = numero.split(".").length;
     const size = [14, 12, 11][nivel - 1];
-    garantir(120); // mantém o título junto do conteúdo que vem depois
+    garantir(reserva); // mantém o título junto do conteúdo que vem depois
     y -= nivel === 1 ? 14 : 8;
     for (const linha of quebrar(`${numero}. ${t}`, bold, size, LARG)) {
       y -= size + 5;
@@ -135,7 +136,7 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
   };
 
   // Tabela no padrão do modelo: cabeçalho verde e primeira coluna verde
-  const tabela = (cabecalho, linhas, colunas = [0.55, 0.45], verde = (_l, c) => c === 0) => {
+  const tabela = (cabecalho, linhas, colunas = [0.55, 0.45], verde = (_l, c) => c === 0, medir = false) => {
     const size = 10, lh = 13, pad = 5;
     const celula = (x, w, h, linhasTexto, fundoVerde, centralizar) => {
       page.drawRectangle({ x, y: y - h, width: w, height: h, color: fundoVerde ? VERDE : BRANCO, borderColor: PRETO, borderWidth: 0.5 });
@@ -146,15 +147,20 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
         else texto(page, lt, x + pad, yy, size, f, fundoVerde ? BRANCO : PRETO);
       });
     };
+    const larguras = colunas.map(c => c * LARG);
     const linhasCab = cabecalho.split("\n").flatMap(l => quebrar(l, bold, size, LARG - pad * 2));
     const hCab = linhasCab.length * lh + pad * 2;
-    garantir(hCab + 30);
+    const medidas = linhas.map(linha => {
+      const textos = linha.map((c, i) => quebrar(c, font, size, larguras[i] - pad * 2));
+      return { textos, h: Math.max(...textos.map(t => t.length)) * lh + pad * 2 };
+    });
+    const total = hCab + medidas.reduce((s, r) => s + r.h, 0);
+    if (medir) return total + 14;
+    // Mantém a tabela inteira na mesma página sempre que ela couber em uma página
+    garantir(total <= A4[1] - MT - MB ? total : hCab + 30);
     celula(ML, LARG, hCab, linhasCab, true, true);
     y -= hCab;
-    linhas.forEach((linha, l) => {
-      const larguras = colunas.map(c => c * LARG);
-      const textos = linha.map((c, i) => quebrar(c, font, size, larguras[i] - pad * 2));
-      const h = Math.max(...textos.map(t => t.length)) * lh + pad * 2;
+    medidas.forEach(({ textos, h }, l) => {
       garantir(h);
       let x = ML;
       textos.forEach((t, c) => { celula(x, larguras[c], h, t, verde(l, c), false); x += larguras[c]; });
@@ -245,15 +251,16 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
     ["Tipo de Ligação da Unidade Consumidora", tipoLigacao],
   ]);
 
-  titulo("3.2", "Responsabilidade Técnica");
-  tabela("Responsável Técnico", [
+  const linhasResponsavel = [
     ["Responsável Pelo Projeto Técnico", RESP_TECNICO],
     ["Número de Registro (CREA)", CREA],
     ["Endereço", RESP_ENDERECO],
     ["Telefone", RESP_TELEFONE],
     ["E-mail", RESP_EMAIL],
     ["Anotação de Responsabilidade Técnica (ART) Projeto", ou(rt.art_numero)],
-  ]);
+  ];
+  titulo("3.2", "Responsabilidade Técnica", tabela("Responsável Técnico", linhasResponsavel, undefined, undefined, true) + 40);
+  tabela("Responsável Técnico", linhasResponsavel);
 
   titulo("4", "Descritivo Técnico do Sistema de Geração Própria – SFCR");
   paragrafo("O presente sistema de microgeração distribuída utiliza a tecnologia dos sistemas fotovoltaicos para a geração de energia em montante necessário para a compensação do consumo médio mensal da unidade consumidora onde está instalado.");
@@ -292,14 +299,16 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
     ["Peso adicional (kg)", num(m.peso * qtdModulos, 1)],
   ]);
 
-  titulo("4.2.2", "Arranjo dos Painéis");
+  // Arranjo informado na aba UC & Técnico; sem ele, o sistema calcula uma sugestão
   const numStrings = Number(rt.num_strings) || 0;
-  tabela("Arranjo dos Painéis", [
-    ["Nº de Módulos Ligados em Serie", "Entrada Inversor"],
-    ...(numStrings
-      ? Array.from({ length: numStrings }, (_v, i) => [ou(rt.modulos_por_string), `Entrada ${i + 1}`])
-      : [["—", "—"]]),
-  ], [0.5, 0.5], (l) => l === 0);
+  let arranjos = (numStrings && rt.modulos_por_string)
+    ? [{ titulo: "Arranjo dos Painéis", linhas: Array.from({ length: numStrings }, (_v, i) => [ou(rt.modulos_por_string), `Entrada ${i + 1}`]) }]
+    : sugerirArranjo({ modulo: m, qtdModulos, inversores });
+  if (!arranjos.length) arranjos = [{ titulo: "Arranjo dos Painéis", linhas: [["—", "—"]] }];
+  const cabArranjo = ["Nº de Módulos Ligados em Serie", "Entrada Inversor"];
+  const args = (a) => [a.titulo, [cabArranjo, ...a.linhas], [0.5, 0.5], (l) => l === 0];
+  titulo("4.2.2", "Arranjo dos Painéis", tabela(...args(arranjos[0]), true) + 40);
+  for (const a of arranjos) tabela(...args(a));
   if (rt.entradas_mppt) paragrafo(`Configuração das entradas MPPT: ${rt.entradas_mppt}`);
 
   titulo("4.2.3", "Estrutura de Fixação dos painéis fotovoltaicos");
