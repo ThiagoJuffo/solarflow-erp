@@ -126,7 +126,9 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
   const titulo = (numero, t, reserva = 120) => {
     const nivel = numero.split(".").length;
     const size = [14, 12, 11][nivel - 1];
-    garantir(reserva); // mantém o título junto do conteúdo que vem depois
+    // Capítulo (nível 1) sempre começa em folha nova; os demais ficam junto do conteúdo que vem depois
+    if (nivel === 1) { if (y < A4[1] - MT) novaPagina(); }
+    else garantir(reserva);
     y -= nivel === 1 ? 14 : 8;
     for (const linha of quebrar(`${numero}. ${t}`, bold, size, LARG)) {
       y -= size + 5;
@@ -346,7 +348,9 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
   titulo("4.3", "Inversor Interativo à Rede", altParagrafo(introInversor) + tabelaInversor(listaInversores[0], true) + 50);
   paragrafo(introInversor);
   for (const inv of listaInversores) tabelaInversor(inv);
-  paragrafo("As funções de manutenção e proteção do inversor estão de acordo com os requisitos mínimos em função da potência instalada, presente na Seção 3.7 do PRODIST da ANEEL, requisitos estes indicados na Tabela a seguir");
+  const introProtecoes = ("As funções de manutenção e proteção do inversor estão de acordo com os requisitos mínimos em função da potência instalada, presente na Seção 3.7 do PRODIST da ANEEL, requisitos estes indicados na Tabela a seguir");
+  garantir(altParagrafo(introProtecoes) + 353 + 12); // texto junto da imagem
+  paragrafo(introProtecoes);
   imagem(imgProtecoes, 425, 353);
 
   titulo("4.3.1", "Especificação do cabeamento");
@@ -355,8 +359,9 @@ export async function gerarMemorialPDF({ projeto, uc, rt, preProjeto, moduloProd
   titulo("4.3.2", "Dispositivo de Manobra e Proteção contra Sobrecorrentes");
   paragrafo("O dispositivo seccionador geral, possui uma corrente nominal de 25A. O dispositivo localiza-se no interior do quadro de proteção e controle e possui características de disparo conforme curva C e uma corrente nominal de atuação de 5kA.");
 
-  titulo("4.4", "Sinalização de Segurança");
-  paragrafo("Será afixada, no poste-padrão do ramal de entrada, uma placa indicativa de que a unidade consumidora possui sistema de geração própria, conforme definição da norma \"Conexão de Micro e Minigeração Distribuída Sob Sistema de Compensação de Energia Elétrica\" (GED-15303). A placa sinalizadora é composta de acrílico, com formato, dimensões e conteúdo conforme imagem abaixo:");
+  const introPlaca = ("Será afixada, no poste-padrão do ramal de entrada, uma placa indicativa de que a unidade consumidora possui sistema de geração própria, conforme definição da norma \"Conexão de Micro e Minigeração Distribuída Sob Sistema de Compensação de Energia Elétrica\" (GED-15303). A placa sinalizadora é composta de acrílico, com formato, dimensões e conteúdo conforme imagem abaixo:");
+  titulo("4.4", "Sinalização de Segurança", altParagrafo(introPlaca) + 205 + 12 + 50);
+  paragrafo(introPlaca);
   imagem(imgPlaca, 283, 205);
 
   secaoTabela("5", "Estimativa de geração e Considerações Gerais", "Este projeto foi elaborado com base nas informações fornecidas pelos fabricantes de cada equipamento, com os dados de placa dos mesmos, e a partir dessas informações foi feito o dimensionamento do sistema de geração solar fotovoltaico com as seguintes características:", "Estimativa de geração e Considerações Gerais", [
